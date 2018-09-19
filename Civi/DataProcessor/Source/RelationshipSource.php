@@ -41,7 +41,7 @@ class RelationshipSource implements SourceInterface {
       new FieldSpecification('contact_id_b', 'Integer', $source_name.'_contact_id_b'),
     )));
     if (isset($configuration['relationship_type_id'])) {
-      $this->dataFlow->addWhereClause(new SimpleWhereClause($source_name, 'relationship_type_id', '=', $configuration['relationship_type_id'], 'Integer'));
+      $this->dataFlow->addWhereClause(new SimpleWhereClause($source_name, 'relationship_type_id', 'IN', $configuration['relationship_type_id'], 'Integer'));
     }
     return $this;
   }

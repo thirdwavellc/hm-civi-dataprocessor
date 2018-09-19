@@ -114,4 +114,18 @@ class CombinedSqlDataFlow extends SqlDataFlow implements MultipleSourceDataFlows
     return 'combined_sql_data_flow';
   }
 
+  public function getWhereClauses() {
+    foreach($this->whereClauses as $clause) {
+      $clauses[] = $clause;
+    }
+    foreach($this->sourceDataFlowDescriptions as $sourceDataFlowDescription) {
+      if ($sourceDataFlowDescription->getDataFlow() instanceof SqlDataFlow) {
+        foreach($sourceDataFlowDescription->getDataFlow()->getWhereClauses() as $clause) {
+          $clauses[] = $clause;
+        }
+      }
+    }
+    return $clauses;
+  }
+
 }

@@ -50,6 +50,7 @@ abstract class SqlDataFlow extends AbstractDataFlow {
 
     $from = $this->getFromStatement();
     $where = $this->getWhereStatement();
+
     $countSql = "SELECT COUNT(*) {$from} {$where}";
     $this->count = \CRM_Core_DAO::singleValueQuery($countSql);
 
@@ -68,7 +69,6 @@ abstract class SqlDataFlow extends AbstractDataFlow {
       $limitStatement = "LIMIT {$this->offset}, {$calculatedLimit}";
     }
     $sql .= " {$limitStatement}";
-
     $this->dao = \CRM_Core_DAO::executeQuery($sql);
   }
 
@@ -145,7 +145,7 @@ abstract class SqlDataFlow extends AbstractDataFlow {
    */
   public function getWhereStatement() {
     $clauses = array("1");
-    foreach($this->whereClauses as $clause) {
+    foreach($this->getWhereClauses() as $clause) {
       $clauses[] = $clause->getWhereClause();
     }
     return "WHERE ". implode(" AND ", $clauses);
@@ -159,6 +159,15 @@ abstract class SqlDataFlow extends AbstractDataFlow {
   public function addWhereClause(WhereClauseInterface $clause) {
     $this->whereClauses[] = $clause;
     return $this;
+  }
+
+  /**
+   * Return all the where clauses
+   *
+   * @return array
+   */
+  public function getWhereClauses() {
+    return $this->whereClauses;
   }
 
 }

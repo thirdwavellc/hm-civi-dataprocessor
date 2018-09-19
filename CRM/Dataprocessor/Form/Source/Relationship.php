@@ -42,7 +42,7 @@ class CRM_Dataprocessor_Form_Source_Relationship extends CRM_Core_Form {
 
     $relationship_types = array(' - select - ') + $this->buildRelationshipTypeSelectList();
 
-    $this->add('select', 'relationship_type_id', ts('Relationship Type'), $relationship_types, true, array('class' => 'crm-select2'));
+    $relationship_type_select = $this->add('select', 'relationship_type_id', ts('Relationship Type'), $relationship_types, true, array('class' => 'crm-select2', 'multiple' => 'multiple'));
 
     $this->addButtons(array(
       array('type' => 'next', 'name' => E::ts('Save'), 'isDefault' => TRUE,),
@@ -58,7 +58,7 @@ class CRM_Dataprocessor_Form_Source_Relationship extends CRM_Core_Form {
 
     $source = CRM_Dataprocessor_BAO_Source::getValues(array('id' => $this->source_id));
     if (isset($source[$this->source_id]['configuration']['relationship_type_id'])) {
-      $defaults['relationship_type_id'] = $source[$this->source_id]['configuration']['relationship_type_id'].".".$source[$this->source_id]['join_configuration']['left_field'];
+      $defaults['relationship_type_id'] = $source[$this->source_id]['configuration']['relationship_type_id'];
     }
 
     return $defaults;
