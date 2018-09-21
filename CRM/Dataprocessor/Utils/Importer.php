@@ -70,6 +70,7 @@ class CRM_Dataprocessor_Utils_Importer {
 
     // Clear all existing data sources and outputs
     CRM_Dataprocessor_BAO_Source::deleteWithDataProcessorId($id);
+    CRM_Dataprocessor_BAO_Filter::deleteWithDataProcessorId($id);
     CRM_Dataprocessor_BAO_Field::deleteWithDataProcessorId($id);
     CRM_Dataprocessor_BAO_Output::deleteWithDataProcessorId($id);
 
@@ -77,6 +78,11 @@ class CRM_Dataprocessor_Utils_Importer {
       $params = $data_source;
       $params['data_processor_id'] = $id;
       $result = CRM_Dataprocessor_BAO_Source::add($params);
+    }
+    foreach($data['filters'] as $filter) {
+      $params = $filter;
+      $params['data_processor_id'] = $id;
+      $result = CRM_Dataprocessor_BAO_Filter::add($params);
     }
     foreach($data['fields'] as $field) {
       $params = $field;

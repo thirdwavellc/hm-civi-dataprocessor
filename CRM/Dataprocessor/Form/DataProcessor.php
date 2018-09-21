@@ -45,15 +45,18 @@ class CRM_Dataprocessor_Form_DataProcessor extends CRM_Core_Form {
     if ($this->dataProcessorId) {
       $this->addSources();
       $this->addFields();
+      $this->addFilters();
       $this->addAggregateFields();
       $this->assign('outputs', CRM_Dataprocessor_BAO_Output::getValues(array('data_processor_id' => $this->dataProcessorId)));
       $dataSourceAddUrl = CRM_Utils_System::url('civicrm/dataprocessor/form/source', 'reset=1&action=add&data_processor_id='.$this->dataProcessorId, TRUE);
       $addAggregateFieldUrl = CRM_Utils_System::url('civicrm/dataprocessor/form/aggregate_field', 'reset=1&action=add&id='.$this->dataProcessorId, TRUE);
       $addFieldUrl = CRM_Utils_System::url('civicrm/dataprocessor/form/field', 'reset=1&action=add&data_processor_id='.$this->dataProcessorId, TRUE);
+      $addFilterUrl = CRM_Utils_System::url('civicrm/dataprocessor/form/filter', 'reset=1&action=add&data_processor_id='.$this->dataProcessorId, TRUE);
       $outputAddUrl = CRM_Utils_System::url('civicrm/dataprocessor/form/output', 'reset=1&action=add&data_processor_id='.$this->dataProcessorId, TRUE);
       $this->assign('addDataSourceUrl', $dataSourceAddUrl);
       $this->assign('addAggregateFieldUrl', $addAggregateFieldUrl);
       $this->assign('addFieldUrl', $addFieldUrl);
+      $this->assign('addFilterUrl', $addFilterUrl);
       $this->assign('addOutputUrl', $outputAddUrl);
     }
   }
@@ -82,6 +85,15 @@ class CRM_Dataprocessor_Form_DataProcessor extends CRM_Core_Form {
       $fields[$idx]['configuration_link'] = '';
     }
     $this->assign('fields', $fields);
+  }
+
+  protected function addFilters() {
+    $filters = CRM_Dataprocessor_BAO_Filter::getValues(array('data_processor_id' => $this->dataProcessorId));
+    foreach($filters as $idx => $filter) {
+      $filters[$idx]['is_required'] = $filter['is_required'] ? E::ts('Yes') : E::ts('No');
+      $filters[$idx]['configuration_link'] = '';
+    }
+    $this->assign('filters', $filters);
   }
 
   protected function addAggregateFields() {

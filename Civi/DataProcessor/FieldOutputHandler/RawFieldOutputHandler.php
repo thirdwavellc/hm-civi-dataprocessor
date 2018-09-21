@@ -9,7 +9,6 @@ namespace Civi\DataProcessor\FieldOutputHandler;
 use CRM_Dataprocessor_ExtensionUtil as E;
 use Civi\DataProcessor\Source\SourceInterface;
 use Civi\DataProcessor\DataSpecification\FieldSpecification;
-use Civi\DataProcessor\ProcessorType\AbstractProcessorType;
 
 class RawFieldOutputHandler extends AbstractFieldOutputHandler {
 

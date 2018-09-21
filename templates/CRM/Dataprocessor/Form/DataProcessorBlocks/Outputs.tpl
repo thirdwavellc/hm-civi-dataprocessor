@@ -1,5 +1,6 @@
 {crmScope extensionKey='dataprocessor'}
-<div class="crm-block crm-form-block crm-data-processor_outputs-block">
+    <h3>{ts}Output{/ts}</h3>
+    <div class="crm-block crm-form-block crm-data-processor_outputs-block">
     <table>
         <tr>
             <th>{ts}Output{/ts}</th>

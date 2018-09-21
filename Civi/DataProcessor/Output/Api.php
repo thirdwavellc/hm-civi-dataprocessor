@@ -35,7 +35,7 @@ class Api implements OutputInterface, API_ProviderInterface, EventSubscriberInte
     // if so do our getfields stuff there.
     return array(
       Events::RESOLVE => array('onApiResolve'),
-      //Events::RESPOND => array('onGetFieldsRepsonse'), // we use this method to add our field definition to the getFields action.
+      Events::RESPOND => array('onGetFieldsRepsonse'), // we use this method to add our field definition to the getFields action.
     );
   }
 
@@ -45,6 +45,72 @@ class Api implements OutputInterface, API_ProviderInterface, EventSubscriberInte
       $event->setApiProvider($this);
     }
   }
+
+  /**
+   * Event listener on the ResponddEvent to handle the getfields actions.
+   * So the fields defined by the user are availble in the api explorer for example.
+   */
+  public function onGetFieldsRepsonse(RespondEvent $event) {
+    $apiRequest = $event->getApiRequest();
+    $params = $apiRequest['params'];
+    $result = $event->getResponse();
+
+    // First check whether the entity is dataprocessorapi and the action is getfields.
+    // If not return this function.
+    if (strtolower($apiRequest['entity']) != 'dataprocessorapi' || strtolower($apiRequest['action']) != 'getfields') {
+      return;
+    }
+    // Now check whether the action param is set. With the action param we can find the data processor.
+    if (isset($params['action'])) {
+      if (stripos($params['action'], 'getcount') === 0) {
+        return; // Is a get count action.
+      }
+      // Find the data processor
+      try {
+        $dataProcessor = \CRM_Dataprocessor_BAO_DataProcessor::getDataProcessorByOutputTypeAndName('api', $params['action']);
+
+        foreach ($dataProcessor->getDataFlow()->getDataSpecification()->getFields() as $fieldSpec) {
+          $field = [
+            'name' => $fieldSpec->alias,
+            'title' => $fieldSpec->title,
+            'description' => '',
+            'type' => $fieldSpec->type,
+            'api.required' => FALSE,
+            'api.aliases' => [],
+          ];
+          if ($fieldSpec->getOptions()) {
+            $field['options'] = $fieldSpec->getOptions();
+          }
+          $result['values'][$fieldSpec->alias] = $field;
+        }
+        foreach($dataProcessor->getFilterHandlers() as $filterHandler) {
+          $fieldSpec = $filterHandler->getFieldSpecification();
+          $field = [
+            'name' => $fieldSpec->alias,
+            'title' => $fieldSpec->title,
+            'description' => '',
+            'type' => $fieldSpec->type,
+            'api.required' => $filterHandler->isRequired(),
+            'api.aliases' => [],
+          ];
+          if ($fieldSpec->getOptions()) {
+            $field['options'] = $fieldSpec->getOptions();
+          }
+          if (!isset($result['values'][$fieldSpec->alias])) {
+            $result['values'][$fieldSpec->alias] = $field;
+          } else {
+            $result['values'][$fieldSpec->alias] = array_merge($result['values'][$fieldSpec->alias], $field);
+          }
+        }
+      } catch(\Exception $e) {
+        // Do nothing.
+      }
+
+      $result['count'] = count($result['values']);
+      $event->setResponse($result);
+    }
+  }
+
 
   /**
    * @param array $apiRequest
@@ -66,6 +132,29 @@ class Api implements OutputInterface, API_ProviderInterface, EventSubscriberInte
     $dataProcessor = \CRM_Dataprocessor_BAO_DataProcessor::getDataProcessorByOutputTypeAndName('api', $dataProcessorName);
     if (!$dataProcessor instanceof AbstractProcessorType) {
       throw new \API_Exception('Could not find a form processor');
+    }
+
+    $params = $apiRequest['params'];
+    foreach($dataProcessor->getFilterHandlers() as $filter) {
+      $filterSpec = $filter->getFieldSpecification();
+      if ($filter->isRequired() && !isset($params[$filterSpec->alias])) {
+        throw new \API_Exception('Field '.$filterSpec->alias.' is required');
+      }
+      if (isset($params[$filterSpec->alias])) {
+        if (!is_array($params[$filterSpec->alias])) {
+          $filterParams = [
+            'op' => '=',
+            'value' => $params[$filterSpec->alias],
+          ];
+        } else {
+          $value = reset($params[$filterSpec->alias]);
+          $filterParams = [
+            'op' => key($params[$filterSpec->alias]),
+            'value' => $value,
+          ];
+        }
+        $filter->setFilter($filterParams);
+      }
     }
 
     if ($isCountAction) {

@@ -201,19 +201,31 @@ abstract class AbstractCivicrmEntitySource implements SourceInterface {
   protected function addFilters($configuration) {
     if (isset($configuration['filter']) && is_array($configuration['filter'])) {
       foreach($configuration['filter'] as $filter_alias => $filter_field) {
-        if ($this->getAvailableFilterFields()->doesFieldExist($filter_alias)) {
-          $spec = $this->getAvailableFilterFields()->getFieldSpecificationByName($filter_alias);
-          if ($spec instanceof CustomFieldSpecification) {
-            $customGroupDataFlowDescription = $this->ensureCustomGroup($spec->customGroupTableName, $spec->customGroupName);
-            $customGroupTableAlias = $customGroupDataFlowDescription->getDataFlow()
-              ->getTableAlias();
-            $customGroupDataFlowDescription->getDataFlow()->addWhereClause(
-              new SimpleWhereClause($customGroupTableAlias, $spec->customFieldColumnName, $filter_field['op'], $filter_field['value'])
-            );
-          } else {
-            $this->primaryDataFlow->addWhereClause(new SimpleWhereClause($this->primaryDataFlow->getTableAlias(), $spec->name, $filter_field['op'], $filter_field['value']));
-          }
-        }
+        $this->addFilter($filter_alias, $filter_field);
+      }
+    }
+  }
+
+  /**
+   * Adds an inidvidual filter to the data source
+   *
+   * @param $filter_alias
+   * @param $filter
+   *
+   * @throws \Exception
+   */
+  public function addFilter($filter_alias, $filter) {
+    if ($this->getAvailableFilterFields()->doesFieldExist($filter_alias)) {
+      $spec = $this->getAvailableFilterFields()->getFieldSpecificationByName($filter_alias);
+      if ($spec instanceof CustomFieldSpecification) {
+        $customGroupDataFlowDescription = $this->ensureCustomGroup($spec->customGroupTableName, $spec->customGroupName);
+        $customGroupTableAlias = $customGroupDataFlowDescription->getDataFlow()
+          ->getTableAlias();
+        $customGroupDataFlowDescription->getDataFlow()->addWhereClause(
+          new SimpleWhereClause($customGroupTableAlias, $spec->customFieldColumnName, $filter['op'], $filter['value'])
+        );
+      } else {
+        $this->primaryDataFlow->addWhereClause(new SimpleWhereClause($this->primaryDataFlow->getTableAlias(), $spec->name, $filter['op'], $filter['value']));
       }
     }
   }

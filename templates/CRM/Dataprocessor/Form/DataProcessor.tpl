@@ -50,6 +50,7 @@
   {if $data_processor_id}
     {include file="CRM/Dataprocessor/Form/DataProcessorBlocks/Sources.tpl"}
     {include file="CRM/Dataprocessor/Form/DataProcessorBlocks/AggregateFields.tpl"}
+    {include file="CRM/Dataprocessor/Form/DataProcessorBlocks/Filters.tpl"}
     {include file="CRM/Dataprocessor/Form/DataProcessorBlocks/Fields.tpl"}
     {include file="CRM/Dataprocessor/Form/DataProcessorBlocks/Outputs.tpl"}
   {/if}

@@ -4,16 +4,21 @@
  * @license AGPL-3.0
  */
 
-namespace Civi\DataProcessor\FieldOutputHandler;
+namespace Civi\DataProcessor\FilterHandler;
 
 use Civi\DataProcessor\DataSpecification\FieldSpecification;
 
-abstract class AbstractFieldOutputHandler {
+abstract class AbstractFilterHandler {
 
   /**
    * @var \Civi\DataProcessor\DataSpecification\FieldSpecification
    */
-  protected $outputFieldSpecification;
+  protected $fieldSpecification;
+
+  /**
+   * @var bool
+   */
+  protected $is_required;
 
   /**
    * Returns the name of the handler type.
@@ -37,17 +42,14 @@ abstract class AbstractFieldOutputHandler {
   abstract protected function getType();
 
   /**
-   * Returns the formatted value
-   *
-   * @param $rawRecord
-   * @param $formattedRecord
-   *
-   * @return \Civi\DataProcessor\FieldOutputHandler\FieldOutput
+   * @param array $filterParams
+   *   The filter settings
+   * @return mixed
    */
-  abstract public function formatField($rawRecord, $formattedRecord);
+  abstract public function setFilter($filterParams);
 
   public function __construct() {
-    $this->outputFieldSpecification = new FieldSpecification($this->getName(), $this->getType(), $this->getName());
+    $this->fieldSpecification = new FieldSpecification($this->getName(), $this->getType(), $this->getName());
   }
 
   /**
@@ -55,20 +57,25 @@ abstract class AbstractFieldOutputHandler {
    *
    * @param String $alias
    * @param String $title
+   * @param bool $is_required
    * @param array $configuration
    */
-  public function initialize($alias, $title, $configuration) {
+  public function initialize($alias, $title, $is_required, $configuration) {
     // Override this in child classes.
-    $this->outputFieldSpecification->title = $title;
-    $this->outputFieldSpecification->alias = $alias;
+    $this->fieldSpecification->title = $title;
+    $this->fieldSpecification->alias = $alias;
+    $this->is_required = $is_required;
+  }
+
+  public function isRequired() {
+    return $this->is_required;
   }
 
   /**
    * @return \Civi\DataProcessor\DataSpecification\FieldSpecification
    */
-  public function getOutputFieldSpecification() {
-    return $this->outputFieldSpecification;
+  public function getFieldSpecification() {
+    return $this->fieldSpecification;
   }
-
 
 }

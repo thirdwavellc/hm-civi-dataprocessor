@@ -249,6 +249,16 @@ class CRM_Dataprocessor_BAO_DataProcessor extends CRM_Dataprocessor_DAO_DataProc
       }
     }
 
+    $filters = CRM_Dataprocessor_BAO_Filter::getValues(array('data_processor_id' => $this->id));
+    $filterHandlers = $dataProcessor->getAvailableFilterHandlers();
+    foreach($filters as $filter) {
+      if (isset($filterHandlers[$filter['type']])) {
+        $filterHandler = $filterHandlers[$filter['type']];
+        $filterHandler->initialize($filter['name'], $filter['title'], $filter['is_required'], $filter['configuration']);
+        $dataProcessor->addFilterHandler($filterHandler);
+      }
+    }
+
     $fields = CRM_Dataprocessor_BAO_Field::getValues(array('data_processor_id' => $this->id));
     $outputHandlers = $dataProcessor->getAvailableOutputHandlers();
     foreach($fields as $field) {
@@ -283,6 +293,29 @@ class CRM_Dataprocessor_BAO_DataProcessor extends CRM_Dataprocessor_DAO_DataProc
     }
 
     return $dataProcessor->getAvailableOutputHandlers();
+  }
+
+  public static function getAvailableFilterHandlers($data_processor_id) {
+    $dao = new CRM_Dataprocessor_BAO_DataProcessor();
+    $dao->id = $data_processor_id;
+    $dao->find(true);
+    $factory = dataprocessor_get_factory();
+    $dataProcessor = $factory->getDataProcessorTypeByName($dao->type);
+    $sources = CRM_Dataprocessor_BAO_Source::getValues(array('data_processor_id' => $dao->id));
+    foreach($sources as $sourceDao) {
+      $source = $factory->getDataSourceByName($sourceDao['type']);
+      $source->setSourceName($sourceDao['name']);
+      $source->setSourceTitle($sourceDao['title']);
+      $source->initialize($sourceDao['configuration']);
+      $join = null;
+      if ($sourceDao['join_type']) {
+        $join = $factory->getJoinByName($sourceDao['join_type']);
+        $join->initialize($sourceDao['join_configuration'], $dao->id);
+      }
+      $dataProcessor->addDataSource($source, $join);
+    }
+
+    return $dataProcessor->getAvailableFilterHandlers();
   }
 
   public static function getAvailableAggregationFields($data_processor_id) {
@@ -372,6 +405,11 @@ class CRM_Dataprocessor_BAO_DataProcessor extends CRM_Dataprocessor_DAO_DataProc
     foreach($dataProcessor['data_sources'] as $i => $datasource) {
       unset($dataProcessor['data_sources'][$i]['id']);
       unset($dataProcessor['data_sources'][$i]['data_processor_id']);
+    }
+    $dataProcessor['filters'] = CRM_Dataprocessor_BAO_Filter::getValues(array('data_processor_id' => $id));
+    foreach($dataProcessor['filters'] as $i => $field) {
+      unset($dataProcessor['filters'][$i]['id']);
+      unset($dataProcessor['filters'][$i]['data_processor_id']);
     }
     $dataProcessor['fields'] = CRM_Dataprocessor_BAO_Field::getValues(array('data_processor_id' => $id));
     foreach($dataProcessor['fields'] as $i => $field) {

@@ -7,8 +7,10 @@
 namespace Civi\DataProcessor;
 
 use Civi\DataProcessor\DataSpecification\FieldSpecification;
+use Civi\DataProcessor\Event\FilterHandlerEvent;
 use Civi\DataProcessor\Event\OutputHandlerEvent;
 use Civi\DataProcessor\FieldOutputHandler\RawFieldOutputHandler;
+use Civi\DataProcessor\FilterHandler\SimpleSqlFilter;
 use Civi\DataProcessor\ProcessorType\AbstractProcessorType;
 use Civi\DataProcessor\Source\SourceInterface;
 use Symfony\Component\EventDispatcher\EventDispatcher;
@@ -196,6 +198,14 @@ class Factory {
   public function getOutputHandlers(FieldSpecification $field, SourceInterface $source) {
     $event = new OutputHandlerEvent($field, $source);
     $handler = new RawFieldOutputHandler($field, $source);
+    $event->handlers[$handler->getName()] = $handler;
+    $this->dispatcher->dispatch(OutputHandlerEvent::NAME, $event);
+    return $event->handlers;
+  }
+
+  public function getFilterHandlers(FieldSpecification $field, SourceInterface $source) {
+    $event = new FilterHandlerEvent($field, $source);
+    $handler = new SimpleSqlFilter($field, $source);
     $event->handlers[$handler->getName()] = $handler;
     $this->dispatcher->dispatch(OutputHandlerEvent::NAME, $event);
     return $event->handlers;

@@ -15,6 +15,7 @@ use Civi\DataProcessor\DataFlow\MultipleDataFlows\JoinSpecification;
 use Civi\DataProcessor\DataFlow\SqlDataFlow;
 use Civi\DataProcessor\DataSpecification\FieldSpecification;
 use Civi\DataProcessor\FieldOutputHandler\AbstractFieldOutputHandler;
+use Civi\DataProcessor\FilterHandler\AbstractFilterHandler;
 use Civi\DataProcessor\Storage\StorageInterface;
 
 abstract class AbstractProcessorType {
@@ -43,6 +44,11 @@ abstract class AbstractProcessorType {
    * @var \Civi\DataProcessor\FieldOutputHandler\AbstractFieldOutputHandler[]
    */
   protected $outputFieldHandlers;
+
+  /**
+   * @var \Civi\DataProcessor\FilterHandler\AbstractFilterHandler[]
+   */
+  protected $filterHandlers;
 
   /**
    * Add a data source to the processor
@@ -89,10 +95,39 @@ abstract class AbstractProcessorType {
   }
 
   /**
+   * @return \Civi\DataProcessor\FieldOutputHandler\AbstractFilterOutputHandler[]
+   */
+  public function getAvailableFilterHandlers() {
+    $factory = dataprocessor_get_factory();
+    $handlers = array();
+    foreach($this->dataSources as $dataSource) {
+      foreach($dataSource['datasource']->getAvailableFilterFields()->getFields() as $field) {
+        $fieldHandlers = $factory->getFilterHandlers($field, $dataSource['datasource']);
+        $handlers = array_merge($handlers, $fieldHandlers);
+      }
+    }
+    return $handlers;
+  }
+
+  /**
    * @param \Civi\DataProcessor\FieldOutputHandler\AbstractFieldOutputHandler $outputFieldHandler
    */
   public function addOutputFieldHandlers(AbstractFieldOutputHandler $outputFieldHandler) {
     $this->outputFieldHandlers[] = $outputFieldHandler;
+  }
+
+  /**
+   * @param \Civi\DataProcessor\FilterHandler\AbstractFilterHandler $filterHandler
+   */
+  public function addFilterHandler(AbstractFilterHandler $filterHandler) {
+    $this->filterHandlers[] = $filterHandler;
+  }
+
+  /**
+   * @return \Civi\DataProcessor\FilterHandler\AbstractFilterHandler[]
+   */
+  public function getFilterHandlers() {
+    return $this->filterHandlers;
   }
 
   public function ensureFieldInDataSource(FieldSpecification $fieldSpecification) {

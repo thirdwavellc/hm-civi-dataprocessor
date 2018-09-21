@@ -1,4 +1,5 @@
 {crmScope extensionKey='dataprocessor'}
+<h3>{ts}Fields{/ts}</h3>
 <div class="crm-block crm-form-block crm-data-processor_source-block">
     <table>
         <tr>
