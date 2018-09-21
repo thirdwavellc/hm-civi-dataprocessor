@@ -13,12 +13,20 @@ use Civi\DataProcessor\DataFlow\MultipleDataFlows\DataFlowDescription;
 use Civi\DataProcessor\DataFlow\MultipleDataFlows\JoinInterface;
 use Civi\DataProcessor\DataFlow\MultipleDataFlows\JoinSpecification;
 use Civi\DataProcessor\DataFlow\SqlDataFlow;
+use Civi\DataProcessor\DataSpecification\FieldSpecification;
+use Civi\DataProcessor\FieldOutputHandler\AbstractFieldOutputHandler;
 use Civi\DataProcessor\Storage\StorageInterface;
 
 abstract class AbstractProcessorType {
 
+  /**
+   * @var array
+   */
   protected $dataSources = array();
 
+  /**
+   * @var bool
+   */
   protected $allSqlDataFlows = true;
 
   /**
@@ -32,6 +40,11 @@ abstract class AbstractProcessorType {
   protected $dataflow = null;
 
   /**
+   * @var \Civi\DataProcessor\FieldOutputHandler\AbstractFieldOutputHandler[]
+   */
+  protected $outputFieldHandlers;
+
+  /**
    * Add a data source to the processor
    * @param \Civi\DataProcessor\Source\SourceInterface $datasource
    * @param \Civi\DataProcessor\DataFlow\MultipleDataFlows\JoinInterface|NULL $combineSpecification
@@ -42,6 +55,34 @@ abstract class AbstractProcessorType {
     $this->dataSources[] = $d;
     if (!$datasource->getDataFlow() instanceof SqlDataFlow) {
       $this->allSqlDataFlows = false;
+    }
+  }
+
+  /**
+   * @return \Civi\DataProcessor\FieldOutputHandler\AbstractFieldOutputHandler[]
+   */
+  public function getAvailableOutputHandlers() {
+    $factory = dataprocessor_get_factory();
+    $handlers = array();
+    foreach($this->dataSources as $dataSource) {
+      foreach($dataSource['datasource']->getAvailableFields()->getFields() as $field) {
+        $fieldHandlers = $factory->getOutputHandlers($field, $dataSource['datasource']);
+        $handlers = array_merge($handlers, $fieldHandlers);
+      }
+    }
+    return $handlers;
+  }
+
+  /**
+   * @param \Civi\DataProcessor\FieldOutputHandler\AbstractFieldOutputHandler $outputFieldHandler
+   */
+  public function addOutputFieldHandlers(AbstractFieldOutputHandler $outputFieldHandler) {
+    $this->outputFieldHandlers[] = $outputFieldHandler;
+  }
+
+  public function ensureFieldInDataSource(FieldSpecification $fieldSpecification) {
+    foreach($this->dataSources as $dataSource) {
+      $dataSource['datasource']->ensureFieldInSource($fieldSpecification);
     }
   }
 
@@ -82,6 +123,8 @@ abstract class AbstractProcessorType {
       } else {
         $this->dataflow = $dataflow;
       }
+
+      $this->dataflow->setOutputFieldHandlers($this->outputFieldHandlers);
     }
     return $this->dataflow;
   }

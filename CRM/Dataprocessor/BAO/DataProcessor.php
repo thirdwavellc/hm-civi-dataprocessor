@@ -183,6 +183,14 @@ class CRM_Dataprocessor_BAO_DataProcessor extends CRM_Dataprocessor_DAO_DataProc
     return ($count > 0) ? false : true;
   }
 
+  /**
+   * Returns a configured data processor instance.
+   *
+   * @param String $output_type
+   * @param String $name
+   * @return \Civi\DataProcessor\ProcessorType\AbstractProcessorType
+   * @throws \Exception when no data processor is found.
+   */
   public static function getDataProcessorByOutputTypeAndName($output_type, $name) {
     $sql = "
       SELECT civicrm_data_processor.* 
@@ -200,13 +208,20 @@ class CRM_Dataprocessor_BAO_DataProcessor extends CRM_Dataprocessor_DAO_DataProc
     return $dao->getDataProcessor();
   }
 
+  /**
+   * Returns a configured data processor instance.
+   *
+   * @return \Civi\DataProcessor\ProcessorType\AbstractProcessorType
+   */
   public function getDataProcessor() {
-    $factory = \Civi::service('data_processor_factory');
+    $factory = dataprocessor_get_factory();
     $dataProcessor = $factory->getDataProcessorTypeByName($this->type);
     $sources = CRM_Dataprocessor_BAO_Source::getValues(array('data_processor_id' => $this->id));
     foreach($sources as $sourceDao) {
       $source = $factory->getDataSourceByName($sourceDao['type']);
-      $source->initialize($sourceDao['configuration'], $sourceDao['name']);
+      $source->setSourceName($sourceDao['name']);
+      $source->setSourceTitle($sourceDao['title']);
+      $source->initialize($sourceDao['configuration']);
       $join = null;
       if ($sourceDao['join_type']) {
         $join = $factory->getJoinByName($sourceDao['join_type']);
@@ -214,7 +229,41 @@ class CRM_Dataprocessor_BAO_DataProcessor extends CRM_Dataprocessor_DAO_DataProc
       }
       $dataProcessor->addDataSource($source, $join);
     }
+
+    $fields = CRM_Dataprocessor_BAO_Field::getValues(array('data_processor_id' => $this->id));
+    $outputHandlers = $dataProcessor->getAvailableOutputHandlers();
+    foreach($fields as $field) {
+      if (isset($outputHandlers[$field['type']])) {
+        $outputHandler = $outputHandlers[$field['type']];
+        $outputHandler->initialize($field['name'], $field['title'], $field['configuration']);
+        $dataProcessor->addOutputFieldHandlers($outputHandler);
+      }
+    }
+
     return $dataProcessor;
+  }
+
+  public static function getAvailableOutputHandlers($data_processor_id) {
+    $dao = new CRM_Dataprocessor_BAO_DataProcessor();
+    $dao->id = $data_processor_id;
+    $dao->find(true);
+    $factory = dataprocessor_get_factory();
+    $dataProcessor = $factory->getDataProcessorTypeByName($dao->type);
+    $sources = CRM_Dataprocessor_BAO_Source::getValues(array('data_processor_id' => $dao->id));
+    foreach($sources as $sourceDao) {
+      $source = $factory->getDataSourceByName($sourceDao['type']);
+      $source->setSourceName($sourceDao['name']);
+      $source->setSourceTitle($sourceDao['title']);
+      $source->initialize($sourceDao['configuration']);
+      $join = null;
+      if ($sourceDao['join_type']) {
+        $join = $factory->getJoinByName($sourceDao['join_type']);
+        $join->initialize($sourceDao['join_configuration'], $dao->id);
+      }
+      $dataProcessor->addDataSource($source, $join);
+    }
+
+    return $dataProcessor->getAvailableOutputHandlers();
   }
 
   /**
@@ -288,10 +337,17 @@ class CRM_Dataprocessor_BAO_DataProcessor extends CRM_Dataprocessor_DAO_DataProc
     $dataProcessor['data_sources'] = CRM_Dataprocessor_BAO_Source::getValues(array('data_processor_id' => $id));
     foreach($dataProcessor['data_sources'] as $i => $datasource) {
       unset($dataProcessor['data_sources'][$i]['id']);
+      unset($dataProcessor['data_sources'][$i]['data_processor_id']);
+    }
+    $dataProcessor['fields'] = CRM_Dataprocessor_BAO_Field::getValues(array('data_processor_id' => $id));
+    foreach($dataProcessor['fields'] as $i => $field) {
+      unset($dataProcessor['fields'][$i]['id']);
+      unset($dataProcessor['fields'][$i]['data_processor_id']);
     }
     $dataProcessor['outputs'] = CRM_Dataprocessor_BAO_Output::getValues(array('data_processor_id' => $id));
     foreach($dataProcessor['outputs'] as $i => $output) {
       unset($dataProcessor['outputs'][$i]['id']);
+      unset($dataProcessor['outputs'][$i]['data_processor_id']);
     }
     return $dataProcessor;
   }

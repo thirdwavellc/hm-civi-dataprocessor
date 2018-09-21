@@ -7,6 +7,7 @@
 namespace Civi\DataProcessor\Source;
 
 use Civi\DataProcessor\DataFlow\AbstractDataFlow;
+use Civi\DataProcessor\DataSpecification\FieldSpecification;
 
 interface SourceInterface {
 
@@ -22,11 +23,20 @@ interface SourceInterface {
    * Initialize this data source.
    *
    * @param array $configuration
-   * @param string $source_name
    *
    * @return \Civi\DataProcessor\Source\SourceInterface
    */
-  public function initialize($configuration, $source_name);
+  public function initialize($configuration);
+
+  /**
+   * @return \Civi\DataProcessor\DataSpecification\DataSpecification
+   */
+  public function getAvailableFields();
+
+  /**
+   * @return \Civi\DataProcessor\DataSpecification\DataSpecification
+   */
+  public function getAvailableFilterFields();
 
   /**
    * Returns URL to configuration screen
@@ -34,5 +44,36 @@ interface SourceInterface {
    * @return false|string
    */
   public function getConfigurationUrl();
+
+  /**
+   * Ensures a field is in the data source
+   *
+   * @param \Civi\DataProcessor\DataSpecification\FieldSpecification $fieldSpecification
+   *
+   * @return \Civi\DataProcessor\Source\SourceInterface
+   */
+  public function ensureFieldInSource(FieldSpecification $fieldSpecification);
+
+  /**
+   * @return String
+   */
+  public function getSourceName();
+
+  /**
+   * @param String $name
+   * @return \Civi\DataProcessor\Source\SourceInterface
+   */
+  public function setSourceName($name);
+
+  /**
+   * @return String
+   */
+  public function getSourceTitle();
+
+  /**
+   * @param String $title
+   * @return \Civi\DataProcessor\Source\SourceInterface
+   */
+  public function setSourceTitle($title);
 
 }

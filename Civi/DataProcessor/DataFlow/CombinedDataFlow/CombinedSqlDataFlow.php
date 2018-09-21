@@ -9,7 +9,9 @@ namespace Civi\DataProcessor\DataFlow\CombinedDataFlow;
 use \Civi\DataProcessor\DataFlow\EndOfFlowException;
 use Civi\DataProcessor\DataFlow\InvalidFlowException;
 use Civi\DataProcessor\DataFlow\MultipleDataFlows\DataFlowDescription;
+use Civi\DataProcessor\DataFlow\MultipleDataFlows\JoinInterface;
 use Civi\DataProcessor\DataFlow\MultipleDataFlows\MultipleSourceDataFlows;
+use Civi\DataProcessor\DataFlow\MultipleDataFlows\SqlJoinInterface;
 use Civi\DataProcessor\DataFlow\SqlDataFlow;
 use \Civi\DataProcessor\DataSpecification\DataSpecification;
 
@@ -21,8 +23,26 @@ class CombinedSqlDataFlow extends SqlDataFlow implements MultipleSourceDataFlows
    */
   protected $sourceDataFlowDescriptions = array();
 
-  public function __construct() {
+  /**
+   * @var null|String
+   */
+  protected $primary_table;
 
+  /**
+   * @var null|String
+   */
+  protected $primary_table_alias;
+
+  /**
+   * @var String
+   */
+  protected $name;
+
+  public function __construct($name = 'combined_sql_data_flow', $primary_table=null, $primary_table_alias=null) {
+    parent::__construct();
+    $this->primary_table = $primary_table;
+    $this->primary_table_alias = $primary_table_alias;
+    $this->name = $name;
   }
 
   /**
@@ -46,14 +66,39 @@ class CombinedSqlDataFlow extends SqlDataFlow implements MultipleSourceDataFlows
    */
   public function getFromStatement() {
     $fromStatements = array();
+    $sourceDataFlowDescription = reset($this->sourceDataFlowDescriptions);
+    $fromStatements[] = "FROM `{$sourceDataFlowDescription->getDataFlow()->getTable()}` `{$sourceDataFlowDescription->getDataFlow()->getTableAlias()}`";
+    $fromStatements = array_merge($fromStatements, $this->getJoinStatement(0));
+    return implode(" ", $fromStatements);
+  }
+
+  /**
+   * Returns the join Statement part.
+   *
+   * @param int $skip
+   * @return string
+   */
+  public function getJoinStatement($skip=0) {
+    $fromStatements = array();
+    $i = 0;
     foreach($this->sourceDataFlowDescriptions as $sourceDataFlowDescription) {
-      if (count($fromStatements)) {
-        $fromStatements[] = $sourceDataFlowDescription->getJoinSpecification()->getJoinClause($sourceDataFlowDescription);
-      } else {
-        $fromStatements[] = "FROM `{$sourceDataFlowDescription->getDataFlow()->getTable()}` `{$sourceDataFlowDescription->getDataFlow()->getTableAlias()}`";
+      $i++;
+      if ($i > $skip) {
+        if ($sourceDataFlowDescription->getJoinSpecification()) {
+          $joinStatement = $sourceDataFlowDescription->getJoinSpecification()
+            ->getJoinClause($sourceDataFlowDescription);
+          if (is_array($joinStatement)) {
+            $fromStatements = array_merge($fromStatements, $joinStatement);
+          } else {
+            $fromStatements[] = $joinStatement;
+          }
+        }
+        if ($sourceDataFlowDescription->getDataFlow() instanceof CombinedSqlDataFlow) {
+          $fromStatements = array_merge($fromStatements, $sourceDataFlowDescription->getDataFlow()->getJoinStatement(0));
+        }
       }
     }
-    return implode(" ", $fromStatements);
+    return $fromStatements;
   }
 
   /**
@@ -64,7 +109,20 @@ class CombinedSqlDataFlow extends SqlDataFlow implements MultipleSourceDataFlows
   public function getFieldsForSelectStatement() {
     $fields = array();
     foreach($this->sourceDataFlowDescriptions as $sourceDataFlowDescription) {
-      $fields = array_merge($sourceDataFlowDescription->getDataFlow()->getFieldsForSelectStatement(), $fields);
+      $fields = array_merge($fields, $sourceDataFlowDescription->getDataFlow()->getFieldsForSelectStatement());
+    }
+    return $fields;
+  }
+
+  /**
+   * Returns an array with the fields for in the group by statement in the sql query.
+   *
+   * @return string[]
+   */
+  public function getFieldsForGroupByStatement() {
+    $fields = array();
+    foreach($this->sourceDataFlowDescriptions as $sourceDataFlowDescription) {
+      $fields = array_merge($fields, $sourceDataFlowDescription->getDataFlow()->getFieldsForGroupByStatement());
     }
     return $fields;
   }
@@ -90,8 +148,7 @@ class CombinedSqlDataFlow extends SqlDataFlow implements MultipleSourceDataFlows
     foreach($this->sourceDataFlowDescriptions as $sourceDataFlowDescription) {
       foreach ($sourceDataFlowDescription->getDataFlow()->getDataSpecification()->getFields() as $field) {
         $alias = $field->alias;
-        $fieldName = $fieldNamePrefix.$sourceDataFlowDescription->getDataFlow()->getName().$field->name;
-        $record[$fieldName] = $this->dao->$alias;
+        $record[$alias] = $this->dao->$alias;
       }
     }
     return $record;
@@ -102,16 +159,19 @@ class CombinedSqlDataFlow extends SqlDataFlow implements MultipleSourceDataFlows
    * @throws \Civi\DataProcessor\DataSpecification\FieldExistsException
    */
   public function getDataSpecification() {
-    $dataSpecification = new DataSpecification();
-    foreach($this->sourceDataFlowDescriptions as $sourceDataFlowDescription) {
-      $dataSpecification->merge($sourceDataFlowDescription->getDataFlow()->getDataSpecification(), $sourceDataFlowDescription->getDataFlow()->getName());
+    if (!$this->dataSpecification) {
+      $this->dataSpecification = new DataSpecification();
+      foreach ($this->sourceDataFlowDescriptions as $sourceDataFlowDescription) {
+        $this->dataSpecification->merge($sourceDataFlowDescription->getDataFlow()
+          ->getDataSpecification(), $sourceDataFlowDescription->getDataFlow()
+          ->getName());
+      }
     }
-    $dataSpecification = $this->manipulateDataSpecification($dataSpecification);
-    return $dataSpecification;
+    return $this->dataSpecification;
   }
 
   public function getName() {
-    return 'combined_sql_data_flow';
+    return $this->name;
   }
 
   public function getWhereClauses() {
@@ -127,5 +187,20 @@ class CombinedSqlDataFlow extends SqlDataFlow implements MultipleSourceDataFlows
     }
     return $clauses;
   }
+
+  /**
+   * @return null|String
+   */
+  public function getPrimaryTable() {
+    return $this->primary_table;
+  }
+
+  /**
+   * @return null|String
+   */
+  public function getPrimaryTableAlias() {
+    return $this->primary_table_alias;
+  }
+
 
 }

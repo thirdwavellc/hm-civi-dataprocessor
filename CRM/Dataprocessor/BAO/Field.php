@@ -4,7 +4,7 @@
  * @license AGPL-3.0
  */
 
-class CRM_Dataprocessor_BAO_Source extends CRM_Dataprocessor_DAO_Source {
+class CRM_Dataprocessor_BAO_Field extends CRM_Dataprocessor_DAO_Field {
 
   /**
    * Function to get values
@@ -18,19 +18,19 @@ class CRM_Dataprocessor_BAO_Source extends CRM_Dataprocessor_DAO_Source {
     $types = $factory->getDataSources();
 
     $result = array();
-    $source = new CRM_Dataprocessor_DAO_Source();
+    $field = new CRM_Dataprocessor_DAO_Field();
     if (!empty($params)) {
       $fields = self::fields();
       foreach ($params as $key => $value) {
         if (isset($fields[$key])) {
-          $source->$key = $value;
+          $field->$key = $value;
         }
       }
     }
-    $source->find();
-    while ($source->fetch()) {
+    $field->find();
+    while ($field->fetch()) {
       $row = array();
-      self::storeValues($source, $row);
+      self::storeValues($field, $row);
 
       if (isset($types[$row['type']])) {
         $row['type_name'] = $types[$row['type']];
@@ -65,38 +65,35 @@ class CRM_Dataprocessor_BAO_Source extends CRM_Dataprocessor_DAO_Source {
   public static function add($params) {
     $result = array();
     if (empty($params)) {
-      throw new Exception('Params can not be empty when adding or updating a data processor source');
+      throw new Exception('Params can not be empty when adding or updating a data processor field');
     }
 
     if (!empty($params['id'])) {
-      CRM_Utils_Hook::pre('edit', 'DataProcessorSource', $params['id'], $params);
+      CRM_Utils_Hook::pre('edit', 'DataProcessorField', $params['id'], $params);
     }
     else {
-      CRM_Utils_Hook::pre('create', 'DataProcessorSource', NULL, $params);
+      CRM_Utils_Hook::pre('create', 'DataProcessorField', NULL, $params);
     }
 
-    $source = new CRM_Dataprocessor_DAO_Source();
+    $field = new CRM_Dataprocessor_DAO_Field();
     $fields = self::fields();
     foreach ($params as $key => $value) {
       if (isset($fields[$key])) {
-        $source->$key = $value;
+        $field->$key = $value;
       }
     }
-    if (isset($source->configuration) && is_array($source->configuration)) {
-      $source->configuration = json_encode($source->configuration);
-    }
-    if (isset($source->join_configuration) && is_array($source->join_configuration)) {
-      $source->join_configuration = json_encode($source->join_configuration);
+    if (isset($field->configuration) && is_array($field->configuration)) {
+      $field->configuration = json_encode($field->configuration);
     }
 
-    $source->save();
-    self::storeValues($source, $result);
+    $field->save();
+    self::storeValues($field, $result);
 
     if (!empty($params['id'])) {
-      CRM_Utils_Hook::post('edit', 'DataProcessorSource', $source->id, $source);
+      CRM_Utils_Hook::post('edit', 'DataProcessorField', $field->id, $field);
     }
     else {
-      CRM_Utils_Hook::post('create', 'DataProcessorSource', $source->id, $source);
+      CRM_Utils_Hook::post('create', 'DataProcessorField', $field->id, $field);
     }
 
     return $result;
@@ -124,7 +121,7 @@ class CRM_Dataprocessor_BAO_Source extends CRM_Dataprocessor_DAO_Source {
    * @static
    */
   public static function isNameValid($name, $data_procssor_id, $id=null) {
-    $sql = "SELECT COUNT(*) FROM `civicrm_data_processor_source` WHERE `name` = %1 AND `data_processor_id` = %2";
+    $sql = "SELECT COUNT(*) FROM `civicrm_data_processor_field` WHERE `name` = %1 AND `data_processor_id` = %2";
     $params[1] = array($name, 'String');
     $params[2] = array($data_procssor_id, 'Integer');
     if ($id) {
@@ -136,7 +133,7 @@ class CRM_Dataprocessor_BAO_Source extends CRM_Dataprocessor_DAO_Source {
   }
 
   /**
-   * Function to delete a Data Processor Source with id
+   * Function to delete a Data Processor Field with id
    *
    * @param int $id
    * @throws Exception when $id is empty
@@ -145,22 +142,22 @@ class CRM_Dataprocessor_BAO_Source extends CRM_Dataprocessor_DAO_Source {
    */
   public static function deleteWithId($id) {
     if (empty($id)) {
-      throw new Exception('id can not be empty when attempting to delete a data processor source');
+      throw new Exception('id can not be empty when attempting to delete a data processor field');
     }
 
-    CRM_Utils_Hook::pre('delete', 'DataProcessorSource', $id, CRM_Core_DAO::$_nullArray);
+    CRM_Utils_Hook::pre('delete', 'DataProcessorField', $id, CRM_Core_DAO::$_nullArray);
 
-    $source = new CRM_Dataprocessor_DAO_Source();
-    $source->id = $id;
-    $source->delete();
+    $field = new CRM_Dataprocessor_DAO_Field();
+    $field->id = $id;
+    $field->delete();
 
-    CRM_Utils_Hook::post('delete', 'DataProcessorSource', $id, CRM_Core_DAO::$_nullArray);
+    CRM_Utils_Hook::post('delete', 'DataProcessorField', $id, CRM_Core_DAO::$_nullArray);
 
     return;
   }
 
   /**
-   * Function to delete a Data Processor Source with id
+   * Function to delete a Data Processor Field with id
    *
    * @param int $id
    * @throws Exception when $id is empty
@@ -169,14 +166,14 @@ class CRM_Dataprocessor_BAO_Source extends CRM_Dataprocessor_DAO_Source {
    */
   public static function deleteWithDataProcessorId($id) {
     if (empty($id)) {
-      throw new Exception('id can not be empty when attempting to delete a data processor source');
+      throw new Exception('id can not be empty when attempting to delete a data processor field');
     }
 
-    $source = new CRM_Dataprocessor_DAO_Source();
-    $source->data_processor_id = $id;
-    $source->find(FALSE);
-    while ($source->fetch()) {
-      self::deleteWithId($source->id);
+    $field = new CRM_Dataprocessor_DAO_Field();
+    $field->data_processor_id = $id;
+    $field->find(FALSE);
+    while ($field->fetch()) {
+      self::deleteWithId($field->id);
     }
   }
 

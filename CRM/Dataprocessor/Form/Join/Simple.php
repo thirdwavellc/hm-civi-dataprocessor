@@ -102,13 +102,13 @@ class CRM_Dataprocessor_Form_Join_Simple extends CRM_Core_Form {
   }
 
   function buildFieldList() {
-    $factory = \Civi::service('data_processor_factory');
+    $factory = dataprocessor_get_factory();
     $fields = array();
     $sources = CRM_Dataprocessor_BAO_Source::getValues(array('data_processor_id' => $this->dataProcessorId));
     foreach($sources as $source) {
       $sourceClass = $factory->getDataSourceByName($source['type']);
       $sourceClass->initialize($source['configuration'], $source['name']);
-      $sourceFields = $sourceClass->getDataFlow()->getDataSpecification()->getFields();
+      $sourceFields = $sourceClass->getAvailableFields()->getFields();
       foreach($sourceFields as $sourceField) {
         $fields[$source['name'].'.'.$sourceField->name] = $source['title'] . '::'.$sourceField->name;
       }

@@ -23,6 +23,8 @@ abstract class SqlDataFlow extends AbstractDataFlow {
 
   protected $whereClauses = array();
 
+  protected $sqlStatement;
+
   /**
    * Returns an array with the fields for in the select statement in the sql query.
    *
@@ -30,6 +32,14 @@ abstract class SqlDataFlow extends AbstractDataFlow {
    * @throws \Civi\DataProcessor\DataSpecification\FieldExistsException
    */
   abstract public function getFieldsForSelectStatement();
+
+  /**
+   * Returns an array with the fields for in the group by statement in the sql query.
+   *
+   * @return string[]
+   * @throws \Civi\DataProcessor\DataSpecification\FieldExistsException
+   */
+  abstract public function getFieldsForGroupByStatement();
 
   /**
    * Returns the From Statement.
@@ -50,12 +60,12 @@ abstract class SqlDataFlow extends AbstractDataFlow {
 
     $from = $this->getFromStatement();
     $where = $this->getWhereStatement();
+    $groupBy = $this->getGroupByStatement();
 
-    $countSql = "SELECT COUNT(*) {$from} {$where}";
+    $countSql = "SELECT COUNT(*) {$from} {$where} {$groupBy}";
     $this->count = \CRM_Core_DAO::singleValueQuery($countSql);
 
-    $sql = $this->getSelectQueryStatement();
-    $sql .= $where;
+    $sql = "{$this->getSelectQueryStatement()} {$where} {$groupBy}";
 
     // Build Limit and Offset.
     $limitStatement = "";
@@ -69,6 +79,7 @@ abstract class SqlDataFlow extends AbstractDataFlow {
       $limitStatement = "LIMIT {$this->offset}, {$calculatedLimit}";
     }
     $sql .= " {$limitStatement}";
+    $this->sqlStatement = $sql;
     $this->dao = \CRM_Core_DAO::executeQuery($sql);
   }
 
@@ -113,7 +124,7 @@ abstract class SqlDataFlow extends AbstractDataFlow {
     $record = array();
     foreach($this->dataSpecification->getFields() as $field) {
       $alias = $field->alias;
-      $record[$fieldNamePrefix.$field->name] = $this->dao->$alias;
+      $record[$fieldNamePrefix.$field->alias] = $this->dao->$alias;
     }
     return $record;
   }
@@ -136,6 +147,14 @@ abstract class SqlDataFlow extends AbstractDataFlow {
     $select = implode(", ", $this->getFieldsForSelectStatement());
     $from = $this->getFromStatement();
     return "SELECT {$select} {$from}";
+  }
+
+  public function getGroupByStatement() {
+    $groupByFields = $this->getFieldsForGroupByStatement();
+    if (!count($groupByFields)) {
+      return "";
+    }
+    return "GROUP BY ".implode(", ", $groupByFields);
   }
 
   /**
@@ -168,6 +187,15 @@ abstract class SqlDataFlow extends AbstractDataFlow {
    */
   public function getWhereClauses() {
     return $this->whereClauses;
+  }
+
+    /**
+     * Returns debug information
+     *
+     * @return string
+     */
+  public function getDebugInformation() {
+    return $this->sqlStatement;
   }
 
 }

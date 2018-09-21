@@ -59,7 +59,7 @@ class CRM_Dataprocessor_Form_Source extends CRM_Core_Form {
       $this->add('text', 'name', E::ts('Name'), array('size' => CRM_Utils_Type::HUGE), FALSE);
       $this->add('text', 'title', E::ts('Title'), array('size' => CRM_Utils_Type::HUGE), TRUE);
 
-      $factory = \Civi::service('data_processor_factory');
+      $factory = dataprocessor_get_factory();
       $types = array(' - select - ')  + $factory->getDataSources();
       $this->add('select', 'type', ts('Select source'), $types, true, array('class' => 'crm-select2'));
 
@@ -141,7 +141,7 @@ class CRM_Dataprocessor_Form_Source extends CRM_Core_Form {
 
     $result = CRM_Dataprocessor_BAO_Source::add($params);
 
-    $factory = \Civi::service('data_processor_factory');
+    $factory = dataprocessor_get_factory();
     $configurationUrl = false;
     $sourceClass = $factory->getDataSourceByName($values['type']);
     if ($sourceClass->getConfigurationUrl()) {

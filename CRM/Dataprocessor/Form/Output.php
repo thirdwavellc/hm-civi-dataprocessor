@@ -42,7 +42,7 @@ class CRM_Dataprocessor_Form_Output extends CRM_Core_Form {
     $this->add('hidden', 'data_processor_id');
     $this->add('hidden', 'id');
     if ($this->_action != CRM_Core_Action::DELETE) {
-      $factory = \Civi::service('data_processor_factory');
+      $factory = dataprocessor_get_factory();
       $types = array(' - select - ')  + $factory->getOutputs();
       $this->add('select', 'type', ts('Select output'), $types, true, array('class' => 'crm-select2'));
     }

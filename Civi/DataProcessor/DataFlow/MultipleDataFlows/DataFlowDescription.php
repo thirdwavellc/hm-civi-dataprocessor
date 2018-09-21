@@ -21,6 +21,7 @@ class DataFlowDescription {
   public function __construct($datFlow, $joinSpecification = null) {
     $this->dataFlow = $datFlow;
     $this->joinSpecification = $joinSpecification;
+    $this->dataFlow->setOffset($this);
   }
 
   /**

@@ -80,8 +80,22 @@ class Api implements OutputInterface, API_ProviderInterface, EventSubscriberInte
         $dataProcessor->getDataFlow()->setOffset($options['offset']);
       }
 
-      $return = $dataProcessor->getDataFlow()->allRecords();
-      return civicrm_api3_create_success($return);
+      $records = $dataProcessor->getDataFlow()->allRecords();
+      $values = array();
+      foreach($records as $idx => $record) {
+        foreach($record as $fieldname => $field) {
+          $values[$idx][$fieldname] = $field->formattedValue;
+        }
+      }
+      $return = array(
+        'values' => $values,
+        'count' => count($values),
+        'is_error' => 0,
+      );
+      if (isset($apiRequest['params']['debug']) && $apiRequest['params']['debug']) {
+        $return['debug_info'] = $dataProcessor->getDataFlow()->getDebugInformation();
+      }
+      return $return;
     }
   }
 

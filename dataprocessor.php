@@ -7,6 +7,13 @@ use \Symfony\Component\DependencyInjection\ContainerBuilder;
 use \Symfony\Component\DependencyInjection\Definition;
 
 /**
+ * @return \Civi\DataProcessor\Factory
+ */
+function dataprocessor_get_factory() {
+  return \Civi::service('data_processor_factory');
+}
+
+/**
  * Implements hook_civicrm_container()
  *
  * @link https://docs.civicrm.org/dev/en/latest/hooks/hook_civicrm_container/

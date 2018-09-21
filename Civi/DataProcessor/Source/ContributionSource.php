@@ -12,45 +12,23 @@ use Civi\DataProcessor\DataSpecification\FieldSpecification;
 
 use CRM_Dataprocessor_ExtensionUtil as E;
 
-class ContributionSource implements SourceInterface {
+class ContributionSource extends AbstractCivicrmEntitySource {
 
   /**
-   * @var \Civi\DataProcessor\DataFlow\SqlDataFlow
-   */
-  protected $dataFlow;
-
-  public function __construct() {
-
-  }
-
-  /**
-   * Initialize this data source.
+   * Returns the entity name
    *
-   * @param array $configuration
-   * @param string $source_name
-   *
-   * @return \Civi\DataProcessor\Source\SourceInterface
+   * @return String
    */
-  public function initialize($configuration, $source_name) {
-    $this->dataFlow = new SqlTableDataFlow('civicrm_contribution', $source_name, new DataSpecification(array(
-      new FieldSpecification('id', 'Integer', $source_name.'_id'),
-      new FieldSpecification('contact_id', 'Integer', $source_name.'_contact_id'),
-      new FieldSpecification('total_amount', 'Float', $source_name.'_total_amount'),
-    )));
-    return $this;
-  }
-
-  public function getDataFlow() {
-    return $this->dataFlow;
+  protected function getEntity() {
+    return 'Contribution';
   }
 
   /**
-   * Returns URL to configuration screen
+   * Returns the table name of this entity
    *
-   * @return false|string
+   * @return String
    */
-  public function getConfigurationUrl() {
-    return false;
+  protected function getTable() {
+    return 'civicrm_contribution';
   }
-
 }

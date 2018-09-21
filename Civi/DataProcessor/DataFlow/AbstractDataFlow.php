@@ -6,9 +6,11 @@
 
 namespace Civi\DataProcessor\DataFlow;
 
+use \Civi\DataProcessor\DataFlow\MultipleDataFlows\DataFlowDescription;
 use \Civi\DataProcessor\DataSpecification\DataSpecification;
-use \Civi\DataProcessor\DataFlow\Manipulator\AbstractManipulator;
-use \Civi\DataProcessor\DataFlow\Filter\AbstractFilter;
+use Civi\DataProcessor\DataSpecification\FieldSpecification;
+use \Civi\DataProcessor\FieldOutputHandler\AbstractFieldOutputHandler;
+
 
 abstract class AbstractDataFlow {
 
@@ -18,14 +20,9 @@ abstract class AbstractDataFlow {
   private $_allRecords = null;
 
   /**
-   * @var AbstractManipulator[]
+   * @var \Civi\DataProcessor\FieldOutputHandler\AbstractFieldOutputHandler[]
    */
-  protected $manipulators = array();
-
-  /**
-   * @var AbstractFilter[]
-   */
-  protected $filters = array();
+  protected $outputFieldHandlers;
 
   /**
    * @var false|int
@@ -36,6 +33,21 @@ abstract class AbstractDataFlow {
    * @var false|int
    */
   protected $limit = false;
+
+  /**
+   * @var \Civi\DataProcessor\DataFlow\MultipleDataFlows\DataFlowDescription
+   */
+  protected $dataFlowDescription;
+
+  /**
+   * @var \Civi\DataProcessor\DataSpecification\DataSpecification
+   */
+  protected $dataSpecification;
+
+  /**
+   * @var FieldSpecification[]
+   */
+  protected $aggregateFields = array();
 
   /**
    * Initialize the data flow
@@ -70,16 +82,14 @@ abstract class AbstractDataFlow {
   abstract protected function retrieveNextRecord($fieldNameprefix='');
 
   /**
-   * @return DataSpecification
-   */
-  abstract public function getDataSpecification();
-
-  /**
    * Returns a name for this data flow.
    *
    * @return string
    */
   abstract public function getName();
+
+  public function __construct() {
+  }
 
   /**
    * Returns the next record or throws EndOfFlowException when the end
@@ -92,10 +102,7 @@ abstract class AbstractDataFlow {
    */
   public function nextRecord($fieldNamePrefix = '') {
     while ($record = $this->retrieveNextRecord($fieldNamePrefix)) {
-      $record = $this->manipulateRecord($record, $fieldNamePrefix);
-      if ($this->filterRecord($record)) {
-        return $record;
-      }
+      return $this->formatRecordOutput($record);
     }
   }
 
@@ -105,6 +112,16 @@ abstract class AbstractDataFlow {
   public function recordCount() {
     $allRecords = $this->allRecords();
     return count($allRecords);
+  }
+
+  /**
+   * @return DataSpecification
+   */
+  public function getDataSpecification() {
+    if (!$this->dataSpecification) {
+      $this->dataSpecification = new DataSpecification();
+    }
+    return $this->dataSpecification;
   }
 
   /**
@@ -119,10 +136,7 @@ abstract class AbstractDataFlow {
       $this->_allRecords = [];
       try {
         while ($record = $this->retrieveNextRecord($fieldNameprefix)) {
-          $record = $this->manipulateRecord($record, $fieldNameprefix);
-          if ($this->filterRecord($record)) {
-            $this->_allRecords[] = $record;
-          }
+          $this->_allRecords[] = $this->formatRecordOutput($record);
         }
       } catch (EndOfFlowException $e) {
         // Do nothing
@@ -132,24 +146,12 @@ abstract class AbstractDataFlow {
     return $this->_allRecords;
   }
 
-  /**
-   * @param \Civi\DataProcessor\DataFlow\Manipulator\AbstractManipulator $manipulator
-   *
-   * @return \Civi\DataProcessor\DataFlow\AbstractDataFlow
-   */
-  public function addManipulator(AbstractManipulator $manipulator) {
-    $this->manipulators[] = $manipulator;
-    return $this;
-  }
-
-  /**
-   * @param \Civi\DataProcessor\DataFlow\Filter\AbstractFilter $filter
-   *
-   * @return \Civi\DataProcessor\DataFlow\AbstractDataFlow
-   */
-  public function addFilter(AbstractFilter $filter) {
-    $this->filters[] = $filter;
-    return $this;
+  public function formatRecordOutput($record) {
+    $formattedRecord = array();
+    foreach($this->outputFieldHandlers as $outputFieldHandler) {
+      $formattedRecord[$outputFieldHandler->getOutputFieldSpecification()->alias] = $outputFieldHandler->formatField($record, $formattedRecord);
+    }
+    return $formattedRecord;
   }
 
   /**
@@ -175,48 +177,54 @@ abstract class AbstractDataFlow {
   }
 
   /**
-   * Manilpulates a record
-   *
-   * @param string $fieldNamePrefix
-   *   The prefix before the name of the field within the record
-   * @param array $record
-   * @return array
+   * @param \Civi\DataProcessor\DataFlow\MultipleDataFlows\DataFlowDescription $dataFlowDescription
+   * @return \Civi\DataProcessor\DataFlow\AbstractDataFlow
    */
-  protected function manipulateRecord($record, $fieldNamePrefix='') {
-    foreach($this->manipulators as $manipulator) {
-      $record = $manipulator->manipulate($record, $fieldNamePrefix);
-    }
-    return $record;
+  public function setDataFlowDescription(DataFlowDescription $dataFlowDescription) {
+    $this->dataFlowDescription = $dataFlowDescription;
+    return $this;
   }
 
   /**
-   * Filters a record. Returns true when a record is valid, and false when the record does not
-   * match the filter criteria.
-   *
-   * @param array $record
-   * @return bool
+   * @return \Civi\DataProcessor\DataFlow\MultipleDataFlows\DataFlowDescription
    */
-  protected function filterRecord($record) {
-    foreach($this->filters as $filter) {
-      if (!$filter->filter($record)) {
-        return false;
-      }
-    }
-    return true;
+  public function getDataFlowDescription() {
+    return $this->dataFlowDescription;
   }
 
   /**
-   * Manipulates the dataspecification for this data flow.
-   *
-   * @param \Civi\DataProcessor\DataSpecification\DataSpecification $dataSpecification
-   * @return \Civi\DataProcessor\DataSpecification\DataSpecification
-   * @throws \Civi\DataProcessor\DataSpecification\FieldExistsException
+   * @param \Civi\DataProcessor\FieldOutputHandler\AbstractFieldOutputHandler $outputFieldHandler
    */
-  protected function manipulateDataSpecification(DataSpecification $dataSpecification) {
-    foreach($this->manipulators as $manipulator) {
-      $dataSpecification = $manipulator->manipulateDataSpecification($dataSpecification);
-    }
-    return $dataSpecification;
+  public function addOutputFieldHandlers(AbstractFieldOutputHandler $outputFieldHandler) {
+    $this->outputFieldHandlers[] = $outputFieldHandler;
+  }
+
+  /**
+   * @param \Civi\DataProcessor\FieldOutputHandler\AbstractFieldOutputHandler $outputFieldHandler[]
+   */
+  public function setOutputFieldHandlers($handlers) {
+    $this->outputFieldHandlers = $handlers;
+  }
+
+  /**
+   * @return \Civi\DataProcessor\FieldOutputHandler\AbstractFieldOutputHandler[]
+   */
+  public function getOutputFieldHandlers() {
+    return $this->outputFieldHandlers;
+  }
+
+
+  /**
+   * Returns debug information
+   *
+   * @return string
+   */
+  public function getDebugInformation() {
+    return "";
+  }
+
+  public function addAggregateField(FieldSpecification $aggregateField) {
+    $this->aggregateFields[] = $aggregateField;
   }
 
 

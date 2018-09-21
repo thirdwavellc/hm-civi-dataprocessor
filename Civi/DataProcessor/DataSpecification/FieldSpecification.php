@@ -21,9 +21,19 @@ class FieldSpecification {
   /**
    * @var String
    */
+  public $title;
+
+  /**
+   * @var String
+   */
   public $alias;
 
-  public function __construct($name, $type, $alias=null) {
+  /**
+   * @var null|array
+   */
+  public $options = null;
+
+  public function __construct($name, $type, $title, $options=null, $alias=null) {
     if (empty($alias)) {
       $this->alias = $name;
     } else {
@@ -31,6 +41,12 @@ class FieldSpecification {
     }
     $this->name = $name;
     $this->type = $type;
+    $this->title = $title;
+    $this->options = $options;
+  }
+
+  public function getOptions() {
+    return $this->options;
   }
 
 }

@@ -14,7 +14,7 @@ class CRM_Dataprocessor_BAO_Output extends CRM_Dataprocessor_DAO_Output {
    * @static
    */
   public static function getValues($params) {
-    $factory = \Civi::service('data_processor_factory');
+    $factory = dataprocessor_get_factory();
     $types = $factory->getOutputs();
 
     $result = array();

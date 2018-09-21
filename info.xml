@@ -1,17 +1,16 @@
 <?xml version="1.0"?>
 <extension key="dataprocessor" type="module">
   <file>dataprocessor</file>
-  <name>FIXME</name>
-  <description>FIXME</description>
+  <name>Data Processor</name>
+  <description>With the data processor you can build complex queries easily in the user interface and display them as a table, api.</description>
   <license>AGPL-3.0</license>
   <maintainer>
-    <author>FIXME</author>
-    <email>FIXME</email>
+    <author>Jaap Jansma</author>
+    <email>jaap.jansma@civicoop.org</email>
   </maintainer>
   <urls>
-    <url desc="Main Extension Page">http://FIXME</url>
-    <url desc="Documentation">http://FIXME</url>
-    <url desc="Support">http://FIXME</url>
+    <url desc="Main Extension Page">https://lab.civicrm.org/extensions/dataprocessor</url>
+    <url desc="Documentation">https://lab.civicrm.org/extensions/dataprocessor/README.md</url>
     <url desc="Licensing">http://www.gnu.org/licenses/agpl-3.0.html</url>
   </urls>
   <releaseDate>2018-08-14</releaseDate>
@@ -23,7 +22,6 @@
   <classloader>
     <psr4 prefix="Civi\" path="Civi" />
   </classloader>
-  <comments>This is a new, undeveloped module</comments>
   <civix>
     <namespace>CRM/Dataprocessor</namespace>
   </civix>

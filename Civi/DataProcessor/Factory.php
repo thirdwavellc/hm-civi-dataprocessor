@@ -6,9 +6,21 @@
 
 namespace Civi\DataProcessor;
 
+use Civi\DataProcessor\DataSpecification\FieldSpecification;
+use Civi\DataProcessor\Event\OutputHandlerEvent;
+use Civi\DataProcessor\FieldOutputHandler\RawFieldOutputHandler;
 use Civi\DataProcessor\ProcessorType\AbstractProcessorType;
+use Civi\DataProcessor\Source\SourceInterface;
+use Symfony\Component\EventDispatcher\EventDispatcher;
+
+use CRM_Dataprocessor_ExtensionUtil as E;
 
 class Factory {
+
+  /**
+   * @var EventDispatcher
+   */
+  protected $dispatcher;
 
   /**
    * @var array<String>
@@ -54,14 +66,19 @@ class Factory {
    */
   protected $joinClasses = array();
 
+  protected $fieldOutputHandlers = array();
+
 
   public function __construct() {
-    $this->addDataProcessorType('default', 'Civi\DataProcessor\ProcessorType\DefaultProcessorType', 'Default');
-    $this->addDataSource('contact', 'Civi\DataProcessor\Source\ContactSource', 'Contact');
-    $this->addDataSource('contribution', 'Civi\DataProcessor\Source\ContributionSource', 'Contribution');
-    $this->addDataSource('relationship', 'Civi\DataProcessor\Source\RelationshipSource', 'Relationship');
-    $this->addOutput('api', 'Civi\DataProcessor\Output\Api', 'API');
-    $this->addjoinType('simple_join', 'Civi\DataProcessor\DataFlow\MultipleDataFlows\SimpleJoin', 'Simple Join');
+    $this->dispatcher = new EventDispatcher();
+
+    $this->addDataProcessorType('default', 'Civi\DataProcessor\ProcessorType\DefaultProcessorType', E::ts('Default'));
+    $this->addDataSource('contact', 'Civi\DataProcessor\Source\ContactSource', E::ts('Contact'));
+    $this->addDataSource('email', 'Civi\DataProcessor\Source\EmailSource', E::ts('E-mail'));
+    $this->addDataSource('contribution', 'Civi\DataProcessor\Source\ContributionSource', E::ts('Contribution'));
+    $this->addDataSource('relationship', 'Civi\DataProcessor\Source\RelationshipSource', E::ts('Relationship'));
+    $this->addOutput('api', 'Civi\DataProcessor\Output\Api', E::ts('API'));
+    $this->addjoinType('simple_join', 'Civi\DataProcessor\DataFlow\MultipleDataFlows\SimpleJoin', E::ts('Simple Join'));
   }
 
   /**
@@ -174,6 +191,14 @@ class Factory {
     $this->outputClasses[$name] = $class;
     $this->outputs[$name] = $label;
     return $this;
+  }
+
+  public function getOutputHandlers(FieldSpecification $field, SourceInterface $source) {
+    $event = new OutputHandlerEvent($field, $source);
+    $handler = new RawFieldOutputHandler($field, $source);
+    $event->handlers[$handler->getName()] = $handler;
+    $this->dispatcher->dispatch(OutputHandlerEvent::NAME, $event);
+    return $event->handlers;
   }
 
 }

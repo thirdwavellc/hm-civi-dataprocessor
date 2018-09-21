@@ -12,45 +12,37 @@ use Civi\DataProcessor\DataSpecification\FieldSpecification;
 
 use CRM_Dataprocessor_ExtensionUtil as E;
 
-class ContactSource implements SourceInterface {
+class ContactSource extends AbstractCivicrmEntitySource {
 
   /**
-   * @var \Civi\DataProcessor\DataFlow\SqlDataFlow
+   * Returns the entity name
+   *
+   * @return String
    */
-  protected $dataFlow;
-
-  public function __construct() {
-
+  protected function getEntity() {
+    return 'Contact';
   }
 
   /**
-   * Initialize this data source.
+   * Returns the table name of this entity
    *
-   * @param array $configuration
-   * @param string $source_name
-   *
-   * @return \Civi\DataProcessor\Source\SourceInterface
+   * @return String
    */
-  public function initialize($configuration, $source_name) {
-    $this->dataFlow = new SqlTableDataFlow('civicrm_contact', $source_name, new DataSpecification(array(
-      new FieldSpecification('id', 'Integer', $source_name.'_id'),
-      new FieldSpecification('contact_type', 'String', $source_name.'contact_type'),
-      new FieldSpecification('display_name', 'String', $source_name.'display_name'),
-    )));
-    return $this;
-  }
-
-  public function getDataFlow() {
-    return $this->dataFlow;
+  protected function getTable() {
+    return 'civicrm_contact';
   }
 
   /**
-   * Returns URL to configuration screen
-   *
-   * @return false|string
+   * @return \Civi\DataProcessor\DataSpecification\DataSpecification
+   * @throws \Exception
    */
-  public function getConfigurationUrl() {
-    return false;
+  public function getAvailableFilterFields() {
+    if (!$this->availableFilterFields) {
+      $this->availableFilterFields = new DataSpecification();
+      $this->loadFields($this->availableFilterFields, array('contact_type'));
+      $this->loadCustomGroupsAndFields($this->availableFilterFields, true);
+    }
+    return $this->availableFilterFields;
   }
 
 }

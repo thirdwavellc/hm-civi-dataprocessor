@@ -44,16 +44,19 @@ class CRM_Dataprocessor_Form_DataProcessor extends CRM_Core_Form {
 
     if ($this->dataProcessorId) {
       $this->addSources();
+      $this->addFields();
       $this->assign('outputs', CRM_Dataprocessor_BAO_Output::getValues(array('data_processor_id' => $this->dataProcessorId)));
       $dataSourceAddUrl = CRM_Utils_System::url('civicrm/dataprocessor/form/source', 'reset=1&action=add&data_processor_id='.$this->dataProcessorId, TRUE);
+      $addFieldUrl = CRM_Utils_System::url('civicrm/dataprocessor/form/field', 'reset=1&action=add&data_processor_id='.$this->dataProcessorId, TRUE);
       $outputAddUrl = CRM_Utils_System::url('civicrm/dataprocessor/form/output', 'reset=1&action=add&data_processor_id='.$this->dataProcessorId, TRUE);
       $this->assign('addDataSourceUrl', $dataSourceAddUrl);
+      $this->assign('addFieldUrl', $addFieldUrl);
       $this->assign('addOutputUrl', $outputAddUrl);
     }
   }
 
   protected function addSources() {
-    $factory = \Civi::service('data_processor_factory');
+    $factory = dataprocessor_get_factory();
     $sources = CRM_Dataprocessor_BAO_Source::getValues(array('data_processor_id' => $this->dataProcessorId));
     foreach($sources as $idx => $source) {
       $sources[$idx]['join_link'] = '';
@@ -68,6 +71,16 @@ class CRM_Dataprocessor_Form_DataProcessor extends CRM_Core_Form {
       }
     }
     $this->assign('sources', $sources);
+  }
+
+  protected function addFields() {
+    $factory = dataprocessor_get_factory();
+    $fields = CRM_Dataprocessor_BAO_Field::getValues(array('data_processor_id' => $this->dataProcessorId));
+    foreach($fields as $idx => $field) {
+      $fields[$idx]['configuration_link'] = '';
+      $fields[$idx]['aggregate'] = $field['aggregate'] ? E::ts('Aggregate field') : '';
+    }
+    $this->assign('fields', $fields);
   }
 
   public function buildQuickForm() {

@@ -7,6 +7,7 @@
 namespace Civi\DataProcessor\DataFlow;
 
 use Civi\DataProcessor\DataSpecification\DataSpecification;
+use Civi\DataProcessor\DataSpecification\FieldSpecification;
 
 class SqlTableDataFlow extends SqlDataFlow {
 
@@ -22,29 +23,15 @@ class SqlTableDataFlow extends SqlDataFlow {
    */
   protected $table_alias;
 
-  /**
-   * @var \Civi\DataProcessor\DataSpecification\DataSpecification
-   */
-  protected $dataSpecification;
 
-
-  public function __construct($table, $table_alias, DataSpecification $dataSpecification) {
+  public function __construct($table, $table_alias) {
+    parent::__construct();
     $this->table = $table;
     $this->table_alias = $table_alias;
-    $this->dataSpecification = $dataSpecification;
   }
 
   public function getName() {
     return $this->table_alias;
-  }
-
-  /**
-   * @return DataSpecification
-   * @throws \Civi\DataProcessor\DataSpecification\FieldExistsException
-   */
-  public function getDataSpecification() {
-    $dataSpecification = $this->manipulateDataSpecification($this->dataSpecification);
-    return $dataSpecification;
   }
 
   /**
@@ -64,8 +51,21 @@ class SqlTableDataFlow extends SqlDataFlow {
    */
   public function getFieldsForSelectStatement() {
     $fields = array();
-    foreach($this->dataSpecification->getFields() as $field) {
+    foreach($this->getDataSpecification()->getFields() as $field) {
       $fields[] = "`{$this->table_alias}`.`{$field->name}` AS `{$field->alias}`";
+    }
+    return $fields;
+  }
+
+  /**
+   * Returns an array with the fields for in the group by statement in the sql query.
+   *
+   * @return string[]
+   */
+  public function getFieldsForGroupByStatement() {
+    $fields = array();
+    foreach($this->aggregateFields as $field) {
+      $fields[] = "`{$this->table_alias}`.`{$field->name}`";
     }
     return $fields;
   }

@@ -15,22 +15,24 @@ class DataSpecification {
 
   public function __construct($fields=array()) {
     foreach($fields as $field) {
-      $this->addFieldSpecification($field);
+      $this->addFieldSpecification($field->name, $field);
     }
   }
 
   /**
    * Add a field specification
    *
+   * @param String $name
+   *   The identifier for this field
    * @param \Civi\DataProcessor\DataSpecification\FieldSpecification $field
    * @return \Civi\DataProcessor\DataSpecification\DataSpecification
    * @throws \Civi\DataProcessor\DataSpecification\FieldExistsException
    */
-  public function addFieldSpecification(FieldSpecification $field) {
-    if (isset($this->fields[$field->name])) {
-      throw new FieldExistsException($field->name);
+  public function addFieldSpecification($name, FieldSpecification $field) {
+    if (isset($this->fields[$name])) {
+      throw new FieldExistsException($name);
     }
-    $this->fields[$field->name] = $field;
+    $this->fields[$name] = $field;
     return $this;
   }
 
@@ -50,6 +52,19 @@ class DataSpecification {
   }
 
   /**
+   * Returns whether a field exists
+   *
+   * @param $name
+   * @return bool
+   */
+  public function doesFieldExist($name) {
+    if (isset($this->fields[$name])) {
+      return true;
+    }
+    return false;
+  }
+
+  /**
    * Merge with another dataspecification.
    *
    * @param \Civi\DataProcessor\DataSpecification\DataSpecification $dataSpecification
@@ -61,7 +76,7 @@ class DataSpecification {
     foreach($dataSpecification->getFields() as $field) {
       $f = clone $field;
       $f->name = $prefix.$field->name;
-      $this->addFieldSpecification($f);
+      $this->addFieldSpecification($f->name, $f);
     }
     return $this;
   }

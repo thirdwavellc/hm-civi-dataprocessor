@@ -6,34 +6,47 @@
 
 namespace Civi\DataProcessor\DataFlow\MultipleDataFlows;
 
+use Civi\DataProcessor\DataFlow\CombinedDataFlow\CombinedSqlDataFlow;
+use Civi\DataProcessor\DataFlow\SqlTableDataFlow;
+
 class SimpleJoin implements JoinInterface, SqlJoinInterface {
 
   /**
    * @var string
    *   The name of the left field
    */
-  public $left_field;
+  private $left_field;
 
   /**
    * @var string
    *   The name of the right field
    */
-  public $right_field;
+  private $right_field;
 
   /**
    * @var string
    *   The prefix for the left field, or in SQL join mode the left table
    */
-  public $left_prefix;
+  private $left_prefix;
 
   /**
    * @var string
    *   The prefix for the right field, or in SQL join mode the right table
    */
-  public $right_prefix;
+  private $right_prefix;
 
-  public function __construct() {
+  /**
+   * @var String
+   *   The join type, e.g. INNER, LEFT, OUT etc..
+   */
+  private $type = "INNER";
 
+  public function __construct($left_prefix = null, $left_field = null, $right_prefix = null, $right_field = null, $type = "INNER") {
+    $this->left_prefix = $left_prefix;
+    $this->left_field = $left_field;
+    $this->right_prefix = $right_prefix;
+    $this->right_field = $right_field;
+    $this->type = $type;
   }
 
   /**
@@ -50,10 +63,21 @@ class SimpleJoin implements JoinInterface, SqlJoinInterface {
    * @return \Civi\DataProcessor\DataFlow\MultipleDataFlows\JoinInterface
    */
   public function initialize($configuration, $data_processor_id) {
-    $this->left_field = $configuration['left_field'];
-    $this->left_prefix = $configuration['left_prefix'];
-    $this->right_field = $configuration['right_field'];
-    $this->right_prefix = $configuration['right_prefix'];
+    if (isset($configuration['left_field'])) {
+      $this->left_field = $configuration['left_field'];
+    }
+    if (isset($configuration['left_prefix'])) {
+      $this->left_prefix = $configuration['left_prefix'];
+    }
+    if (isset($configuration['right_field'])) {
+      $this->right_field = $configuration['right_field'];
+    }
+    if (isset($configuration['right_prefix'])) {
+      $this->right_prefix = $configuration['right_prefix'];
+    }
+    if (isset($configuration['type'])) {
+      $this->type = $configuration['type'];
+    }
   }
 
   /**
@@ -92,7 +116,15 @@ class SimpleJoin implements JoinInterface, SqlJoinInterface {
     if ($sourceDataFlowDescription->getJoinSpecification()) {
       $joinClause = "ON `{$this->left_prefix}`.`{$this->left_field}` = `{$this->right_prefix}`.`{$this->right_field}`";
     }
-    return "INNER JOIN `{$sourceDataFlowDescription->getDataFlow()->getTable()}` `{$sourceDataFlowDescription->getDataFlow()->getTableAlias()}` {$joinClause}";
+    if ($sourceDataFlowDescription->getDataFlow() instanceof SqlTableDataFlow) {
+      $table = $sourceDataFlowDescription->getDataFlow()->getTable();
+      $table_alias = $sourceDataFlowDescription->getDataFlow()->getTableAlias();
+    } elseif ($sourceDataFlowDescription->getDataFlow() instanceof CombinedSqlDataFlow) {
+      $table = $sourceDataFlowDescription->getDataFlow()->getPrimaryTable();
+      $table_alias = $sourceDataFlowDescription->getDataFlow()->getPrimaryTableAlias();
+    }
+
+    return "{$this->type} JOIN `{$table}` `{$table_alias}` {$joinClause}";
   }
 
 

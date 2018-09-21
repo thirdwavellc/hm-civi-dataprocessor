@@ -15,6 +15,13 @@
     <access_arguments>administer CiviCRM</access_arguments>
   </item>
   <item>
+    <path>civicrm/dataprocessor/form/field</path>
+    <page_callback>CRM_Dataprocessor_Form_Field</page_callback>
+    <title>DataProcessor</title>
+    <access_arguments>access CiviCRM</access_arguments>
+    <access_arguments>administer CiviCRM</access_arguments>
+  </item>
+  <item>
     <path>civicrm/dataprocessor/form/output</path>
     <page_callback>CRM_Dataprocessor_Form_Output</page_callback>
     <title>DataProcessor</title>
@@ -29,8 +36,8 @@
     <access_arguments>administer CiviCRM</access_arguments>
   </item>
   <item>
-    <path>civicrm/dataprocessor/form/source/relationship</path>
-    <page_callback>CRM_Dataprocessor_Form_Source_Relationship</page_callback>
+    <path>civicrm/dataprocessor/form/source/configuration</path>
+    <page_callback>CRM_Dataprocessor_Form_Source_Configuration</page_callback>
     <title>DataProcessor</title>
     <access_arguments>access CiviCRM</access_arguments>
     <access_arguments>administer CiviCRM</access_arguments>
