@@ -73,13 +73,13 @@ class Api implements OutputInterface, API_ProviderInterface, EventSubscriberInte
       return array('count' => $count, 'is_error' => 0);
     } else {
       $options = _civicrm_api3_get_options_from_params($apiRequest['params']);
+
       if (isset($options['limit'])) {
         $dataProcessor->getDataFlow()->setLimit($options['limit']);
       }
       if (isset($options['offset'])) {
         $dataProcessor->getDataFlow()->setOffset($options['offset']);
       }
-
       $records = $dataProcessor->getDataFlow()->allRecords();
       $values = array();
       foreach($records as $idx => $record) {

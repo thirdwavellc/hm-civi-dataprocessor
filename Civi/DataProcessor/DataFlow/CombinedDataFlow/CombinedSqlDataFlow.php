@@ -13,6 +13,7 @@ use Civi\DataProcessor\DataFlow\MultipleDataFlows\JoinInterface;
 use Civi\DataProcessor\DataFlow\MultipleDataFlows\MultipleSourceDataFlows;
 use Civi\DataProcessor\DataFlow\MultipleDataFlows\SqlJoinInterface;
 use Civi\DataProcessor\DataFlow\SqlDataFlow;
+use Civi\DataProcessor\DataFlow\SqlTableDataFlow;
 use \Civi\DataProcessor\DataSpecification\DataSpecification;
 
 
@@ -67,7 +68,11 @@ class CombinedSqlDataFlow extends SqlDataFlow implements MultipleSourceDataFlows
   public function getFromStatement() {
     $fromStatements = array();
     $sourceDataFlowDescription = reset($this->sourceDataFlowDescriptions);
-    $fromStatements[] = "FROM `{$sourceDataFlowDescription->getDataFlow()->getTable()}` `{$sourceDataFlowDescription->getDataFlow()->getTableAlias()}`";
+    if ($sourceDataFlowDescription->getDataFlow() instanceof SqlTableDataFlow) {
+      $fromStatements[] = "FROM `{$sourceDataFlowDescription->getDataFlow()->getTable()}` `{$sourceDataFlowDescription->getDataFlow()->getTableAlias()}`";
+    } elseif ($sourceDataFlowDescription->getDataFlow() instanceof CombinedSqlDataFlow) {
+      $fromStatements[] = "FROM `{$sourceDataFlowDescription->getDataFlow()->getPrimaryTable()}` `{$sourceDataFlowDescription->getDataFlow()->getPrimaryTableAlias()}`";
+    }
     $fromStatements = array_merge($fromStatements, $this->getJoinStatement(0));
     return implode(" ", $fromStatements);
   }

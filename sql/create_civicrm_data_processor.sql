@@ -32,7 +32,7 @@ CREATE TABLE IF NOT EXISTS `civicrm_data_processor_field` (
   `name` VARCHAR(128) NOT NULL,
   `type` VARCHAR(128) NOT NULL,
   `title` VARCHAR(128) NOT NULL,
-  `configuration` TEXT NULL
+  `configuration` TEXT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE = InnoDB;
 
