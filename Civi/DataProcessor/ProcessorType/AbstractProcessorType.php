@@ -59,6 +59,21 @@ abstract class AbstractProcessorType {
   }
 
   /**
+   * Returns the data source
+   *
+   * @param $source_name
+   * @return null|\Civi\DataProcessor\Source\SourceInterface
+   */
+  public function getDataSourceByName($source_name) {
+    foreach($this->dataSources as $dataSource) {
+      if ($dataSource['datasource']->getSourceName() == $source_name) {
+        return $dataSource['datasource'];
+      }
+    }
+    return null;
+  }
+
+  /**
    * @return \Civi\DataProcessor\FieldOutputHandler\AbstractFieldOutputHandler[]
    */
   public function getAvailableOutputHandlers() {

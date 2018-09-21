@@ -52,8 +52,6 @@ class CRM_Dataprocessor_Form_Field extends CRM_Core_Form {
       }
 
       $this->add('select', 'type', E::ts('Select Field'), $outputHandlersSelect, true, array('class' => 'crm-select2 crm-huge40'));
-
-      $this->add('checkbox', 'aggregate', E::ts('Aggregate field'));
     }
     if ($this->_action == CRM_Core_Action::ADD) {
       $this->addButtons(array(
@@ -86,9 +84,6 @@ class CRM_Dataprocessor_Form_Field extends CRM_Core_Form {
     if (isset($field[$this->id]['name'])) {
       $defaults['name'] = $field[$this->id]['name'];
     }
-    if (isset($field[$this->id]['aggregate'])) {
-      $defaults['aggregate'] = $field[$this->id]['aggregate'];
-    }
     return $defaults;
   }
 
@@ -109,7 +104,6 @@ class CRM_Dataprocessor_Form_Field extends CRM_Core_Form {
     }
     $params['title'] = $values['title'];
     $params['type'] = $values['type'];
-    $params['aggregate'] = isset($values['aggregate']) && !empty($values['aggregate']) ? 1 : 0;
     if ($this->dataProcessorId) {
       $params['data_processor_id'] = $this->dataProcessorId;
     }

@@ -2,6 +2,7 @@ CREATE TABLE IF NOT EXISTS `civicrm_data_processor` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
   `type` VARCHAR(128) NOT NULL,
   `configuration` TEXT NULL,
+  `aggregation` TEXT NULL,
   `name` VARCHAR(128) NOT NULL,
   `title` VARCHAR(128) NULL,
   `is_active` TINYINT NULL DEFAULT 1,

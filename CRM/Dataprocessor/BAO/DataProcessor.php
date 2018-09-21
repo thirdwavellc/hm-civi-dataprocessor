@@ -28,6 +28,11 @@ class CRM_Dataprocessor_BAO_DataProcessor extends CRM_Dataprocessor_DAO_DataProc
     while ($dataProcessor->fetch()) {
       $row = array();
       self::storeValues($dataProcessor, $row);
+      if (!empty($row['aggregation'])) {
+        $row['aggregation'] = json_decode($row['aggregation'], true);
+      } else {
+        $row['aggregation'] = array();
+      }
       $result[$row['id']] = $row;
     }
     return $result;
@@ -70,6 +75,9 @@ class CRM_Dataprocessor_BAO_DataProcessor extends CRM_Dataprocessor_DAO_DataProc
     }
     if (isset($dataProcessor->configuration) && is_array($dataProcessor->configuration)) {
       $dataProcessor->configuration = json_encode($dataProcessor->configuration);
+    }
+    if (isset($dataProcessor->aggregation) && is_array($dataProcessor->aggregation)) {
+      $dataProcessor->aggregation = json_encode($dataProcessor->aggregation);
     }
     if (isset($dataProcessor->storage_configuration) && is_array($dataProcessor->storage_configuration)) {
       $dataProcessor->storage_configuration = json_encode($dataProcessor->storage_configuration);
@@ -230,6 +238,17 @@ class CRM_Dataprocessor_BAO_DataProcessor extends CRM_Dataprocessor_DAO_DataProc
       $dataProcessor->addDataSource($source, $join);
     }
 
+    $aggregationFields = CRM_Dataprocessor_BAO_DataProcessor::getAvailableAggregationFields($this->dataProcessorId);
+    if (is_string($this->aggregation)) {
+      $this->aggregation = json_decode($this->aggregation, true);
+    }
+    foreach($this->aggregation as $alias) {
+      $dataSource = $dataProcessor->getDataSourceByName($aggregationFields[$alias]->dataSource->getSourceName());
+      if ($dataSource) {
+        $dataSource->ensureAggregationFieldInSource($aggregationFields[$alias]->fieldSpecification);
+      }
+    }
+
     $fields = CRM_Dataprocessor_BAO_Field::getValues(array('data_processor_id' => $this->id));
     $outputHandlers = $dataProcessor->getAvailableOutputHandlers();
     foreach($fields as $field) {
@@ -264,6 +283,21 @@ class CRM_Dataprocessor_BAO_DataProcessor extends CRM_Dataprocessor_DAO_DataProc
     }
 
     return $dataProcessor->getAvailableOutputHandlers();
+  }
+
+  public static function getAvailableAggregationFields($data_processor_id) {
+    $availableAggregationFields = array();
+    $factory = dataprocessor_get_factory();
+    $sources = CRM_Dataprocessor_BAO_Source::getValues(array('data_processor_id' => $data_processor_id));
+    foreach($sources as $sourceDao) {
+      $source = $factory->getDataSourceByName($sourceDao['type']);
+      $source->setSourceName($sourceDao['name']);
+      $source->setSourceTitle($sourceDao['title']);
+      $source->initialize($sourceDao['configuration']);
+      $availableAggregationFields = array_merge($availableAggregationFields, $source->getAvailableAggregationFields());
+    }
+
+    return $availableAggregationFields;
   }
 
   /**

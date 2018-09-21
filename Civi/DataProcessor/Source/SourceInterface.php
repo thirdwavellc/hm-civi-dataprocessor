@@ -39,6 +39,11 @@ interface SourceInterface {
   public function getAvailableFilterFields();
 
   /**
+   * @return \Civi\DataProcessor\DataSpecification\AggregationField[]
+   */
+  public function getAvailableAggregationFields();
+
+  /**
    * Returns URL to configuration screen
    *
    * @return false|string
@@ -53,6 +58,15 @@ interface SourceInterface {
    * @return \Civi\DataProcessor\Source\SourceInterface
    */
   public function ensureFieldInSource(FieldSpecification $fieldSpecification);
+
+  /**
+   * Ensures an aggregation field in the data source
+   *
+   * @param \Civi\DataProcessor\DataSpecification\FieldSpecification $fieldSpecification
+   *
+   * @return \Civi\DataProcessor\Source\SourceInterface
+   */
+  public function ensureAggregationFieldInSource(FieldSpecification $fieldSpecification);
 
   /**
    * @return String

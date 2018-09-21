@@ -77,6 +77,11 @@ class CRM_Dataprocessor_DAO_DataProcessor extends CRM_Core_DAO {
           'title' => E::ts('Configuration'),
           'type' => CRM_Utils_Type::T_TEXT,
         ),
+        'aggregation' => array(
+          'name' => 'aggregation',
+          'title' => E::ts('Aggregation'),
+          'type' => CRM_Utils_Type::T_TEXT,
+        ),
         'storage_type' => array(
           'name' => 'storage_type',
           'title' => E::ts('Storage Type'),

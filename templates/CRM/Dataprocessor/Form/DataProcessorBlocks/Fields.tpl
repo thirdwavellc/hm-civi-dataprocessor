@@ -4,7 +4,6 @@
         <tr>
             <th>{ts}Title{/ts}</th>
             <th>{ts}Name{/ts}</th>
-            <th>{ts}Aggregate{/ts}</th>
             <th></th>
             <th></th>
             <th></th>
@@ -14,7 +13,6 @@
             <tr>
                 <td>{$field.title}</td>
                 <td>{$field.name}</td>
-                <td>{$field.aggregate}</td>
                 <td>
                     {if $field.configuration_link}
                         <a href="{$source.configuration_link}">{ts}Configure Field{/ts}</a>

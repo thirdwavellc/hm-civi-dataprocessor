@@ -47,6 +47,11 @@ function _civicrm_api3_data_processor_create_spec(&$spec) {
     'type' => CRM_Utils_Type::T_TEXT,
     'api.required' => false,
   );
+  $spec['aggregation'] = array(
+    'title' => E::ts('Aggregation'),
+    'type' => CRM_Utils_Type::T_TEXT,
+    'api.required' => false,
+  );
   $spec['storage_type'] = array(
     'title' => E::ts('Storage Type'),
     'type' => CRM_Utils_Type::T_STRING,

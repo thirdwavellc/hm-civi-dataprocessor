@@ -12,6 +12,7 @@ use Civi\DataProcessor\DataFlow\SqlTableDataFlow;
 use Civi\DataProcessor\DataFlow\CombinedDataFlow\CombinedSqlDataFlow;
 use Civi\DataProcessor\DataFlow\MultipleDataFlows\DataFlowDescription;
 use Civi\DataProcessor\DataFlow\MultipleDataFlows\SimpleJoin;
+use Civi\DataProcessor\DataSpecification\AggregationField;
 use Civi\DataProcessor\DataSpecification\CustomFieldSpecification;
 use Civi\DataProcessor\DataSpecification\DataSpecification;
 use Civi\DataProcessor\DataSpecification\FieldSpecification;
@@ -269,6 +270,19 @@ abstract class AbstractCivicrmEntitySource implements SourceInterface {
   }
 
   /**
+   * @return \Civi\DataProcessor\DataSpecification\AggregationField[]
+   * @throws \Exception
+   */
+  public function getAvailableAggregationFields() {
+    $fields = $this->getAvailableFields();
+    $aggregationFields = array();
+    foreach($fields->getFields() as $field) {
+      $aggregationFields[$field->alias] = new AggregationField($field, $this);
+    }
+    return $aggregationFields;
+  }
+
+  /**
    * Ensures a field is in the data source
    *
    * @param \Civi\DataProcessor\DataSpecification\FieldSpecification $fieldSpecification
@@ -276,12 +290,30 @@ abstract class AbstractCivicrmEntitySource implements SourceInterface {
    * @throws \Exception
    */
   public function ensureFieldInSource(FieldSpecification $fieldSpecification) {
-    if ($this->availableFields->doesFieldExist($fieldSpecification->name)) {
+    if ($this->getAvailableFields()->doesFieldExist($fieldSpecification->name)) {
       if ($fieldSpecification instanceof CustomFieldSpecification) {
         $customGroupDataFlowDescription = $this->ensureCustomGroup($fieldSpecification->customGroupTableName, $fieldSpecification->customGroupName);
         $customGroupDataFlowDescription->getDataFlow()->getDataSpecification()->addFieldSpecification($fieldSpecification->alias, $fieldSpecification);
       } else {
         $this->primaryDataFlow->getDataSpecification()->addFieldSpecification($fieldSpecification->alias, $fieldSpecification);
+      }
+    }
+  }
+
+  /**
+   * Ensures an aggregation field in the data source
+   *
+   * @param \Civi\DataProcessor\DataSpecification\FieldSpecification $fieldSpecification
+   * @return \Civi\DataProcessor\Source\SourceInterface
+   * @throws \Exception
+   */
+  public function ensureAggregationFieldInSource(FieldSpecification $fieldSpecification) {
+    if ($this->getAvailableFields()->doesFieldExist($fieldSpecification->name)) {
+      if ($fieldSpecification instanceof CustomFieldSpecification) {
+        $customGroupDataFlowDescription = $this->ensureCustomGroup($fieldSpecification->customGroupTableName, $fieldSpecification->customGroupName);
+        $customGroupDataFlowDescription->getDataFlow()->addAggregateField($fieldSpecification);
+      } else {
+        $this->primaryDataFlow->addAggregateField($fieldSpecification);
       }
     }
   }
