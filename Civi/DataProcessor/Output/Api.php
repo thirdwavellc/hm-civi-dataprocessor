@@ -159,7 +159,7 @@ class Api implements OutputInterface, API_ProviderInterface, EventSubscriberInte
 
     if ($isCountAction) {
       $count = $dataProcessor->getDataFlow()->recordCount();
-      return array('count' => $count, 'is_error' => 0);
+      return array('result' => $count, 'is_error' => 0);
     } else {
       $options = _civicrm_api3_get_options_from_params($apiRequest['params']);
 

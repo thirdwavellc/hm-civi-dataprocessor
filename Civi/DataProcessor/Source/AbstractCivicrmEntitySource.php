@@ -122,22 +122,20 @@ abstract class AbstractCivicrmEntitySource implements SourceInterface {
     if (!$this->primaryDataFlow) {
       $this->primaryDataFlow = new SqlTableDataFlow($this->getTable(), $this->getSourceName());
     }
-    if (!$this->dataFlow) {
-      $this->addFilters($this->configuration);
+    $this->addFilters($this->configuration);
 
-      if (count($this->customGroupDataFlowDescriptions) || count($this->additionalDataFlowDescriptions)) {
-        $this->dataFlow = new CombinedSqlDataFlow('', $this->primaryDataFlow->getTable(), $this->primaryDataFlow->getTableAlias());
-        $this->dataFlow->addSourceDataFlow(new DataFlowDescription($this->primaryDataFlow));
-        foreach ($this->customGroupDataFlowDescriptions as $customGroupDataFlowDescription) {
-          $this->dataFlow->addSourceDataFlow($customGroupDataFlowDescription);
-        }
-        foreach ($this->additionalDataFlowDescriptions as $additionalDataFlowDescription) {
-          $this->dataFlow->addSourceDataFlow($additionalDataFlowDescription);
-        }
+    if (count($this->customGroupDataFlowDescriptions) || count($this->additionalDataFlowDescriptions)) {
+      $this->dataFlow = new CombinedSqlDataFlow('', $this->primaryDataFlow->getTable(), $this->primaryDataFlow->getTableAlias());
+      $this->dataFlow->addSourceDataFlow(new DataFlowDescription($this->primaryDataFlow));
+      foreach ($this->customGroupDataFlowDescriptions as $customGroupDataFlowDescription) {
+        $this->dataFlow->addSourceDataFlow($customGroupDataFlowDescription);
       }
-      else {
-        $this->dataFlow = $this->primaryDataFlow;
+      foreach ($this->additionalDataFlowDescriptions as $additionalDataFlowDescription) {
+        $this->dataFlow->addSourceDataFlow($additionalDataFlowDescription);
       }
+    }
+    else {
+      $this->dataFlow = clone $this->primaryDataFlow;
     }
   }
 

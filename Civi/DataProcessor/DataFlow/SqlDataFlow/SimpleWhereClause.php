@@ -21,7 +21,11 @@ class SimpleWhereClause implements WhereClauseInterface {
     $this->field = $field;
     $this->operator = $operator;
     if (is_array($value)) {
-      $this->value = "(".implode(", ",\CRM_Utils_Type::escapeAll($value, $valueType)).")";
+      $esacpedValues = array();
+      foreach($value as $val) {
+        $esacpedValues[] = "'". \CRM_Utils_Type::escape($val, $valueType)."'";
+      }
+      $this->value = "(".implode(", ",$esacpedValues).")";
     } else {
       $this->value = \CRM_Utils_Type::escape($value, $valueType);
     }
