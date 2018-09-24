@@ -6,10 +6,15 @@
 
 namespace Civi\DataProcessor\DataFlow\MultipleDataFlows;
 
+use Civi\DataProcessor\DataFlow\AbstractDataFlow;
 use Civi\DataProcessor\DataFlow\CombinedDataFlow\CombinedSqlDataFlow;
+use Civi\DataProcessor\DataFlow\SqlDataFlow;
 use Civi\DataProcessor\DataFlow\SqlTableDataFlow;
+use Civi\DataProcessor\ProcessorType\AbstractProcessorType;
 
 class SimpleJoin implements JoinInterface, SqlJoinInterface {
+
+  private $isInitialized = false;
 
   /**
    * @var string
@@ -37,9 +42,24 @@ class SimpleJoin implements JoinInterface, SqlJoinInterface {
 
   /**
    * @var String
+   */
+  private $right_table;
+
+  /**
+   * @var String
+   */
+  private $left_table;
+
+  /**
+   * @var String
    *   The join type, e.g. INNER, LEFT, OUT etc..
    */
   private $type = "INNER";
+
+  /**
+   * @var AbstractProcessorType
+   */
+  private $dataProcessor;
 
   public function __construct($left_prefix = null, $left_field = null, $right_prefix = null, $right_field = null, $type = "INNER") {
     $this->left_prefix = $left_prefix;
@@ -58,11 +78,10 @@ class SimpleJoin implements JoinInterface, SqlJoinInterface {
 
   /**
    * @param array $configuration
-   * @param int $data_processor_id
    *
    * @return \Civi\DataProcessor\DataFlow\MultipleDataFlows\JoinInterface
    */
-  public function initialize($configuration, $data_processor_id) {
+  public function setConfiguration($configuration) {
     if (isset($configuration['left_field'])) {
       $this->left_field = $configuration['left_field'];
     }
@@ -78,6 +97,65 @@ class SimpleJoin implements JoinInterface, SqlJoinInterface {
     if (isset($configuration['type'])) {
       $this->type = $configuration['type'];
     }
+    return $this;
+  }
+
+  /**
+   * @param AbstractProcessorType $dataProcessor
+   * @return \Civi\DataProcessor\DataFlow\MultipleDataFlows\JoinInterface
+   * @throws \Exception
+   */
+  public function setDataProcessor(AbstractProcessorType $dataProcessor) {
+    $this->dataProcessor = $dataProcessor;
+  }
+
+  /**
+   * Returns true when this join is compatible with this data flow
+   *
+   * @param \Civi\DataProcessor\DataFlow\AbstractDataFlow $
+   * @return bool
+   */
+  public function worksWithDataFlow(AbstractDataFlow $dataFlow) {
+    if (!$dataFlow instanceof SqlDataFlow) {
+      return false;
+    }
+    $this->initialize();
+    if ($dataFlow->getTableAlias() == $this->left_table) {
+      return true;
+    }
+    if ($dataFlow->getTableAlias() == $this->right_table) {
+      return true;
+    }
+    return false;
+  }
+
+  public function initialize() {
+    if ($this->isInitialized) {
+      return $this;
+    }
+    if ($this->left_prefix && $this->left_field) {
+      $this->left_table = $this->left_prefix;
+      $left_source = $this->dataProcessor->getDataSourceByName($this->left_prefix);
+      if ($left_source) {
+        $leftTable = $left_source->ensureField($this->left_field);
+        if ($leftTable && $leftTable instanceof SqlTableDataFlow) {
+          $this->left_table = $leftTable->getTableAlias();
+        }
+      }
+    }
+    if ($this->right_prefix && $this->right_field) {
+      $this->right_table = $this->right_prefix;
+      $right_source = $this->dataProcessor->getDataSourceByName($this->right_prefix);
+      if ($right_source) {
+        $rightTable = $right_source->ensureField($this->right_field);
+        if ($rightTable && $rightTable instanceof SqlTableDataFlow) {
+          $this->right_table = $rightTable->getTableAlias();
+        }
+      }
+    }
+
+    $this->isInitialized = true;
+    return $this;
   }
 
   /**
@@ -112,9 +190,10 @@ class SimpleJoin implements JoinInterface, SqlJoinInterface {
    * @return string
    */
   public function getJoinClause(DataFlowDescription $sourceDataFlowDescription) {
+    $this->initialize();
     $joinClause = "";
     if ($sourceDataFlowDescription->getJoinSpecification()) {
-      $joinClause = "ON `{$this->left_prefix}`.`{$this->left_field}` = `{$this->right_prefix}`.`{$this->right_field}`";
+      $joinClause = "ON `{$this->left_table}`.`{$this->left_field}` = `{$this->right_table}`.`{$this->right_field}`";
     }
     if ($sourceDataFlowDescription->getDataFlow() instanceof SqlTableDataFlow) {
       $table = $sourceDataFlowDescription->getDataFlow()->getTable();

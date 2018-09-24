@@ -163,7 +163,7 @@ class Api implements OutputInterface, API_ProviderInterface, EventSubscriberInte
     } else {
       $options = _civicrm_api3_get_options_from_params($apiRequest['params']);
 
-      if (isset($options['limit'])) {
+      if (isset($options['limit']) && $options['limit'] > 0) {
         $dataProcessor->getDataFlow()->setLimit($options['limit']);
       }
       if (isset($options['offset'])) {

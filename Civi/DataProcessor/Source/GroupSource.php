@@ -12,7 +12,7 @@ use Civi\DataProcessor\DataSpecification\FieldSpecification;
 
 use CRM_Dataprocessor_ExtensionUtil as E;
 
-class EmailSource extends AbstractCivicrmEntitySource {
+class GroupSource extends AbstractCivicrmEntitySource {
 
   /**
    * Returns the entity name
@@ -20,7 +20,7 @@ class EmailSource extends AbstractCivicrmEntitySource {
    * @return String
    */
   protected function getEntity() {
-    return 'Email';
+    return 'Group';
   }
 
   /**
@@ -29,7 +29,7 @@ class EmailSource extends AbstractCivicrmEntitySource {
    * @return String
    */
   protected function getTable() {
-    return 'civicrm_email';
+    return 'civicrm_group';
   }
 
 }

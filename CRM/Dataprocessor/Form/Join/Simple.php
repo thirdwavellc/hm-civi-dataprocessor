@@ -110,7 +110,7 @@ class CRM_Dataprocessor_Form_Join_Simple extends CRM_Core_Form {
       $sourceClass->initialize($source['configuration'], $source['name']);
       $sourceFields = $sourceClass->getAvailableFields()->getFields();
       foreach($sourceFields as $sourceField) {
-        $fields[$source['name'].'.'.$sourceField->name] = $source['title'] . '::'.$sourceField->name;
+        $fields[$source['name'] . '.' . $sourceField->name] = $source['title'] . ' :: ' . $sourceField->title;
       }
 
       if ($source['id'] == $this->source_id) {

@@ -180,4 +180,30 @@ class CRM_Dataprocessor_BAO_Source extends CRM_Dataprocessor_DAO_Source {
     }
   }
 
+  /**
+   * @param $source
+   * @param \Civi\DataProcessor\ProcessorType\AbstractProcessorType $dataProcessor
+   * @return \Civi\DataProcessor\Source\SourceInterface
+   */
+  public static function getSourceClass($source, \Civi\DataProcessor\ProcessorType\AbstractProcessorType $dataProcessor) {
+    $factory = dataprocessor_get_factory();
+    $sourceClass = $factory->getDataSourceByName($source['type']);
+    $sourceClass->setSourceName($source['name']);
+    $sourceClass->setSourceTitle($source['title']);
+    $sourceClass->setConfiguration($source['configuration']);
+    $sourceClass->setDataProcessor($dataProcessor);
+    $join = null;
+    if ($source['join_type']) {
+      $join = $factory->getJoinByName($source['join_type']);
+      $join->setConfiguration($source['join_configuration']);
+      $join->setDataProcessor($dataProcessor);
+    }
+    $dataProcessor->addDataSource($sourceClass, $join);
+    if ($join) {
+      $join->initialize();
+      $sourceClass->setJoin($join);
+    }
+    return $sourceClass;
+  }
+
 }

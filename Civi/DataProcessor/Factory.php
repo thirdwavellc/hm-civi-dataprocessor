@@ -76,6 +76,7 @@ class Factory {
 
     $this->addDataProcessorType('default', 'Civi\DataProcessor\ProcessorType\DefaultProcessorType', E::ts('Default'));
     $this->addDataSource('contact', 'Civi\DataProcessor\Source\ContactSource', E::ts('Contact'));
+    $this->addDataSource('group', 'Civi\DataProcessor\Source\GroupSource', E::ts('Group'));
     $this->addDataSource('email', 'Civi\DataProcessor\Source\EmailSource', E::ts('E-mail'));
     $this->addDataSource('contribution', 'Civi\DataProcessor\Source\ContributionSource', E::ts('Contribution'));
     $this->addDataSource('relationship', 'Civi\DataProcessor\Source\RelationshipSource', E::ts('Relationship'));

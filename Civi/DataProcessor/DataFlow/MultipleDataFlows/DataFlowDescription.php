@@ -16,7 +16,7 @@ class DataFlowDescription {
   /**
    * @var \Civi\DataProcessor\DataFlow\MultipleDataFlows\JoinSpecification
    */
-  protected $joinSpecification = null;
+  protected $joinSpecification = array();
 
   public function __construct($datFlow, $joinSpecification = null) {
     $this->dataFlow = $datFlow;

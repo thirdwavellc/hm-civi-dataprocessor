@@ -7,7 +7,9 @@
 namespace Civi\DataProcessor\Source;
 
 use Civi\DataProcessor\DataFlow\AbstractDataFlow;
+use Civi\DataProcessor\DataFlow\MultipleDataFlows\JoinInterface;
 use Civi\DataProcessor\DataSpecification\FieldSpecification;
+use Civi\DataProcessor\ProcessorType\AbstractProcessorType;
 
 interface SourceInterface {
 
@@ -20,13 +22,34 @@ interface SourceInterface {
 
 
   /**
-   * Initialize this data source.
+   * Initialize the join
    *
+   * @return void
+   */
+  public function initialize();
+
+  /**
+   * Sets the join specification to connect this source to other data sources.
+   *
+   * @param \Civi\DataProcessor\DataFlow\MultipleDataFlows\JoinInterface $join
+   *
+   * @return \Civi\DataProcessor\Source\SourceInterface
+   */
+  public function setJoin(JoinInterface $join);
+
+  /**
+   * @param AbstractProcessorType $dataProcessor
+   *
+   * @return \Civi\DataProcessor\Source\SourceInterface
+   */
+  public function setDataProcessor(AbstractProcessorType $dataProcessor);
+
+  /**
    * @param array $configuration
    *
    * @return \Civi\DataProcessor\Source\SourceInterface
    */
-  public function initialize($configuration);
+  public function setConfiguration($configuration);
 
   /**
    * @return \Civi\DataProcessor\DataSpecification\DataSpecification
@@ -49,6 +72,15 @@ interface SourceInterface {
    * @return false|string
    */
   public function getConfigurationUrl();
+
+  /**
+   * Ensure that filter field is accesible in the query
+   *
+   * @param String $fieldName
+   * @return \Civi\DataProcessor\DataFlow\MultipleDataFlows\DataFlowDescription
+   * @throws \Exception
+   */
+  public function ensureField($fieldName);
 
   /**
    * Ensures a field is in the data source
