@@ -120,18 +120,18 @@ abstract class AbstractCivicrmEntitySource implements SourceInterface {
    */
   public function initialize() {
     if (!$this->primaryDataFlow) {
-      $this->primaryDataFlow = new SqlTableDataFlow($this->getTable(), $this->getSourceName());
+      $this->primaryDataFlow = new SqlTableDataFlow($this->getTable(), $this->getSourceName(), $this->getSourceTitle());
     }
     $this->addFilters($this->configuration);
 
     if (count($this->customGroupDataFlowDescriptions) || count($this->additionalDataFlowDescriptions)) {
       $this->dataFlow = new CombinedSqlDataFlow('', $this->primaryDataFlow->getTable(), $this->primaryDataFlow->getTableAlias());
       $this->dataFlow->addSourceDataFlow(new DataFlowDescription($this->primaryDataFlow));
-      foreach ($this->customGroupDataFlowDescriptions as $customGroupDataFlowDescription) {
-        $this->dataFlow->addSourceDataFlow($customGroupDataFlowDescription);
-      }
       foreach ($this->additionalDataFlowDescriptions as $additionalDataFlowDescription) {
         $this->dataFlow->addSourceDataFlow($additionalDataFlowDescription);
+      }
+      foreach ($this->customGroupDataFlowDescriptions as $customGroupDataFlowDescription) {
+        $this->dataFlow->addSourceDataFlow($customGroupDataFlowDescription);
       }
     }
     else {
@@ -140,7 +140,7 @@ abstract class AbstractCivicrmEntitySource implements SourceInterface {
   }
 
   protected function reset() {
-    $this->primaryDataFlow = new SqlTableDataFlow($this->getTable(), $this->getSourceName());
+    $this->primaryDataFlow = new SqlTableDataFlow($this->getTable(), $this->getSourceName(), $this->getSourceTitle());
     $this->dataFlow = null;
     $this->additionalDataFlowDescriptions = array();
   }
@@ -242,7 +242,7 @@ abstract class AbstractCivicrmEntitySource implements SourceInterface {
   protected function addFilters($configuration) {
     if (isset($configuration['filter']) && is_array($configuration['filter'])) {
       foreach($configuration['filter'] as $filter_alias => $filter_field) {
-        $this->addFilter($filter_alias, $filter_field);
+        $this->addFilter($filter_alias, $filter_field['op'], $filter_field['value']);
       }
     }
   }
@@ -250,23 +250,24 @@ abstract class AbstractCivicrmEntitySource implements SourceInterface {
   /**
    * Adds an inidvidual filter to the data source
    *
-   * @param $filter_alias
-   * @param $filter
+   * @param $filter_field_alias
+   * @param $op
+   * @param $values
    *
    * @throws \Exception
    */
-  public function addFilter($filter_alias, $filter) {
-    if ($this->getAvailableFilterFields()->doesFieldExist($filter_alias)) {
-      $spec = $this->getAvailableFilterFields()->getFieldSpecificationByName($filter_alias);
+  protected function addFilter($filter_field_alias, $op, $values) {
+    if ($this->getAvailableFilterFields()->doesFieldExist($filter_field_alias)) {
+      $spec = $this->getAvailableFilterFields()->getFieldSpecificationByName($filter_field_alias);
       if ($spec instanceof CustomFieldSpecification) {
         $customGroupDataFlow = $this->ensureCustomGroup($spec->customGroupTableName, $spec->customGroupName);
         $customGroupTableAlias = $customGroupDataFlow->getTableAlias();
         $customGroupDataFlow->addWhereClause(
-          new SimpleWhereClause($customGroupTableAlias, $spec->customFieldColumnName, $filter['op'], $filter['value'])
+          new SimpleWhereClause($customGroupTableAlias, $spec->customFieldColumnName, $op, $values)
         );
       } else {
         $entityDataFlow = $this->ensureEntity();
-        $entityDataFlow->addWhereClause(new SimpleWhereClause($this->primaryDataFlow->getTableAlias(), $spec->name, $filter['op'], $filter['value']));
+        $entityDataFlow->addWhereClause(new SimpleWhereClause($this->primaryDataFlow->getTableAlias(), $spec->name,$op, $values));
       }
     }
   }
@@ -275,7 +276,7 @@ abstract class AbstractCivicrmEntitySource implements SourceInterface {
    * Ensure that filter field is accesible in the query
    *
    * @param String $fieldName
-   * @return DataFlowDescription|null
+   * @return \Civi\DataProcessor\DataFlow\AbstractDataFlow|null
    * @throws \Exception
    */
   public function ensureField($fieldName) {
@@ -284,6 +285,7 @@ abstract class AbstractCivicrmEntitySource implements SourceInterface {
       if ($spec instanceof CustomFieldSpecification) {
         return $this->ensureCustomGroup($spec->customGroupTableName, $spec->customGroupName);
       }
+      return $this->ensureEntity();
     }
   }
 
@@ -480,6 +482,13 @@ abstract class AbstractCivicrmEntitySource implements SourceInterface {
    */
   public function getConfigurationUrl() {
     return 'civicrm/dataprocessor/form/source/configuration';
+  }
+
+  /**
+   * @return \Civi\DataProcessor\DataFlow\SqlDataFlow
+   */
+  public function getPrimaryDataFlow() {
+    return $this->primaryDataFlow;
   }
 
 }

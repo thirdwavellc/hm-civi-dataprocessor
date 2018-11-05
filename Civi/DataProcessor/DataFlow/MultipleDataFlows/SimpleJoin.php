@@ -20,41 +20,41 @@ class SimpleJoin implements JoinInterface, SqlJoinInterface {
    * @var string
    *   The name of the left field
    */
-  private $left_field;
+  protected $left_field;
 
   /**
    * @var string
    *   The name of the right field
    */
-  private $right_field;
+  protected $right_field;
 
   /**
    * @var string
    *   The prefix for the left field, or in SQL join mode the left table
    */
-  private $left_prefix;
+  protected $left_prefix;
 
   /**
    * @var string
    *   The prefix for the right field, or in SQL join mode the right table
    */
-  private $right_prefix;
+  protected $right_prefix;
 
   /**
    * @var String
    */
-  private $right_table;
+  protected $right_table;
 
   /**
    * @var String
    */
-  private $left_table;
+  protected $left_table;
 
   /**
    * @var String
    *   The join type, e.g. INNER, LEFT, OUT etc..
    */
-  private $type = "INNER";
+  protected  $type = "INNER";
 
   /**
    * @var AbstractProcessorType
@@ -172,7 +172,16 @@ class SimpleJoin implements JoinInterface, SqlJoinInterface {
       if ($left_record[$this->left_prefix.$this->left_field] == $right_record[$this->right_prefix.$this->right_field]) {
         return TRUE;
       }
+    } elseif ($this->type == 'LEFT') {
+      if (isset($left_record[$this->left_prefix.$this->left_field]) && !isset($right_record[$this->right_prefix.$this->right_field])) {
+        return true;
+      }
+    } elseif ($this->type == 'RIGHT') {
+      if (!isset($left_record[$this->left_prefix.$this->left_field]) && isset($right_record[$this->right_prefix.$this->right_field])) {
+        return true;
+      }
     }
+
     return false;
   }
 

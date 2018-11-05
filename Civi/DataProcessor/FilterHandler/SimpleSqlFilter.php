@@ -6,6 +6,8 @@
 
 namespace Civi\DataProcessor\FilterHandler;
 
+use Civi\DataProcessor\DataFlow\SqlDataFlow;
+use Civi\DataProcessor\DataFlow\SqlTableDataFlow;
 use Civi\DataProcessor\DataSpecification\FieldSpecification;
 use Civi\DataProcessor\Source\SourceInterface;
 use CRM_Dataprocessor_ExtensionUtil as E;
@@ -13,40 +15,48 @@ use CRM_Dataprocessor_ExtensionUtil as E;
 class SimpleSqlFilter extends AbstractFilterHandler {
 
   /**
-   * @var \Civi\DataProcessor\Source\SourceInterface
+   * @var \Civi\DataProcessor\DataSpecification\FieldSpecification
+   */
+  protected $fieldSpecification;
+
+  /**
+   * @var SourceInterface
    */
   protected $dataSource;
 
-  public function __construct(FieldSpecification $filterField, SourceInterface $dataSource) {
-    $this->dataSource = $dataSource;
-    $this->fieldSpecification = $filterField;
+  public function __construct() {
+    parent::__construct();
   }
 
   /**
-   * Returns the name of the handler type.
+   * Initialize the processor
    *
-   * @return String
+   * @param String $alias
+   * @param String $title
+   * @param bool $is_required
+   * @param array $configuration
    */
-  public function getName() {
-    return 'simple_filter_'.$this->fieldSpecification->alias;
+  public function initialize($alias, $title, $is_required, $configuration) {
+    if ($this->fieldSpecification) {
+      return; // Already initialized.
+    }
+    if (!isset($configuration['datasource']) || !isset($configuration['field'])) {
+      return; // Invalid configuration
+    }
+
+    $this->is_required = $is_required;
+
+    $this->dataSource = $this->data_processor->getDataSourceByName($configuration['datasource']);
+    $this->fieldSpecification  =  clone $this->dataSource->getAvailableFilterFields()->getFieldSpecificationByName($configuration['field']);
+    $this->fieldSpecification->alias = $alias;
+    $this->fieldSpecification->title = $title;
   }
 
   /**
-   * Returns the data type of this field
-   *
-   * @return String
+   * @return \Civi\DataProcessor\DataSpecification\FieldSpecification
    */
-  protected function getType() {
-    return $this->fieldSpecification->type;
-  }
-
-  /**
-   * Returns the title of this field
-   *
-   * @return String
-   */
-  public function getTitle() {
-    return E::ts('%1::%2 (Simple Filter)', array(1 => $this->dataSource->getSourceTitle(), 2 => $this->fieldSpecification->title));
+  public function getFieldSpecification() {
+    return $this->fieldSpecification;
   }
 
   /**
@@ -55,7 +65,21 @@ class SimpleSqlFilter extends AbstractFilterHandler {
    * @return mixed
    */
   public function setFilter($filter) {
-    $this->dataSource->addFilter($this->fieldSpecification->name, $filter);
+    $dataFlow  = $this->dataSource->ensureField($this->fieldSpecification->name);
+    if ($dataFlow && $dataFlow instanceof  SqlTableDataFlow) {
+        $whereClause = new SqlDataFlow\SimpleWhereClause($dataFlow->getTableAlias(), $this->fieldSpecification->name, $filter['op'], $filter['value']);
+        $dataFlow->addWhereClause($whereClause);
+      }
+  }
+
+  /**
+   * Returns the URL to a configuration screen.
+   * Return false when no configuration screen is present.
+   *
+   * @return false|string
+   */
+  public function getConfigurationUrl() {
+    return 'civicrm/dataprocessor/form/filter/simplefilter';
   }
 
 }

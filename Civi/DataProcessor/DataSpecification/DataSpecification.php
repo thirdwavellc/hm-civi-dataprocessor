@@ -68,14 +68,14 @@ class DataSpecification {
    * Merge with another dataspecification.
    *
    * @param \Civi\DataProcessor\DataSpecification\DataSpecification $dataSpecification
-   * @param string $prefix
+   * @param string $namePrefix
    * @return \Civi\DataProcessor\DataSpecification\DataSpecification
    * @throws \Civi\DataProcessor\DataSpecification\FieldExistsException
    */
-  public function merge(DataSpecification $dataSpecification, $prefix='') {
+  public function merge(DataSpecification $dataSpecification, $namePrefix='') {
     foreach($dataSpecification->getFields() as $field) {
       $f = clone $field;
-      $f->name = $prefix.$field->name;
+      $f->name = $namePrefix.$field->name;
       $this->addFieldSpecification($f->name, $f);
     }
     return $this;

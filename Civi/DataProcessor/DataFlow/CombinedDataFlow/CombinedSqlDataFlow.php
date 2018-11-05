@@ -167,9 +167,9 @@ class CombinedSqlDataFlow extends SqlDataFlow implements MultipleSourceDataFlows
     if (!$this->dataSpecification) {
       $this->dataSpecification = new DataSpecification();
       foreach ($this->sourceDataFlowDescriptions as $sourceDataFlowDescription) {
-        $this->dataSpecification->merge($sourceDataFlowDescription->getDataFlow()
-          ->getDataSpecification(), $sourceDataFlowDescription->getDataFlow()
-          ->getName());
+        $dataFlow = $sourceDataFlowDescription->getDataFlow();
+        $namePrefix = $dataFlow->getName();
+        $this->dataSpecification->merge($dataFlow->getDataSpecification(), $namePrefix);
       }
     }
     return $this->dataSpecification;

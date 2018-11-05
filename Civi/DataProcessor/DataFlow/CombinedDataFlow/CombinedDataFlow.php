@@ -196,7 +196,8 @@ class CombinedDataFlow extends AbstractDataFlow implements MultipleSourceDataFlo
   public function getDataSpecification() {
     $dataSpecification = new DataSpecification();
     foreach($this->dataFlows as $dataFlow) {
-      $dataSpecification->merge($dataFlow['dataflow']->getDataSpecification(), $dataFlow->getName());
+      $namePrefix = $dataFlow['dataflow']->getName();
+      $dataSpecification->merge($dataFlow['dataflow']->getDataSpecification(), $namePrefix);
     }
     return $dataSpecification;
   }

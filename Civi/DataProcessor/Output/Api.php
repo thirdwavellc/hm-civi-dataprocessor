@@ -62,12 +62,13 @@ class Api implements OutputInterface, API_ProviderInterface, EventSubscriberInte
     }
     // Now check whether the action param is set. With the action param we can find the data processor.
     if (isset($params['action'])) {
+      $dataProcessorName = $params['action'];
       if (stripos($params['action'], 'getcount') === 0) {
-        return; // Is a get count action.
+        $dataProcessorName = substr($apiRequest['action'], 8);
       }
       // Find the data processor
       try {
-        $dataProcessor = \CRM_Dataprocessor_BAO_DataProcessor::getDataProcessorByOutputTypeAndName('api', $params['action']);
+        $dataProcessor = \CRM_Dataprocessor_BAO_DataProcessor::getDataProcessorByOutputTypeAndName('api', $dataProcessorName);
 
         foreach ($dataProcessor->getDataFlow()->getDataSpecification()->getFields() as $fieldSpec) {
           $field = [
@@ -77,6 +78,8 @@ class Api implements OutputInterface, API_ProviderInterface, EventSubscriberInte
             'type' => $fieldSpec->type,
             'api.required' => FALSE,
             'api.aliases' => [],
+            'api.filter' => FALSE,
+            'api.return' => TRUE,
           ];
           if ($fieldSpec->getOptions()) {
             $field['options'] = $fieldSpec->getOptions();
@@ -92,6 +95,8 @@ class Api implements OutputInterface, API_ProviderInterface, EventSubscriberInte
             'type' => $fieldSpec->type,
             'api.required' => $filterHandler->isRequired(),
             'api.aliases' => [],
+            'api.filter' => TRUE,
+            'api.return' => isset($result['values'][$fieldSpec->alias]) ? $result['values'][$fieldSpec->alias]['api.return'] : FALSE,
           ];
           if ($fieldSpec->getOptions()) {
             $field['options'] = $fieldSpec->getOptions();

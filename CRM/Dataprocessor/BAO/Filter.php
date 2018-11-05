@@ -42,11 +42,6 @@ class CRM_Dataprocessor_BAO_Filter extends CRM_Dataprocessor_DAO_Filter {
       } else {
         $row['configuration'] = array();
       }
-      if (!empty($row['join_configuration'])) {
-        $row['join_configuration'] = json_decode($row['join_configuration'], true);
-      } else {
-        $row['join_configuration'] = array();
-      }
 
       $result[$row['id']] = $row;
     }

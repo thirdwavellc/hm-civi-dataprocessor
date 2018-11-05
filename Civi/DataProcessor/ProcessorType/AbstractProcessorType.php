@@ -65,6 +65,33 @@ abstract class AbstractProcessorType {
   }
 
   /**
+   * @return \Civi\DataProcessor\Source\SourceInterface[]
+   */
+  public function getDataSources() {
+    $return = array();
+    foreach($this->dataSources as $d) {
+      $return[] = $d['datasource'];
+    }
+    return $return;
+  }
+
+  /**
+   * @param $alias
+   *
+   * @return null|\Civi\DataProcessor\Source\SourceInterface
+   */
+  public function getDataSourceByFieldAlias($alias) {
+    foreach($this->dataSources as $dataSource) {
+      foreach($dataSource['datasource']->getAvailableFields()->getFields() as $field) {
+        if ($field->alias == $alias) {
+          return $dataSource['datasource'];
+        }
+      }
+    }
+    return null;
+  }
+
+  /**
    * Returns the data source
    *
    * @param $source_name
@@ -88,21 +115,6 @@ abstract class AbstractProcessorType {
     foreach($this->dataSources as $dataSource) {
       foreach($dataSource['datasource']->getAvailableFields()->getFields() as $field) {
         $fieldHandlers = $factory->getOutputHandlers($field, $dataSource['datasource']);
-        $handlers = array_merge($handlers, $fieldHandlers);
-      }
-    }
-    return $handlers;
-  }
-
-  /**
-   * @return \Civi\DataProcessor\FieldOutputHandler\AbstractFilterOutputHandler[]
-   */
-  public function getAvailableFilterHandlers() {
-    $factory = dataprocessor_get_factory();
-    $handlers = array();
-    foreach($this->dataSources as $dataSource) {
-      foreach($dataSource['datasource']->getAvailableFilterFields()->getFields() as $field) {
-        $fieldHandlers = $factory->getFilterHandlers($field, $dataSource['datasource']);
         $handlers = array_merge($handlers, $fieldHandlers);
       }
     }

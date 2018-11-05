@@ -77,7 +77,7 @@ interface SourceInterface {
    * Ensure that filter field is accesible in the query
    *
    * @param String $fieldName
-   * @return \Civi\DataProcessor\DataFlow\MultipleDataFlows\DataFlowDescription
+   * @return \Civi\DataProcessor\DataFlow\AbstractDataFlow|null
    * @throws \Exception
    */
   public function ensureField($fieldName);

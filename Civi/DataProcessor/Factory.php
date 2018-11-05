@@ -9,13 +9,16 @@ namespace Civi\DataProcessor;
 use Civi\DataProcessor\DataSpecification\FieldSpecification;
 use Civi\DataProcessor\Event\FilterHandlerEvent;
 use Civi\DataProcessor\Event\OutputHandlerEvent;
+use Civi\DataProcessor\FieldOutputHandler\OptionFieldOutputHandler;
 use Civi\DataProcessor\FieldOutputHandler\RawFieldOutputHandler;
 use Civi\DataProcessor\FilterHandler\SimpleSqlFilter;
 use Civi\DataProcessor\ProcessorType\AbstractProcessorType;
 use Civi\DataProcessor\Source\SourceInterface;
 use Symfony\Component\EventDispatcher\EventDispatcher;
+use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 use CRM_Dataprocessor_ExtensionUtil as E;
+
 
 class Factory {
 
@@ -60,6 +63,17 @@ class Factory {
   /**
    * @var array<String>
    */
+  protected $filters = array();
+
+
+  /**
+   * @var array<String>
+   */
+  protected $filterClasses = array();
+
+  /**
+   * @var array<String>
+   */
   protected $joins = array();
 
 
@@ -72,17 +86,24 @@ class Factory {
 
 
   public function __construct() {
-    $this->dispatcher = new EventDispatcher();
+    $this->dispatcher = \Civi::dispatcher();
 
     $this->addDataProcessorType('default', 'Civi\DataProcessor\ProcessorType\DefaultProcessorType', E::ts('Default'));
     $this->addDataSource('contact', 'Civi\DataProcessor\Source\ContactSource', E::ts('Contact'));
     $this->addDataSource('group', 'Civi\DataProcessor\Source\GroupSource', E::ts('Group'));
     $this->addDataSource('group_contact', 'Civi\DataProcessor\Source\GroupContactSource', E::ts('Contacts in a group'));
     $this->addDataSource('email', 'Civi\DataProcessor\Source\EmailSource', E::ts('E-mail'));
+    $this->addDataSource('address', 'Civi\DataProcessor\Source\AddressSource', E::ts('Address'));
+    $this->addDataSource('phone', 'Civi\DataProcessor\Source\PhoneSource', E::ts('Phone'));
     $this->addDataSource('contribution', 'Civi\DataProcessor\Source\ContributionSource', E::ts('Contribution'));
     $this->addDataSource('relationship', 'Civi\DataProcessor\Source\RelationshipSource', E::ts('Relationship'));
+    $this->addDataSource('relationship_type', 'Civi\DataProcessor\Source\RelationshipTypeSource', E::ts('Relationship Type'));
+    $this->addDataSource('event', 'Civi\DataProcessor\Source\EventSource', E::ts('Event'));
+    $this->addDataSource('participant', 'Civi\DataProcessor\Source\ParticipantSource', E::ts('Participant'));
     $this->addOutput('api', 'Civi\DataProcessor\Output\Api', E::ts('API'));
+    $this->addFilter('simple_sql_filter', 'Civi\DataProcessor\FilterHandler\SimpleSqlFilter', E::ts('Simple Filter'));
     $this->addjoinType('simple_join', 'Civi\DataProcessor\DataFlow\MultipleDataFlows\SimpleJoin', E::ts('Simple Join'));
+    $this->addjoinType('simple_non_required_join', 'Civi\DataProcessor\DataFlow\MultipleDataFlows\SimpleNonRequiredJoin', E::ts('Simple  (but not required) Join'));
   }
 
   /**
@@ -131,6 +152,26 @@ class Factory {
    */
   public function getOutputByName($name) {
     return new $this->outputClasses[$name]();
+  }
+
+  /**
+   * @return array<String>
+   */
+  public function getFilters() {
+    return $this->filters;
+  }
+
+  /**
+   * @param $name
+   *
+   * @param string $name
+   * @return \Civi\DataProcessor\FilterHandler\AbstractFilterHandler
+   */
+  public function getFilterByName($name) {
+    if (!isset($this->filterClasses[$name])) {
+      return null;
+    }
+    return new $this->filterClasses[$name]();
   }
 
   /**
@@ -191,6 +232,18 @@ class Factory {
    * @param $label
    * @return Factory
    */
+  public function addFilter($name, $class, $label) {
+    $this->filterClasses[$name] = $class;
+    $this->filters[$name] = $label;
+    return $this;
+  }
+
+  /**
+   * @param $name
+   * @param $class
+   * @param $label
+   * @return Factory
+   */
   public function addOutput($name, $class, $label) {
     $this->outputClasses[$name] = $class;
     $this->outputs[$name] = $label;
@@ -199,18 +252,23 @@ class Factory {
 
   public function getOutputHandlers(FieldSpecification $field, SourceInterface $source) {
     $event = new OutputHandlerEvent($field, $source);
-    $handler = new RawFieldOutputHandler($field, $source);
-    $event->handlers[$handler->getName()] = $handler;
+    $rawOutputhandler = new RawFieldOutputHandler($field, $source);
+    $event->handlers[$rawOutputhandler->getName()] = $rawOutputhandler;
+    if ($field->getOptions()) {
+      $optionOutputHandler = new OptionFieldOutputHandler($field, $source);
+      $event->handlers[$optionOutputHandler->getName()] = $optionOutputHandler;
+    }
     $this->dispatcher->dispatch(OutputHandlerEvent::NAME, $event);
     return $event->handlers;
   }
 
-  public function getFilterHandlers(FieldSpecification $field, SourceInterface $source) {
-    $event = new FilterHandlerEvent($field, $source);
-    $handler = new SimpleSqlFilter($field, $source);
-    $event->handlers[$handler->getName()] = $handler;
-    $this->dispatcher->dispatch(OutputHandlerEvent::NAME, $event);
-    return $event->handlers;
+  /**
+   * Add an event subscriber class
+   *
+   * @param \Symfony\Component\EventDispatcher\EventSubscriberInterface $subscriber
+   */
+  public function addSubscriber(EventSubscriberInterface $subscriber) {
+    $this->dispatcher->addSubscriber($subscriber);
   }
 
 }

@@ -45,14 +45,9 @@ class CRM_Dataprocessor_Form_Filter extends CRM_Core_Form {
       $this->add('text', 'name', E::ts('Name'), array('size' => CRM_Utils_Type::HUGE), FALSE);
       $this->add('text', 'title', E::ts('Title'), array('size' => CRM_Utils_Type::HUGE), TRUE);
 
-      $filterHandlers = CRM_Dataprocessor_BAO_DataProcessor::getAvailableFilterHandlers($this->dataProcessorId);
-      $filterHandlersSelect = array(E::ts('- Select -'));
-      foreach($filterHandlers as $filterHandler) {
-        $filterHandlersSelect[$filterHandler->getName()] = $filterHandler->getTitle();
-      }
-
-      $this->add('select', 'type', E::ts('Select Filter'), $filterHandlersSelect, true, array('class' => 'crm-select2 crm-huge40'));
-
+      $factory = dataprocessor_get_factory();
+      $filters = array(E::ts(' - select - '))  + $factory->getFilters();
+      $this->add('select', 'type', E::ts('Select Filter'), $filters, true, array('class' => 'crm-select2 crm-huge40'));
       $this->add('checkbox', 'is_required', E::ts('Is required'));
     }
     if ($this->_action == CRM_Core_Action::ADD) {
@@ -109,7 +104,7 @@ class CRM_Dataprocessor_Form_Filter extends CRM_Core_Form {
     }
     $params['title'] = $values['title'];
     $params['type'] = $values['type'];
-    $params['is_required'] = $values['is_required'];
+    $params['is_required'] = isset($values['is_required']) && $values['is_required'] ? 1 : 0;
     if ($this->dataProcessorId) {
       $params['data_processor_id'] = $this->dataProcessorId;
     }
@@ -118,6 +113,16 @@ class CRM_Dataprocessor_Form_Filter extends CRM_Core_Form {
     }
 
     $result = CRM_Dataprocessor_BAO_Filter::add($params);
+    $factory = dataprocessor_get_factory();
+    $filter  = $factory->getFilterByName($values['type']);
+    if  ($filter->getConfigurationUrl($result['id'], $this->dataProcessorId)) {
+      $redirectUrl = CRM_Utils_System::url($filter->getConfigurationUrl(), [
+        'reset' => 1,
+        'action' =>  'update',
+        'id' => $result['id'],
+        'data_processor_id' => $this->dataProcessorId
+      ]);
+    }
 
     CRM_Utils_System::redirect($redirectUrl);
     parent::postProcess();

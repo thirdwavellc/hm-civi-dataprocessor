@@ -199,6 +199,29 @@ class CRM_Dataprocessor_BAO_DataProcessor extends CRM_Dataprocessor_DAO_DataProc
    * @return \Civi\DataProcessor\ProcessorType\AbstractProcessorType
    * @throws \Exception when no data processor is found.
    */
+  public static function getDataProcessorById($id) {
+    $sql = "
+      SELECT civicrm_data_processor.* 
+      FROM civicrm_data_processor 
+      WHERE id = %1
+    ";
+    $params[1] = array($id, 'Integer');
+    $dao = CRM_Dataprocessor_BAO_DataProcessor::executeQuery($sql, $params, TRUE, 'CRM_Dataprocessor_BAO_DataProcessor');
+    if ($dao->N != 1) {
+      throw new \Exception('Could not find Data Processor');
+    }
+    $dao->fetch();
+    return $dao->getDataProcessor();
+  }
+
+  /**
+   * Returns a configured data processor instance.
+   *
+   * @param String $output_type
+   * @param String $name
+   * @return \Civi\DataProcessor\ProcessorType\AbstractProcessorType
+   * @throws \Exception when no data processor is found.
+   */
   public static function getDataProcessorByOutputTypeAndName($output_type, $name) {
     $sql = "
       SELECT civicrm_data_processor.* 
@@ -244,10 +267,10 @@ class CRM_Dataprocessor_BAO_DataProcessor extends CRM_Dataprocessor_DAO_DataProc
     }
 
     $filters = CRM_Dataprocessor_BAO_Filter::getValues(array('data_processor_id' => $this->id));
-    $filterHandlers = $dataProcessor->getAvailableFilterHandlers();
     foreach($filters as $filter) {
-      if (isset($filterHandlers[$filter['type']])) {
-        $filterHandler = $filterHandlers[$filter['type']];
+      $filterHandler = $factory->getFilterByName($filter['type']);
+      if ($filterHandler) {
+        $filterHandler->setDataProcessor($dataProcessor);
         $filterHandler->initialize($filter['name'], $filter['title'], $filter['is_required'], $filter['configuration']);
         $dataProcessor->addFilterHandler($filterHandler);
       }

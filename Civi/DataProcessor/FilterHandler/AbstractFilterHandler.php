@@ -7,13 +7,14 @@
 namespace Civi\DataProcessor\FilterHandler;
 
 use Civi\DataProcessor\DataSpecification\FieldSpecification;
+use Civi\DataProcessor\ProcessorType\AbstractProcessorType;
 
 abstract class AbstractFilterHandler {
 
   /**
-   * @var \Civi\DataProcessor\DataSpecification\FieldSpecification
+   * @var \Civi\DataProcessor\ProcessorType\AbstractProcessorType
    */
-  protected $fieldSpecification;
+  protected $data_processor;
 
   /**
    * @var bool
@@ -21,36 +22,9 @@ abstract class AbstractFilterHandler {
   protected $is_required;
 
   /**
-   * Returns the name of the handler type.
-   *
-   * @return String
+   * @return \Civi\DataProcessor\DataSpecification\FieldSpecification
    */
-  abstract public function getName();
-
-  /**
-   * Returns the title of the handler type.
-   *
-   * @return String
-   */
-  abstract public function getTitle();
-
-  /**
-   * Returns the data type of this field
-   *
-   * @return String
-   */
-  abstract protected function getType();
-
-  /**
-   * @param array $filterParams
-   *   The filter settings
-   * @return mixed
-   */
-  abstract public function setFilter($filterParams);
-
-  public function __construct() {
-    $this->fieldSpecification = new FieldSpecification($this->getName(), $this->getType(), $this->getName());
-  }
+  abstract public function getFieldSpecification();
 
   /**
    * Initialize the processor
@@ -60,11 +34,21 @@ abstract class AbstractFilterHandler {
    * @param bool $is_required
    * @param array $configuration
    */
-  public function initialize($alias, $title, $is_required, $configuration) {
-    // Override this in child classes.
-    $this->fieldSpecification->title = $title;
-    $this->fieldSpecification->alias = $alias;
-    $this->is_required = $is_required;
+  abstract public function initialize($alias, $title, $is_required, $configuration);
+
+  /**
+   * @param array $filterParams
+   *   The filter settings
+   * @return mixed
+   */
+  abstract public function setFilter($filterParams);
+
+  public function __construct() {
+
+  }
+
+  public function setDataProcessor(AbstractProcessorType $dataProcessor) {
+    $this->data_processor = $dataProcessor;
   }
 
   public function isRequired() {
@@ -72,10 +56,13 @@ abstract class AbstractFilterHandler {
   }
 
   /**
-   * @return \Civi\DataProcessor\DataSpecification\FieldSpecification
+   * Returns the URL to a configuration screen.
+   * Return false when no configuration screen is present.
+   *
+   * @return false|string
    */
-  public function getFieldSpecification() {
-    return $this->fieldSpecification;
+  public function getConfigurationUrl() {
+    return false;
   }
 
 }
