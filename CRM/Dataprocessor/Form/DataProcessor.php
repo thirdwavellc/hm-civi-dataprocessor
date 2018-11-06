@@ -34,7 +34,7 @@ class CRM_Dataprocessor_Form_DataProcessor extends CRM_Core_Form {
         break;
       case CRM_Core_Action::REVERT:
         CRM_Dataprocessor_BAO_DataProcessor::revert($this->dataProcessorId);
-        $session->setStatus('Data Processor enabled', 'Enable', 'success');
+        $session->setStatus('Data Processor reverted', 'Revert', 'success');
         CRM_Utils_System::redirect($session->readUserContext());
         break;
       case CRM_Core_Action::EXPORT:

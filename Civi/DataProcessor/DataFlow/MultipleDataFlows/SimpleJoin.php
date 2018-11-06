@@ -212,7 +212,7 @@ class SimpleJoin implements JoinInterface, SqlJoinInterface {
       $table_alias = $sourceDataFlowDescription->getDataFlow()->getPrimaryTableAlias();
     }
 
-    return "{$this->type} JOIN `{$table}` `{$table_alias}` {$joinClause}";
+    return "{$this->type} JOIN `{$table}` `{$table_alias}` {$joinClause} ";
   }
 
 

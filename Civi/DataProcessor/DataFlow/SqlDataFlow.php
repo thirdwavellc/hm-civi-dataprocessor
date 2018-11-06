@@ -197,6 +197,20 @@ abstract class SqlDataFlow extends AbstractDataFlow {
   }
 
   /**
+   * @param \Civi\DataProcessor\DataFlow\SqlDataFlow\WhereClauseInterface $clause
+   *
+   * @return \Civi\DataProcessor\DataFlow\SqlDataFlow
+   */
+  public function removeWhereClause(WhereClauseInterface $clause) {
+    foreach($this->whereClauses as  $i => $c) {
+      if ($c->getWhereClause() == $clause->getWhereClause()) {
+        unset($this->whereClauses[$i]);
+      }
+    }
+    return $this;
+  }
+
+  /**
    * Return all the where clauses
    *
    * @return array

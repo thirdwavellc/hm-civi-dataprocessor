@@ -400,25 +400,33 @@ class CRM_Dataprocessor_BAO_DataProcessor extends CRM_Dataprocessor_DAO_DataProc
     unset($dataProcessor['status']);
     unset($dataProcessor['source_file']);
 
-    $dataProcessor['data_sources'] = CRM_Dataprocessor_BAO_Source::getValues(array('data_processor_id' => $id));
-    foreach($dataProcessor['data_sources'] as $i => $datasource) {
-      unset($dataProcessor['data_sources'][$i]['id']);
-      unset($dataProcessor['data_sources'][$i]['data_processor_id']);
+    $dataSources = CRM_Dataprocessor_BAO_Source::getValues(array('data_processor_id' => $id));
+    $dataProcessor['data_sources'] = array();
+    foreach($dataSources as $i => $datasource) {
+      unset($datasource['id']);
+      unset($datasource['data_processor_id']);
+      $dataProcessor['data_sources'][] = $datasource;
     }
-    $dataProcessor['filters'] = CRM_Dataprocessor_BAO_Filter::getValues(array('data_processor_id' => $id));
-    foreach($dataProcessor['filters'] as $i => $field) {
-      unset($dataProcessor['filters'][$i]['id']);
-      unset($dataProcessor['filters'][$i]['data_processor_id']);
+    $filters = CRM_Dataprocessor_BAO_Filter::getValues(array('data_processor_id' => $id));
+    $dataProcessor['filters']  = array();
+    foreach($filters as $i => $filter) {
+      unset($filter['id']);
+      unset($filter['data_processor_id']);
+      $dataProcessor['filters'][] = $filter;
     }
-    $dataProcessor['fields'] = CRM_Dataprocessor_BAO_Field::getValues(array('data_processor_id' => $id));
-    foreach($dataProcessor['fields'] as $i => $field) {
-      unset($dataProcessor['fields'][$i]['id']);
-      unset($dataProcessor['fields'][$i]['data_processor_id']);
+    $fields = CRM_Dataprocessor_BAO_Field::getValues(array('data_processor_id' => $id));
+    $dataProcessor['fields'] = array();
+    foreach($fields as $i => $field) {
+      unset($field['id']);
+      unset($field['data_processor_id']);
+      $dataProcessor['fields'][] = $field;
     }
-    $dataProcessor['outputs'] = CRM_Dataprocessor_BAO_Output::getValues(array('data_processor_id' => $id));
-    foreach($dataProcessor['outputs'] as $i => $output) {
-      unset($dataProcessor['outputs'][$i]['id']);
-      unset($dataProcessor['outputs'][$i]['data_processor_id']);
+    $outputs = CRM_Dataprocessor_BAO_Output::getValues(array('data_processor_id' => $id));
+    $dataProcessor['outputs'] = array();
+    foreach($outputs as $i => $output) {
+      unset($output['id']);
+      unset($output['data_processor_id']);
+      $dataProcessor['outputs'][] = $output;
     }
     return $dataProcessor;
   }

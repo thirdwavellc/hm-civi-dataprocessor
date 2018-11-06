@@ -123,7 +123,6 @@ abstract class AbstractCivicrmEntitySource implements SourceInterface {
       $this->primaryDataFlow = new SqlTableDataFlow($this->getTable(), $this->getSourceName(), $this->getSourceTitle());
     }
     $this->addFilters($this->configuration);
-
     if (count($this->customGroupDataFlowDescriptions) || count($this->additionalDataFlowDescriptions)) {
       $this->dataFlow = new CombinedSqlDataFlow('', $this->primaryDataFlow->getTable(), $this->primaryDataFlow->getTableAlias());
       $this->dataFlow->addSourceDataFlow(new DataFlowDescription($this->primaryDataFlow));
@@ -267,7 +266,7 @@ abstract class AbstractCivicrmEntitySource implements SourceInterface {
         );
       } else {
         $entityDataFlow = $this->ensureEntity();
-        $entityDataFlow->addWhereClause(new SimpleWhereClause($this->primaryDataFlow->getTableAlias(), $spec->name,$op, $values));
+        $entityDataFlow->addWhereClause(new SimpleWhereClause($this->getSourceName(), $spec->name,$op, $values));
       }
     }
   }

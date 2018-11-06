@@ -14,6 +14,8 @@ use Civi\DataProcessor\ProcessorType\AbstractProcessorType;
 
 class SimpleNonRequiredJoin  extends  SimpleJoin {
 
+  protected $filterClauses = array();
+
   public function __construct($left_prefix = null, $left_field = null, $right_prefix = null, $right_field = null, $type = "INNER") {
     $type = 'LEFT';
     parent::__construct($left_prefix, $left_field, $right_prefix, $right_field, $type);
@@ -34,6 +36,49 @@ class SimpleNonRequiredJoin  extends  SimpleJoin {
   public function setConfiguration($configuration) {
     $configuration[' type'] = 'LEFT';
     return parent::setConfiguration($configuration);
+  }
+
+  /**
+   * Returns the SQL join statement
+   *
+   * For example:
+   *  INNER JOIN civicrm_contact source_3 ON source_3.id = source_2.contact_id
+   * OR
+   *  LEFT JOIN civicrm_contact source_3 ON source3.id = source_2.contact_id
+   *
+   * @param \Civi\DataProcessor\DataFlow\MultipleDataFlows\DataFlowDescription $sourceDataFlowDescription
+   *   The source data flow description used to genereate the join stament.
+   *
+   * @return string
+   */
+  public function getJoinClause(DataFlowDescription $sourceDataFlowDescription) {
+    $this->initialize();
+    $joinClause = "";
+    if ($sourceDataFlowDescription->getJoinSpecification()) {
+      $joinClause = "ON `{$this->left_table}`.`{$this->left_field}` = `{$this->right_table}`.`{$this->right_field}`";
+    }
+    if ($sourceDataFlowDescription->getDataFlow() instanceof SqlTableDataFlow) {
+      $table = $sourceDataFlowDescription->getDataFlow()->getTable();
+      $table_alias = $sourceDataFlowDescription->getDataFlow()->getTableAlias();
+    } elseif ($sourceDataFlowDescription->getDataFlow() instanceof CombinedSqlDataFlow) {
+      $table = $sourceDataFlowDescription->getDataFlow()->getPrimaryTable();
+      $table_alias = $sourceDataFlowDescription->getDataFlow()->getPrimaryTableAlias();
+    }
+
+    $extraClause  = "";
+    $dataFlow = $sourceDataFlowDescription->getDataFlow();
+    if ($dataFlow  instanceof  SqlTableDataFlow) {
+      $whereClauses = $dataFlow->getWhereClauses();
+      foreach($whereClauses as $whereClause) {
+        $this->filterClauses[] = $whereClause->getWhereClause();
+        $dataFlow->removeWhereClause($whereClause);
+      }
+    }
+    if (count($this->filterClauses)) {
+      $extraClause = " AND (".implode(" AND ", $this->filterClauses). ")";
+    }
+
+    return "{$this->type} JOIN `{$table}` `{$table_alias}` {$joinClause} {$extraClause}";
   }
 
 
