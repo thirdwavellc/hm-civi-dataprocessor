@@ -213,7 +213,7 @@ abstract class AbstractCivicrmEntitySource implements SourceInterface {
         'max_multiple',
       ),
     );
-    $customGroups = \CRM_Core_BAO_CustomGroup::getTree($this->getEntity(), $customGroupToReturnParam,NULL,NULL,NULL,NULL,NULL,NULL,FALSE,FALSE,FALSE);
+    $customGroups = \CRM_Core_BAO_CustomGroup::getTree($this->getEntity(), $customGroupToReturnParam,NULL,NULL,NULL,NULL,NULL,NULL,TRUE,FALSE,FALSE);
     foreach($customGroups as $cgId => $customGroup) {
       if ($cgId == 'info') {
         continue;
