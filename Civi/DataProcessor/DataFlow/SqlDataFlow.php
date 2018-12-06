@@ -6,6 +6,7 @@
 
 namespace Civi\DataProcessor\DataFlow;
 
+use Civi\DataProcessor\DataFlow\Sort\SortSpecification;
 use Civi\DataProcessor\DataFlow\SqlDataFlow\WhereClauseInterface;
 use \Civi\DataProcessor\DataSpecification\DataSpecification;
 
@@ -64,12 +65,13 @@ abstract class SqlDataFlow extends AbstractDataFlow {
       $from = $this->getFromStatement();
       $where = $this->getWhereStatement();
       $groupBy = $this->getGroupByStatement();
+      $orderBy = $this->getOrderByStatement();
 
       $countSql = "SELECT COUNT(*) {$from} {$where} {$groupBy}";
       $this->sqlCountStatement = $countSql;
       $this->count = \CRM_Core_DAO::singleValueQuery($countSql);
 
-      $sql = "{$this->getSelectQueryStatement()} {$where} {$groupBy}";
+      $sql = "{$this->getSelectQueryStatement()} {$where} {$groupBy} {$orderBy}";
 
       // Build Limit and Offset.
       $limitStatement = "";
@@ -219,11 +221,34 @@ abstract class SqlDataFlow extends AbstractDataFlow {
     return $this->whereClauses;
   }
 
-    /**
-     * Returns debug information
-     *
-     * @return string
-     */
+  /**
+   * Get the order by statement
+   *
+   * @return string
+   */
+  public function getOrderByStatement() {
+    $orderBys = array();
+    foreach($this->sortSpecifications as $sortSpecification) {
+      $dir = 'ASC';
+      switch($sortSpecification->getDirection()) {
+        case SortSpecification::DESC:
+          $dir = 'DESC';
+          break;
+      }
+      $fieldName = $sortSpecification->getField()->alias;
+      $orderBys[] = "{$fieldName} {$dir}";
+    }
+    if (count($orderBys)) {
+      return "ORDER BY ".implode(", ", $orderBys);
+    }
+    return "";
+  }
+
+  /**
+   * Returns debug information
+   *
+   * @return string
+   */
   public function getDebugInformation() {
     return $this->sqlStatement;
   }

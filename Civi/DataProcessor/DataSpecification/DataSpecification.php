@@ -52,6 +52,19 @@ class DataSpecification {
   }
 
   /**
+   * @param string
+   * @return \Civi\DataProcessor\DataSpecification\FieldSpecification
+   */
+  public function getFieldSpecificationByAlias($alias) {
+    foreach($this->fields as $field) {
+      if ($field->alias == $alias) {
+        return $field;
+      }
+    }
+    return null;
+  }
+
+  /**
    * Returns whether a field exists
    *
    * @param $name

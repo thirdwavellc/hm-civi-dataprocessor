@@ -10,7 +10,7 @@ use \Civi\DataProcessor\DataFlow\MultipleDataFlows\DataFlowDescription;
 use \Civi\DataProcessor\DataSpecification\DataSpecification;
 use Civi\DataProcessor\DataSpecification\FieldSpecification;
 use \Civi\DataProcessor\FieldOutputHandler\AbstractFieldOutputHandler;
-
+use Civi\DataProcessor\DataFlow\Sort\SortSpecification;
 
 abstract class AbstractDataFlow {
 
@@ -48,6 +48,11 @@ abstract class AbstractDataFlow {
    * @var FieldSpecification[]
    */
   protected $aggregateFields = array();
+
+  /**
+   * @var SortSpecification[]
+   */
+  protected $sortSpecifications = array();
 
   /**
    * Initialize the data flow
@@ -101,9 +106,14 @@ abstract class AbstractDataFlow {
    * @throws \Civi\DataProcessor\DataFlow\EndOfFlowException
    */
   public function nextRecord($fieldNamePrefix = '') {
-    while ($record = $this->retrieveNextRecord($fieldNamePrefix)) {
-      return $this->formatRecordOutput($record);
+    static $currentRecordIndex = 0;
+    $allRecords = $this->allRecords($fieldNamePrefix);
+    if (isset($allRecords[$currentRecordIndex])) {
+      $record = $allRecords[$currentRecordIndex];
+      $currentRecordIndex++;
+      return $record;
     }
+    throw new EndOfFlowException();
   }
 
   /**
@@ -141,6 +151,7 @@ abstract class AbstractDataFlow {
       } catch (EndOfFlowException $e) {
         // Do nothing
       }
+      usort($this->_allRecords, array($this, 'sort'));
     }
 
     return $this->_allRecords;
@@ -225,6 +236,38 @@ abstract class AbstractDataFlow {
 
   public function addAggregateField(FieldSpecification $aggregateField) {
     $this->aggregateFields[] = $aggregateField;
+  }
+
+  /**
+   * Adds a field for sorting
+   *
+   * @param $fieldName
+   * @param $direction
+   */
+  public function addSort($fieldName, $direction) {
+    $direction = strtoupper($direction);
+    $this->sortSpecifications[] = new SortSpecification($this, $fieldName, $direction);
+  }
+
+  /**
+   * Sort compare function
+   * Returns 0 when both values are equal
+   * Returns -1 when a is less than b
+   * Return 1 when b is less than a
+   *
+   * @param $row_a
+   * @param $row_b
+   * @return int
+   */
+  protected function sort($row_a, $row_b) {
+    $compareValue = 0;
+    foreach($this->sortSpecifications as $sortSpecification) {
+      $compareValue = $sortSpecification->compare($row_a, $row_b);
+      if ($compareValue != 0) {
+        break;
+      }
+    }
+    return $compareValue;
   }
 
 

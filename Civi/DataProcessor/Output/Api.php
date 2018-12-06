@@ -174,6 +174,15 @@ class Api implements OutputInterface, API_ProviderInterface, EventSubscriberInte
       if (isset($options['offset'])) {
         $dataProcessor->getDataFlow()->setOffset($options['offset']);
       }
+      if (isset($options['sort'])) {
+        $sort = explode(', ', $options['sort']);
+        foreach ($sort as $index => &$sortString) {
+          // Get sort field and direction
+          list($sortField, $dir) = array_pad(explode(' ', $sortString), 2, 'ASC');
+          $dataProcessor->getDataFlow()->addSort($sortField, $dir);
+        }
+      }
+
       $records = $dataProcessor->getDataFlow()->allRecords();
       $values = array();
       foreach($records as $idx => $record) {

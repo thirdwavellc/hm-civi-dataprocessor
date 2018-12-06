@@ -6,6 +6,7 @@
 
 namespace Civi\DataProcessor;
 
+use Civi\DataProcessor\DataFlow\Sort\SortCompareFactory;
 use Civi\DataProcessor\DataSpecification\FieldSpecification;
 use Civi\DataProcessor\Event\FilterHandlerEvent;
 use Civi\DataProcessor\Event\OutputHandlerEvent;
@@ -84,6 +85,11 @@ class Factory {
 
   protected $fieldOutputHandlers = array();
 
+  /**
+   * @var SortCompareFactory
+   */
+  protected $sortCompareFactory;
+
 
   public function __construct() {
     $this->dispatcher = \Civi::dispatcher();
@@ -100,6 +106,7 @@ class Factory {
     $this->addDataSource('relationship_type', 'Civi\DataProcessor\Source\RelationshipTypeSource', E::ts('Relationship Type'));
     $this->addDataSource('event', 'Civi\DataProcessor\Source\EventSource', E::ts('Event'));
     $this->addDataSource('participant', 'Civi\DataProcessor\Source\ParticipantSource', E::ts('Participant'));
+    $this->addDataSource('mailing', 'Civi\DataProcessor\Source\MailingSource', E::ts('Mailing'));
     $this->addOutput('api', 'Civi\DataProcessor\Output\Api', E::ts('API'));
     $this->addFilter('simple_sql_filter', 'Civi\DataProcessor\FilterHandler\SimpleSqlFilter', E::ts('Simple Filter'));
     $this->addjoinType('simple_join', 'Civi\DataProcessor\DataFlow\MultipleDataFlows\SimpleJoin', E::ts('Simple Join'));
@@ -269,6 +276,16 @@ class Factory {
    */
   public function addSubscriber(EventSubscriberInterface $subscriber) {
     $this->dispatcher->addSubscriber($subscriber);
+  }
+
+  /**
+   * @return \Civi\DataProcessor\DataFlow\Sort\SortCompareFactory
+   */
+  public function getSortCompareFactory() {
+    if (!$this->sortCompareFactory) {
+      $this->sortCompareFactory = new SortCompareFactory();
+    }
+    return $this->sortCompareFactory;
   }
 
 }
