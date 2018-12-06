@@ -70,7 +70,8 @@ class Api implements OutputInterface, API_ProviderInterface, EventSubscriberInte
       try {
         $dataProcessor = \CRM_Dataprocessor_BAO_DataProcessor::getDataProcessorByOutputTypeAndName('api', $dataProcessorName);
 
-        foreach ($dataProcessor->getDataFlow()->getDataSpecification()->getFields() as $fieldSpec) {
+        foreach ($dataProcessor->getDataFlow()->getOutputFieldHandlers() as $outputFieldHandler) {
+          $fieldSpec = $outputFieldHandler->getOutputFieldSpecification();
           $field = [
             'name' => $fieldSpec->alias,
             'title' => $fieldSpec->title,
