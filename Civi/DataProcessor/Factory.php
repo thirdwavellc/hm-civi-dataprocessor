@@ -108,6 +108,7 @@ class Factory {
     $this->addDataSource('participant', 'Civi\DataProcessor\Source\ParticipantSource', E::ts('Participant'));
     $this->addDataSource('mailing', 'Civi\DataProcessor\Source\MailingSource', E::ts('Mailing'));
     $this->addDataSource('mailing_job', 'Civi\DataProcessor\Source\MailingJobSource', E::ts('Mailing Job'));
+    $this->addDataSource('mailing_group', 'Civi\DataProcessor\Source\MailingGroupSource', E::ts('Mailing Group'));
     $this->addOutput('api', 'Civi\DataProcessor\Output\Api', E::ts('API'));
     $this->addFilter('simple_sql_filter', 'Civi\DataProcessor\FilterHandler\SimpleSqlFilter', E::ts('Simple Filter'));
     $this->addjoinType('simple_join', 'Civi\DataProcessor\DataFlow\MultipleDataFlows\SimpleJoin', E::ts('Simple Join'));

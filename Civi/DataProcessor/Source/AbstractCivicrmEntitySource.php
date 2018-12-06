@@ -159,7 +159,7 @@ abstract class AbstractCivicrmEntitySource implements SourceInterface {
         continue;
       }
       $type = \CRM_Utils_Type::typeToString($field['type']);
-      $options = $bao::buildOptions($field['name']);
+      $options = $dao::buildOptions($field['name']);
       $alias = $this->getSourceName(). '_'.$field['name'];
       $fieldSpec = new FieldSpecification($field['name'], $type, $field['title'], $options, $alias);
       $dataSpecification->addFieldSpecification($fieldSpec->name, $fieldSpec);
