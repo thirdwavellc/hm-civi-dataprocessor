@@ -37,10 +37,8 @@ class SortSpecification {
 
   public function __construct(AbstractDataFlow $dataFlow=null, $fieldName="", $direction=self::ASC) {
     $this->dataFlow = $dataFlow;
-    if ($fieldName && $this->dataFlow) {
-      $this->field = $this->dataFlow->getDataSpecification()->getFieldSpecificationByAlias($fieldName);
-    }
     $this->direction = $direction;
+    $this->setField($fieldName);
   }
 
   /**
@@ -58,7 +56,11 @@ class SortSpecification {
    */
   public function setField($fieldName) {
     if ($fieldName && $this->dataFlow) {
-      $this->field = $this->dataFlow->getDataSpecification()->getFieldSpecificationByAlias($fieldName);
+      foreach($this->dataFlow->getOutputFieldHandlers() as $outputFieldHandler) {
+        if ($outputFieldHandler->getOutputFieldSpecification()->name == $fieldName) {
+          $this->field = $outputFieldHandler->getOutputFieldSpecification();
+        }
+      }
     }
     return $this;
   }
