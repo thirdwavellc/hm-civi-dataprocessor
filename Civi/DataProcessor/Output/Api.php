@@ -89,6 +89,9 @@ class Api implements OutputInterface, API_ProviderInterface, EventSubscriberInte
         }
         foreach($dataProcessor->getFilterHandlers() as $filterHandler) {
           $fieldSpec = $filterHandler->getFieldSpecification();
+          if (!$fieldSpec) {
+            continue;
+          }
           $field = [
             'name' => $fieldSpec->alias,
             'title' => $fieldSpec->title,
