@@ -26,7 +26,7 @@ class OptionFieldOutputHandler extends AbstractFieldOutputHandler {
   public function __construct(FieldSpecification $inputFieldSpec, SourceInterface $dataSource) {
     $this->dataSource = $dataSource;
     $this->inputFieldSpec = $inputFieldSpec;
-    $this->outputFieldSpecification = $inputFieldSpec;
+    $this->outputFieldSpecification = clone $inputFieldSpec;
     $this->outputFieldSpecification->alias = $this->getName();
   }
 
