@@ -11,7 +11,7 @@ use Civi\DataProcessor\Source\SourceInterface;
 use Civi\DataProcessor\DataSpecification\FieldSpecification;
 use Civi\DataProcessor\FieldOutputHandler\FieldOutput;
 
-class OptionFieldOutputHandler extends AbstractFieldOutputHandler {
+class OptionFieldOutputHandler extends AbstractFieldOutputHandler implements OutputHandlerSortable {
 
   /**
    * @var \Civi\DataProcessor\DataSpecification\FieldSpecification
@@ -28,6 +28,13 @@ class OptionFieldOutputHandler extends AbstractFieldOutputHandler {
     $this->inputFieldSpec = $inputFieldSpec;
     $this->outputFieldSpecification = clone $inputFieldSpec;
     $this->outputFieldSpecification->alias = $this->getName();
+  }
+
+  /**
+   * @return \Civi\DataProcessor\DataSpecification\FieldSpecification
+   */
+  public function getSortableInputFieldSpec() {
+    return $this->inputFieldSpec;
   }
 
   /**

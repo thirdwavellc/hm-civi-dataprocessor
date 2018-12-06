@@ -8,6 +8,7 @@ namespace Civi\DataProcessor\DataFlow\Sort;
 
 use Civi\DataProcessor\DataSpecification\FieldSpecification;
 use Civi\DataProcessor\DataFlow\AbstractDataFlow;
+use Civi\DataProcessor\FieldOutputHandler\OutputHandlerSortable;
 
 class SortSpecification {
 
@@ -57,8 +58,8 @@ class SortSpecification {
   public function setField($fieldName) {
     if ($fieldName && $this->dataFlow) {
       foreach($this->dataFlow->getOutputFieldHandlers() as $outputFieldHandler) {
-        if ($outputFieldHandler->getOutputFieldSpecification()->name == $fieldName) {
-          $this->field = $outputFieldHandler->getOutputFieldSpecification();
+        if ($outputFieldHandler->getOutputFieldSpecification()->alias == $fieldName && $outputFieldHandler instanceof OutputHandlerSortable) {
+          $this->field = $outputFieldHandler->getSortableInputFieldSpec();
         }
       }
     }
