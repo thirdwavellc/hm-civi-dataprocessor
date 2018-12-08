@@ -36,6 +36,26 @@ function _civicrm_api3_data_processor_output_create_spec(&$spec) {
     'type' => CRM_Utils_Type::T_TEXT,
     'api.required' => false,
 	);
+  $spec['api_permission'] = array(
+    'name' => 'api_permission',
+    'title' => E::ts('API Permission'),
+    'type' => CRM_Utils_Type::T_STRING
+  );
+  $spec['api_entity'] = array(
+    'name' => 'api_entity',
+    'title' => E::ts('API Entity'),
+    'type' => CRM_Utils_Type::T_STRING
+  );
+  $spec['api_action'] = array(
+    'name' => 'api_action',
+    'title' => E::ts('API Action name'),
+    'type' => CRM_Utils_Type::T_STRING
+  );
+  $spec['api_count_action'] = array(
+    'name' => 'api_count_action',
+    'title' => E::ts('API GetCount Action name'),
+    'type' => CRM_Utils_Type::T_STRING
+  );
 }
 
 /**

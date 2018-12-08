@@ -90,6 +90,11 @@ class CRM_Dataprocessor_BAO_Source extends CRM_Dataprocessor_DAO_Source {
     }
 
     $source->save();
+    $id = $source->id;
+    $source = new CRM_Dataprocessor_BAO_Source();
+    $source->id = $id;
+    $source->find(true);
+    CRM_Dataprocessor_BAO_DataProcessor::updateAndChekStatus($source->data_processor_id);
     self::storeValues($source, $result);
 
     if (!empty($params['id'])) {

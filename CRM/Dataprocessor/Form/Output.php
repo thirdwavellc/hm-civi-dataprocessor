@@ -76,10 +76,11 @@ class CRM_Dataprocessor_Form_Output extends CRM_Core_Form {
 
   public function postProcess() {
     $session = CRM_Core_Session::singleton();
+    $redirectUrl = $session->readUserContext();
     if ($this->_action == CRM_Core_Action::DELETE) {
       CRM_Dataprocessor_BAO_Output::deleteWithId($this->id);
       $session->setStatus(E::ts('Data Processor Output removed'), E::ts('Removed'), 'success');
-      CRM_Utils_System::redirect($session->readUserContext());
+      CRM_Utils_System::redirect($redirectUrl);
     }
 
     $values = $this->exportValues();
@@ -90,8 +91,19 @@ class CRM_Dataprocessor_Form_Output extends CRM_Core_Form {
     if ($this->id) {
       $params['id'] = $this->id;
     }
-    CRM_Dataprocessor_BAO_Output::add($params);
-    CRM_Utils_System::redirect($session->readUserContext());
+    $result = CRM_Dataprocessor_BAO_Output::add($params);
+    $factory = dataprocessor_get_factory();
+    $outputClass  = $factory->getOutputByName($result['type']);
+    if  ($outputClass->getConfigurationUrl()) {
+      $redirectUrl = CRM_Utils_System::url($outputClass->getConfigurationUrl(), [
+        'reset' => 1,
+        'action' =>  'update',
+        'id' => $result['id'],
+        'data_processor_id' => $this->dataProcessorId
+      ]);
+    }
+
+    CRM_Utils_System::redirect($redirectUrl);
     parent::postProcess();
   }
 

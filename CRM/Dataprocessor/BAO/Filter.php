@@ -82,6 +82,11 @@ class CRM_Dataprocessor_BAO_Filter extends CRM_Dataprocessor_DAO_Filter {
     }
 
     $filter->save();
+    $id = $filter->id;
+    $filter = new CRM_Dataprocessor_BAO_Filter();
+    $filter->id = $id;
+    $filter->find(true);
+    CRM_Dataprocessor_BAO_DataProcessor::updateAndChekStatus($filter->data_processor_id);
     self::storeValues($filter, $result);
 
     if (!empty($params['id'])) {

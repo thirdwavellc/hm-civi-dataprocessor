@@ -80,6 +80,11 @@ class CRM_Dataprocessor_BAO_Output extends CRM_Dataprocessor_DAO_Output {
     }
 
     $output->save();
+    $id = $output->id;
+    $output = new CRM_Dataprocessor_BAO_Output();
+    $output->id = $id;
+    $output->find(true);
+    CRM_Dataprocessor_BAO_DataProcessor::updateAndChekStatus($output->data_processor_id);
     self::storeValues($output, $result);
 
     if (!empty($params['id'])) {

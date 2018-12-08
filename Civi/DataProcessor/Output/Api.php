@@ -20,6 +20,16 @@ class Api implements OutputInterface, API_ProviderInterface, EventSubscriberInte
   }
 
   /**
+   * Return the url to a configuration page.
+   * Or return false when no configuration page exists.
+   *
+   * @return string|false
+   */
+  public function getConfigurationUrl() {
+    return 'civicrm/dataprocessor/form/output/api';
+  }
+
+  /**
    * @return array
    */
   public static function getSubscribedEvents() {
@@ -40,9 +50,12 @@ class Api implements OutputInterface, API_ProviderInterface, EventSubscriberInte
   }
 
   public function onApiResolve(ResolveEvent $event) {
+    $entities = $this->getEntityNames();
     $apiRequest = $event->getApiRequest();
-    if (strtolower($apiRequest['entity']) == 'dataprocessorapi') {
-      $event->setApiProvider($this);
+    foreach($entities as $entity) {
+      if (strtolower($apiRequest['entity']) == strtolower($entity)) {
+        $event->setApiProvider($this);
+      }
     }
   }
 
@@ -57,18 +70,29 @@ class Api implements OutputInterface, API_ProviderInterface, EventSubscriberInte
 
     // First check whether the entity is dataprocessorapi and the action is getfields.
     // If not return this function.
-    if (strtolower($apiRequest['entity']) != 'dataprocessorapi' || strtolower($apiRequest['action']) != 'getfields') {
+    if (strtolower($apiRequest['action']) != 'getfields') {
       return;
     }
     // Now check whether the action param is set. With the action param we can find the data processor.
     if (isset($params['action'])) {
-      $dataProcessorName = $params['action'];
-      if (stripos($params['action'], 'getcount') === 0) {
-        $dataProcessorName = substr($apiRequest['action'], 8);
-      }
-      // Find the data processor
       try {
-        $dataProcessor = \CRM_Dataprocessor_BAO_DataProcessor::getDataProcessorByOutputTypeAndName('api', $dataProcessorName);
+        // Find the data processor
+        $dataProcessorIdSql = "
+          SELECT *
+          FROM civicrm_data_processor_output o 
+          INNER JOIN civicrm_data_processor p ON o.data_processor_id = p.id 
+          WHERE p.is_active = 1 AND LOWER(o.api_entity) = LOWER(%1)
+          AND (LOWER(o.api_action) = LOWER(%2) OR LOWER(o.api_count_action) = LOWER(%2))
+        ";
+
+        $dataProcessorIdParams[1] = array($apiRequest['entity'], 'String');
+        $dataProcessorIdParams[2] = array($params['action'], 'String');
+        $dao = \CRM_Core_DAO::executeQuery($dataProcessorIdSql, $dataProcessorIdParams);
+        if (!$dao->fetch()) {
+          throw new \API_Exception("Could not find a data processor");
+        }
+        $dataProcessor = \CRM_Dataprocessor_BAO_DataProcessor::getDataProcessorById($dao->data_processor_id);
+
 
         foreach ($dataProcessor->getDataFlow()->getOutputFieldHandlers() as $outputFieldHandler) {
           $fieldSpec = $outputFieldHandler->getOutputFieldSpecification();
@@ -127,21 +151,28 @@ class Api implements OutputInterface, API_ProviderInterface, EventSubscriberInte
    * @return array
    *   structured response data (per civicrm_api3_create_success)
    * @see civicrm_api3_create_success
-   * @throws \API_Exception
+   * @throws \Exception
    */
   public function invoke($apiRequest) {
-    // Check whether we do a count...
-    $dataProcessorName = $apiRequest['action'];
-    $isCountAction = false;
-    if (stripos($apiRequest['action'], 'getcount') === 0) {
-      $isCountAction = true;
-      $dataProcessorName = substr($apiRequest['action'], 8);
+    $isCountAction = FALSE;
+
+    $dataProcessorIdSql = "
+      SELECT *
+      FROM civicrm_data_processor_output o 
+      INNER JOIN civicrm_data_processor p ON o.data_processor_id = p.id 
+      WHERE p.is_active = 1 AND LOWER(o.api_entity) = LOWER(%1)
+      AND (LOWER(o.api_action) = LOWER(%2) OR LOWER(o.api_count_action) = LOWER(%2))
+    ";
+    $dataProcessorIdParams[1] = array($apiRequest['entity'], 'String');
+    $dataProcessorIdParams[2] = array($apiRequest['action'], 'String');
+    $dao = \CRM_Core_DAO::executeQuery($dataProcessorIdSql, $dataProcessorIdParams);
+    if (!$dao->fetch()) {
+      throw new \API_Exception("Could not find a data processor");
     }
-    // Find the form processor
-    $dataProcessor = \CRM_Dataprocessor_BAO_DataProcessor::getDataProcessorByOutputTypeAndName('api', $dataProcessorName);
-    if (!$dataProcessor instanceof AbstractProcessorType) {
-      throw new \API_Exception('Could not find a form processor');
+    if (strtolower($dao->api_count_action) == $apiRequest['action']) {
+      $isCountAction = TRUE;
     }
+    $dataProcessor = \CRM_Dataprocessor_BAO_DataProcessor::getDataProcessorById($dao->data_processor_id);
 
     $params = $apiRequest['params'];
     foreach($dataProcessor->getFilterHandlers() as $filter) {
@@ -212,9 +243,20 @@ class Api implements OutputInterface, API_ProviderInterface, EventSubscriberInte
    * @return array<string>
    */
   public function getEntityNames($version) {
-    return array(
-      'DataProcessorApi'
-    );
+    $dao = \CRM_Core_DAO::executeQuery("
+      SELECT DISTINCT o.api_entity 
+      FROM civicrm_data_processor_output o 
+      INNER JOIN civicrm_data_processor p ON o.data_processor_id = p.id 
+      WHERE p.is_active = 1
+    ");
+    $entities = array();
+
+    while($dao->fetch()) {
+      if ($dao->api_entity) {
+        $entities[] = $dao->api_entity;
+      }
+    }
+    return $entities;
   }
 
   /**
@@ -225,16 +267,19 @@ class Api implements OutputInterface, API_ProviderInterface, EventSubscriberInte
    * @return array<string>
    */
   public function getActionNames($version, $entity) {
-    if (strtolower($entity) != 'dataprocessorapi') {
-      return array();
+    $actions = array();
+    $dao = \CRM_Core_DAO::executeQuery("
+      SELECT api_action, api_count_action 
+      FROM civicrm_data_processor_output o 
+      INNER JOIN civicrm_data_processor p ON o.data_processor_id = p.id 
+      WHERE p.is_active = 1 AND LOWER(o.api_entity) = LOWER(%1)",
+      array(1=>array($entity, 'String'))
+    );
+    while($dao->fetch()) {
+      $actions[] = $dao->api_action;
+      $actions[] = $dao->api_count_action;
     }
-    $params['is_active'] = 1;
-    $data_processors = \CRM_Dataprocessor_BAO_DataProcessor::getValues($params);
-    $actions[] = 'getfields';
-    foreach($data_processors as $data_processor) {
-      $actions[] = $data_processor['name'];
-      $actions[] = 'getcount'.$data_processor['name'];
-    }
+
     return $actions;
   }
 

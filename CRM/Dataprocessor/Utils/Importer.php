@@ -12,6 +12,8 @@ class CRM_Dataprocessor_Utils_Importer {
     $new_status = null;
     $new_id = null;
 
+    CRM_Dataprocessor_BAO_DataProcessor::setDataProcessorToImportingState($data['name']);
+
     switch ($status) {
       case CRM_Dataprocessor_DAO_DataProcessor::STATUS_IN_DATABASE:
         // Update to overriden
@@ -65,6 +67,7 @@ class CRM_Dataprocessor_Utils_Importer {
     }
     $params['status'] = CRM_Dataprocessor_DAO_DataProcessor::STATUS_IN_CODE;
     $params['source_file'] = $filename;
+    CRM_Dataprocessor_BAO_DataProcessor::setDataProcessorToImportingState($params['name']);
     $result = CRM_Dataprocessor_BAO_DataProcessor::add($params);
     $id = $result['id'];
 

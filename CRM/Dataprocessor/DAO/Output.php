@@ -55,6 +55,26 @@ class CRM_Dataprocessor_DAO_Output extends CRM_Core_DAO {
           'title' => E::ts('Configuration'),
           'type' => CRM_Utils_Type::T_TEXT,
         ),
+        'api_permission' => array(
+          'name' => 'api_permission',
+          'title' => E::ts('API Permission'),
+          'type' => CRM_Utils_Type::T_STRING
+        ),
+        'api_entity' => array(
+          'name' => 'api_entity',
+          'title' => E::ts('API Entity'),
+          'type' => CRM_Utils_Type::T_STRING
+        ),
+        'api_action' => array(
+          'name' => 'api_action',
+          'title' => E::ts('API Action Name'),
+          'type' => CRM_Utils_Type::T_STRING
+        ),
+        'api_count_action' => array(
+          'name' => 'api_count_action',
+          'title' => E::ts('API GetCount Action Name'),
+          'type' => CRM_Utils_Type::T_STRING
+        ),
       );
     }
     return self::$_fields;

@@ -87,6 +87,11 @@ class CRM_Dataprocessor_BAO_Field extends CRM_Dataprocessor_DAO_Field {
     }
 
     $field->save();
+    $id = $field->id;
+    $field = new CRM_Dataprocessor_BAO_Field();
+    $field->id = $id;
+    $field->find(true);
+    CRM_Dataprocessor_BAO_DataProcessor::updateAndChekStatus($field->data_processor_id);
     self::storeValues($field, $result);
 
     if (!empty($params['id'])) {

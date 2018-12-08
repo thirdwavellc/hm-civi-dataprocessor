@@ -28,6 +28,45 @@ function dataprocessor_civicrm_container(ContainerBuilder $container) {
 }
 
 /**
+ * Implements hook_civicrm_alterAPIPermissions()
+ *
+ * All Data Processor api outputs have their own permission.
+ * Except for the FormProcessorExecutor api.
+ *
+ * @link https://docs.civicrm.org/dev/en/latest/hooks/hook_civicrm_alterAPIPermissions/
+ */
+function dataprocessor_civicrm_alterAPIPermissions($entity, $action, &$params, &$permissions) {
+  // We have to check the camelcase and the non camel case names
+  $entityNonCamelCase = _civicrm_api_get_entity_name_from_camel($entity);
+  $entityCamelCase = _civicrm_api_get_camel_name($entity);
+  $api_action = $action;
+  if ($action == 'getfields' && isset($params['api_action'])) {
+    $api_action = $params['api_action'];
+  }
+  $actionNonCamelCase = _civicrm_api_get_entity_name_from_camel($api_action);
+  $actionCamelCase = _civicrm_api_get_camel_name($api_action);
+  $dao = CRM_Core_DAO::executeQuery("
+    SELECT *
+    FROM civicrm_data_processor_output o 
+    INNER JOIN civicrm_data_processor p ON o.data_processor_id = p.id 
+    WHERE p.is_active = 1
+    AND (LOWER(api_entity) = LOWER(%1) OR LOWER(api_entity) = LOWER(%2))
+    AND (
+      LOWER(api_action) = LOWER(%3) OR LOWER(api_count_action) = LOWER(%3)
+      OR LOWER(api_action) = LOWER(%4) OR LOWER(api_count_action) = LOWER(%4)
+    )",
+    array(
+      1 => array($entityCamelCase, 'String'),
+      2 => array($entityNonCamelCase, 'String'),
+      3 => array($actionNonCamelCase, 'String'),
+      4 => array($actionCamelCase, 'String'))
+  );
+  while ($dao->fetch()) {
+    $permissions[$entity][$action] = array($dao->api_permission);
+  }
+}
+
+/**
  * Implements hook_civicrm_config().
  *
  * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_config
