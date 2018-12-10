@@ -18,17 +18,7 @@ use Civi\DataProcessor\DataSpecification\DataSpecification;
 use Civi\DataProcessor\DataSpecification\FieldSpecification;
 use Civi\DataProcessor\ProcessorType\AbstractProcessorType;
 
-abstract class AbstractCivicrmEntitySource implements SourceInterface {
-
-  /**
-   * @var String
-   */
-  private $sourceName;
-
-  /**
-   * @var String
-   */
-  private $sourceTitle;
+abstract class AbstractCivicrmEntitySource extends AbstractSource {
 
   /**
    * @var \Civi\DataProcessor\DataFlow\SqlDataFlow
@@ -90,28 +80,6 @@ abstract class AbstractCivicrmEntitySource implements SourceInterface {
    */
   abstract protected function getTable();
 
-  public function __construct() {
-  }
-
-  /**
-   * @param AbstractProcessorType $dataProcessor
-   *
-   * @return \Civi\DataProcessor\Source\SourceInterface
-   */
-  public function setDataProcessor(AbstractProcessorType $dataProcessor) {
-    $this->dataProcessor = $dataProcessor;
-    return $this;
-  }
-
-  /**
-   * @param array $configuration
-   *
-   * @return \Civi\DataProcessor\Source\SourceInterface
-   */
-  public function setConfiguration($configuration) {
-    $this->configuration = $configuration;
-    return $this;
-  }
 
   /**
    * Initialize this data source.
@@ -357,15 +325,6 @@ abstract class AbstractCivicrmEntitySource implements SourceInterface {
   }
 
   /**
-   * @return \Civi\DataProcessor\DataFlow\AbstractDataFlow|\Civi\DataProcessor\DataFlow\AbstractDataFlow
-   * @throws \Exception
-   */
-  public function getDataFlow() {
-    $this->initialize();
-    return $this->dataFlow;
-  }
-
-  /**
    * @return \Civi\DataProcessor\DataSpecification\DataSpecification
    * @throws \Exception
    */
@@ -440,38 +399,6 @@ abstract class AbstractCivicrmEntitySource implements SourceInterface {
         $entityDataFlow->addAggregateField($fieldSpecification);
       }
     }
-  }
-
-  /**
-   * @return String
-   */
-  public function getSourceName() {
-    return $this->sourceName;
-  }
-
-  /**
-   * @param String $name
-   * @return \Civi\DataProcessor\Source\SourceInterface
-   */
-  public function setSourceName($name) {
-    $this->sourceName = $name;
-    return $this;
-  }
-
-  /**
-   * @return String
-   */
-  public function getSourceTitle() {
-    return $this->sourceTitle;
-  }
-
-  /**
-   * @param String $title
-   * @return \Civi\DataProcessor\Source\SourceInterface
-   */
-  public function setSourceTitle($title) {
-    $this->sourceTitle = $title;
-    return $this;
   }
 
   /**
