@@ -9,7 +9,7 @@ namespace Civi\DataProcessor\DataFlow\CombinedDataFlow;
 use \Civi\DataProcessor\DataFlow\AbstractDataFlow;
 use \Civi\DataProcessor\DataFlow\EndOfFlowException;
 use Civi\DataProcessor\DataFlow\MultipleDataFlows\DataFlowDescription;
-use Civi\DataProcessor\DataFlow\MultipleDataFlows\JoinSpecification;
+use Civi\DataProcessor\DataFlow\MultipleDataFlows\JoinInterface;
 use Civi\DataProcessor\DataFlow\MultipleDataFlows\MultipleSourceDataFlows;
 use \Civi\DataProcessor\DataSpecification\DataSpecification;
 
@@ -106,11 +106,11 @@ class CombinedDataFlow extends AbstractDataFlow implements MultipleSourceDataFlo
    *
    * @param $left
    * @param $right
-   * @param \Civi\DataProcessor\DataFlow\MultipleDataFlows\JoinSpecification|null
+   * @param \Civi\DataProcessor\DataFlow\MultipleDataFlows\JoinInterface|null
    *
    * @return array
    */
-  protected function joinArray($left, $right, JoinSpecification $combineSpecification=null) {
+  protected function joinArray($left, $right, JoinInterface $combineSpecification=null) {
     $out = array();
 
     if ($combineSpecification === null && empty($left)) {
