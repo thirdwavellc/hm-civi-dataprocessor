@@ -45,7 +45,7 @@ class RelationshipSource extends AbstractCivicrmEntitySource {
       $options = array();
       $relationship_types = civicrm_api3('RelationshipType', 'get', array('options' => array('limit' => 0)));
       foreach($relationship_types['values'] as $rel_type) {
-        $options[$rel_type['id']] = $rel_type['label_a_b'];
+        $options[$rel_type['name_a_b']] = $rel_type['label_a_b'];
       }
       $fieldSpec = new FieldSpecification('relationship_type_id', 'Integer', E::ts('Relationship type'), $options, $alias);
       $this->availableFilterFields->addFieldSpecification($fieldSpec->name, $fieldSpec);
@@ -54,6 +54,49 @@ class RelationshipSource extends AbstractCivicrmEntitySource {
       $this->loadCustomGroupsAndFields($this->availableFilterFields, true);
     }
     return $this->availableFilterFields;
+  }
+
+  /**
+   * Adds an inidvidual filter to the data source
+   *
+   * @param $filter_field_alias
+   * @param $op
+   * @param $values
+   *
+   * @throws \Exception
+   */
+  protected function addFilter($filter_field_alias, $op, $values) {
+    if ($this->getAvailableFilterFields()->doesFieldExist($filter_field_alias)) {
+      $spec = $this->getAvailableFilterFields()->getFieldSpecificationByName($filter_field_alias);
+      if ($spec instanceof CustomFieldSpecification) {
+        $customGroupDataFlow = $this->ensureCustomGroup($spec->customGroupTableName, $spec->customGroupName);
+        $customGroupTableAlias = $customGroupDataFlow->getTableAlias();
+        $customGroupDataFlow->addWhereClause(
+          new SimpleWhereClause($customGroupTableAlias, $spec->customFieldColumnName, $op, $values)
+        );
+      } else {
+        if ($filter_field_alias == 'relationship_type_id') {
+          $relationship_types = civicrm_api3('RelationshipType', 'get', array('options' => array('limit' => 0)));
+          $selectedRelationShipTypeIds = array();
+          foreach($relationship_types['values'] as $rel_type) {
+            if (in_array($rel_type['name_a_b'], $values)) {
+              $selectedRelationShipTypeIds[] = $rel_type['id'];
+            }
+          }
+          $values = $selectedRelationShipTypeIds;
+        } else {
+          $relationship_types = civicrm_api3('RelationshipType', 'get', array('options' => array('limit' => 0)));
+          foreach($relationship_types['values'] as $rel_type) {
+            if ($rel_type['name_a_b'] == $values) {
+              $values = $rel_type['id'];
+              break;
+            }
+          }
+        }
+        $entityDataFlow = $this->ensureEntity();
+        $entityDataFlow->addWhereClause(new SimpleWhereClause($this->getSourceName(), $spec->name,$op, $values));
+      }
+    }
   }
 
 }
