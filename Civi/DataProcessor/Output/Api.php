@@ -242,7 +242,7 @@ class Api implements OutputInterface, API_ProviderInterface, EventSubscriberInte
    *   API version.
    * @return array<string>
    */
-  public function getEntityNames($version) {
+  public function getEntityNames($version=null) {
     $dao = \CRM_Core_DAO::executeQuery("
       SELECT DISTINCT o.api_entity 
       FROM civicrm_data_processor_output o 
