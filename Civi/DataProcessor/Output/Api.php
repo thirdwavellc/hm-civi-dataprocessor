@@ -67,6 +67,7 @@ class Api implements OutputInterface, API_ProviderInterface, EventSubscriberInte
     $apiRequest = $event->getApiRequest();
     $params = $apiRequest['params'];
     $result = $event->getResponse();
+    $types = \CRM_Utils_Type::getValidTypes();
 
     // First check whether the entity is dataprocessorapi and the action is getfields.
     // If not return this function.
@@ -96,11 +97,15 @@ class Api implements OutputInterface, API_ProviderInterface, EventSubscriberInte
 
         foreach ($dataProcessor->getDataFlow()->getOutputFieldHandlers() as $outputFieldHandler) {
           $fieldSpec = $outputFieldHandler->getOutputFieldSpecification();
+          $type = \CRM_Utils_Type::T_STRING;
+          if (isset($types[$fieldSpec->type])) {
+            $type = $types[$fieldSpec->type];
+          }
           $field = [
             'name' => $fieldSpec->alias,
             'title' => $fieldSpec->title,
             'description' => '',
-            'type' => $fieldSpec->type,
+            'type' => $type,
             'api.required' => FALSE,
             'api.aliases' => [],
             'api.filter' => FALSE,
@@ -113,6 +118,10 @@ class Api implements OutputInterface, API_ProviderInterface, EventSubscriberInte
         }
         foreach($dataProcessor->getFilterHandlers() as $filterHandler) {
           $fieldSpec = $filterHandler->getFieldSpecification();
+          $type = \CRM_Utils_Type::T_STRING;
+          if (isset($types[$fieldSpec->type])) {
+            $type = $types[$fieldSpec->type];
+          }
           if (!$fieldSpec) {
             continue;
           }
@@ -120,7 +129,7 @@ class Api implements OutputInterface, API_ProviderInterface, EventSubscriberInte
             'name' => $fieldSpec->alias,
             'title' => $fieldSpec->title,
             'description' => '',
-            'type' => $fieldSpec->type,
+            'type' => $type,
             'api.required' => $filterHandler->isRequired(),
             'api.aliases' => [],
             'api.filter' => TRUE,
@@ -279,6 +288,7 @@ class Api implements OutputInterface, API_ProviderInterface, EventSubscriberInte
       $actions[] = $dao->api_action;
       $actions[] = $dao->api_count_action;
     }
+    $actions[] = 'getfields';
 
     return $actions;
   }
