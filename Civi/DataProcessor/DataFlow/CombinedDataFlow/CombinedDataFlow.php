@@ -9,8 +9,9 @@ namespace Civi\DataProcessor\DataFlow\CombinedDataFlow;
 use \Civi\DataProcessor\DataFlow\AbstractDataFlow;
 use \Civi\DataProcessor\DataFlow\EndOfFlowException;
 use Civi\DataProcessor\DataFlow\MultipleDataFlows\DataFlowDescription;
-use Civi\DataProcessor\DataFlow\MultipleDataFlows\JoinSpecification;
+use Civi\DataProcessor\DataFlow\MultipleDataFlows\JoinInterface;
 use Civi\DataProcessor\DataFlow\MultipleDataFlows\MultipleSourceDataFlows;
+use Civi\DataProcessor\DataFlow\SqlDataFlow;
 use \Civi\DataProcessor\DataSpecification\DataSpecification;
 
 
@@ -46,6 +47,11 @@ class CombinedDataFlow extends AbstractDataFlow implements MultipleSourceDataFlo
    */
   protected $dataSpecification;
 
+  /**
+   * @var int
+   */
+  protected $batchSize = 100;
+
   public function __construct() {
     $this->dataSpecification = new DataSpecification();
   }
@@ -58,6 +64,16 @@ class CombinedDataFlow extends AbstractDataFlow implements MultipleSourceDataFlo
    */
   public function addSourceDataFlow(DataFlowDescription $dataFlowDescription) {
     $this->sourceDataFlowDescriptions[] = $dataFlowDescription;
+  }
+
+  /**
+   * @param \Civi\DataProcessor\FieldOutputHandler\AbstractFieldOutputHandler $outputFieldHandler[]
+   */
+  public function setOutputFieldHandlers($handlers) {
+    parent::setOutputFieldHandlers($handlers);
+    foreach($this->sourceDataFlowDescriptions as $sourceDataFlowDescription) {
+      $sourceDataFlowDescription->getDataFlow()->setOutputFieldHandlers($handlers);
+    }
   }
 
   /**
@@ -79,9 +95,16 @@ class CombinedDataFlow extends AbstractDataFlow implements MultipleSourceDataFlo
     }
 
     $allRecords = array();
-    foreach($this->sourceDataFlowDescriptions as $dataFlowDescription) {
-      $records = $dataFlowDescription->getDataFlow()->allRecords($dataFlowDescription->getDataFlow()->getName());
-      $allRecords = $this->joinArray($allRecords, $records, $dataFlowDescription->getJoinSpecification());
+    for($i=0; $i<count($this->sourceDataFlowDescriptions); $i++) {
+      do {
+        $batch = $this->getAllRecordsFromDataFlowAsArray($this->sourceDataFlowDescriptions[$i]->getDataFlow(), $this->batchSize);
+        for($j=$i+1; $j<count($this->sourceDataFlowDescriptions); $j++) {
+          $this->sourceDataFlowDescriptions[$j]->getJoinSpecification()->prepareRightDataFlow($batch, $this->sourceDataFlowDescriptions[$j]->getDataFlow());
+          $rightRecords = $this->getAllRecordsFromDataFlowAsArray($this->sourceDataFlowDescriptions[$j]->getDataFlow());
+          $batch = $this->sourceDataFlowDescriptions[$j]->getJoinSpecification()->join($batch, $rightRecords);
+        }
+        $allRecords = array_merge($allRecords, $batch);
+      } while(count($batch) >= $this->batchSize || $this->batchSize == 0);
     }
     $this->recordCount = count($allRecords);
 
@@ -101,35 +124,25 @@ class CombinedDataFlow extends AbstractDataFlow implements MultipleSourceDataFlo
   }
 
   /**
-   * Join two arrays together based on the combine specification
-   * This functions like an INNER JOIN in sql.
+   * Return all records for a given data flow.
    *
-   * @param $left
-   * @param $right
-   * @param \Civi\DataProcessor\DataFlow\MultipleDataFlows\JoinSpecification|null
-   *
+   * @param \Civi\DataProcessor\DataFlow\AbstractDataFlow $dataFlow
+   * @param int $batchSize 0 for unlimited
    * @return array
+   * @throws \Civi\DataProcessor\DataFlow\EndOfFlowException
    */
-  protected function joinArray($left, $right, JoinSpecification $combineSpecification=null) {
-    $out = array();
-
-    if ($combineSpecification === null && empty($left)) {
-      return $right;
-    } elseif ($combineSpecification === null && empty($right)) {
-      return $left;
-    }
-
-    foreach($left as $left_index => $left_record) {
-      foreach($right as $right_index => $right_record) {
-        if ($combineSpecification === null || $combineSpecification->isJoinable($left_record, $right_record)) {
-          $out[] = array_merge($left_record, $right_record);
-          unset($left[$left_index]);
-          unset($right[$right_index]);
-        }
+  protected function getAllRecordsFromDataFlowAsArray(AbstractDataFlow $dataFlow, $batchSize=0) {
+    $records = array();
+    try {
+      $i = 0;
+      while(($record = $dataFlow->retrieveNextRecord()) && ($i < $batchSize || $batchSize == 0)) {
+        $records[] = $record;
+        $i++;
       }
+    } catch (EndOfFlowException $e) {
+      // Do nothing
     }
-
-    return $out;
+    return $records;
   }
 
   /**
@@ -159,7 +172,7 @@ class CombinedDataFlow extends AbstractDataFlow implements MultipleSourceDataFlo
    * @return array
    * @throws EndOfFlowException
    */
-  protected function retrieveNextRecord($fieldNamePrefix='') {
+  public function retrieveNextRecord($fieldNamePrefix='') {
     if (!$this->isInitialized()) {
       $this->initialize();
     }
@@ -204,6 +217,15 @@ class CombinedDataFlow extends AbstractDataFlow implements MultipleSourceDataFlo
 
   public function getName() {
     return 'combined_data_flow';
+  }
+
+  public function getDebugInformation() {
+    $debug = array();
+    foreach($this->sourceDataFlowDescriptions as $sourceDataFlowDescription) {
+      $debug[$sourceDataFlowDescription->getDataFlow()->getName()] = $sourceDataFlowDescription->getDataFlow()->getDebugInformation();
+    }
+    return $debug;
+
   }
 
 }

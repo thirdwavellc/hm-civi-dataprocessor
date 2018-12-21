@@ -64,6 +64,13 @@
     <access_arguments>administer CiviCRM</access_arguments>
   </item>
   <item>
+    <path>civicrm/dataprocessor/form/source/csv</path>
+    <page_callback>CRM_Dataprocessor_Form_Source_Csv</page_callback>
+    <title>DataProcessor</title>
+    <access_arguments>access CiviCRM</access_arguments>
+    <access_arguments>administer CiviCRM</access_arguments>
+  </item>
+  <item>
     <path>civicrm/dataprocessor/form/output/api</path>
     <page_callback>CRM_Dataprocessor_Form_Output_API</page_callback>
     <title>DataProcessor</title>

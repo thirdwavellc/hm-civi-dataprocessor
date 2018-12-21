@@ -24,9 +24,9 @@ abstract class SqlDataFlow extends AbstractDataFlow {
 
   protected $whereClauses = array();
 
-  protected $sqlStatement;
+  protected $sqlStatements = array();
 
-  protected $sqlCountStatement;
+  protected $sqlCountStatements = array();
 
   /**
    * Returns an array with the fields for in the select statement in the sql query.
@@ -68,7 +68,7 @@ abstract class SqlDataFlow extends AbstractDataFlow {
       $orderBy = $this->getOrderByStatement();
 
       $countSql = "SELECT COUNT(*) {$from} {$where} {$groupBy}";
-      $this->sqlCountStatement = $countSql;
+      $this->sqlCountStatements[] = $countSql;
       $this->count = \CRM_Core_DAO::singleValueQuery($countSql);
 
       $sql = "{$this->getSelectQueryStatement()} {$where} {$groupBy} {$orderBy}";
@@ -82,17 +82,21 @@ abstract class SqlDataFlow extends AbstractDataFlow {
         $limitStatement = "LIMIT 0, {$this->limit}";
       }
       elseif ($this->offset !== FALSE && $this->limit === FALSE) {
+        echo $this->getName();
+        var_dump($this->offset);
+
         $calculatedLimit = $this->count - $this->offset;
         $limitStatement = "LIMIT {$this->offset}, {$calculatedLimit}";
       }
       $sql .= " {$limitStatement}";
-      $this->sqlStatement = $sql;
+      $this->sqlStatements[] = $sql;
       $this->dao = \CRM_Core_DAO::executeQuery($sql);
     } catch (\Exception $e) {
       throw new \Exception(
-        "Error in query. 
-        \r\nCount query: {$this->sqlCountStatement}
-        \r\nQuery: $this->sqlStatement", 0, $e);
+        "Error in DataFlow query.
+        \r\nData flow: {$this->getName()}
+        \r\nCount query: {$countSql}
+        \r\nQuery: $sql", 0, $e);
     }
   }
 
@@ -126,7 +130,7 @@ abstract class SqlDataFlow extends AbstractDataFlow {
    * @return array
    * @throws EndOfFlowException
    */
-  protected function retrieveNextRecord($fieldNamePrefix='') {
+  public function retrieveNextRecord($fieldNamePrefix='') {
     if (!$this->isInitialized()) {
       $this->initialize();
     }
@@ -137,7 +141,7 @@ abstract class SqlDataFlow extends AbstractDataFlow {
     $record = array();
     foreach($this->dataSpecification->getFields() as $field) {
       $alias = $field->alias;
-      $record[$fieldNamePrefix.$field->alias] = $this->dao->$alias;
+      $record[$fieldNamePrefix.$alias] = $this->dao->$alias;
     }
     return $record;
   }
@@ -250,7 +254,10 @@ abstract class SqlDataFlow extends AbstractDataFlow {
    * @return string
    */
   public function getDebugInformation() {
-    return $this->sqlStatement;
+    return array(
+      'query' => $this->sqlStatements,
+      'count query' => $this->sqlCountStatements,
+    );
   }
 
 }

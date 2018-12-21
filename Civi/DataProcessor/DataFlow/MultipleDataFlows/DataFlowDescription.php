@@ -14,14 +14,14 @@ class DataFlowDescription {
   protected $dataFlow;
 
   /**
-   * @var \Civi\DataProcessor\DataFlow\MultipleDataFlows\JoinSpecification
+   * @var \Civi\DataProcessor\DataFlow\MultipleDataFlows\JoinInterface
    */
   protected $joinSpecification = array();
 
   public function __construct($datFlow, $joinSpecification = null) {
     $this->dataFlow = $datFlow;
     $this->joinSpecification = $joinSpecification;
-    $this->dataFlow->setOffset($this);
+    $this->dataFlow->setDataFlowDescription($this);
   }
 
   /**
@@ -32,7 +32,7 @@ class DataFlowDescription {
   }
 
   /**
-   * @return \Civi\DataProcessor\DataFlow\MultipleDataFlows\JoinSpecification
+   * @return \Civi\DataProcessor\DataFlow\MultipleDataFlows\JoinInterface
    */
   public function getJoinSpecification() {
     return $this->joinSpecification;

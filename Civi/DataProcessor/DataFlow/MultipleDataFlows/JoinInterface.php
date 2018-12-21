@@ -12,15 +12,14 @@ use Civi\DataProcessor\ProcessorType\AbstractProcessorType;
 interface JoinInterface{
 
   /**
-   * Validates the right record against the left record and returns true when the right record
-   * has a successfull join with the left record. Otherwise false.
+   * Joins the records sets and return the new created set.
    *
-   * @param $left_record
-   * @param $right_record
+   * @param $left_record_set
+   * @param $right_record_set
    *
-   * @return mixed
+   * @return array
    */
-  public function isJoinable($left_record, $right_record);
+  public function join($left_record_set, $right_record_set);
 
   /**
    * Returns true when this join is compatible with this data flow
@@ -57,5 +56,15 @@ interface JoinInterface{
    * @return string
    */
   public function getConfigurationUrl();
+
+  /**
+   * Prepares the right data flow based on the data in the left record set.
+   *
+   * @param $left_record_set
+   * @param \Civi\DataProcessor\DataFlow\AbstractDataFlow $rightDataFlow
+   *
+   * @return \Civi\DataProcessor\DataFlow\AbstractDataFlow
+   */
+  public function prepareRightDataFlow($left_record_set, AbstractDataFlow $rightDataFlow);
 
 }
