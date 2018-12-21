@@ -6,6 +6,15 @@
     {* block for rule data *}
     <h3>{ts}Data Processor Sources configuration{/ts}</h3>
     <div class="crm-block crm-form-block crm-data-processor_source_configuration-block">
+        <div class="help-block" id="help">
+            {ts}<p>On this form you can configure the CSV data source.</p>
+                <p>The <strong>URI</strong> is the file location. Which is either a path on the server  or a URL from where the file could be downloaded.</p>
+                <p>The <strong>Field delimiter</strong> the character which separates each field.</p>
+                <p>The <strong>Field enclosure character</strong> is the a character which is wrapped around each field.</p>
+                <p>The <strong>Escape character</strong> is the character which marks special characters</p>
+            {/ts}
+        </div>
+
         <div class="crm-section">
             <div class="label">{$form.uri.label}</div>
             <div class="content">{$form.uri.html}</div>
