@@ -141,7 +141,7 @@ class CombinedSqlDataFlow extends SqlDataFlow implements MultipleSourceDataFlows
    * @return array
    * @throws EndOfFlowException
    */
-  protected function retrieveNextRecord($fieldNamePrefix='') {
+  public function retrieveNextRecord($fieldNamePrefix='') {
     if (!$this->isInitialized()) {
       $this->initialize();
     }

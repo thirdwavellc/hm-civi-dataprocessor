@@ -17,13 +17,8 @@ class RawFieldOutputHandler extends AbstractFieldOutputHandler implements Output
    */
   protected $inputFieldSpec;
 
-  /**
-   * @var \Civi\DataProcessor\Source\SourceInterface
-   */
-  protected $dataSource;
-
   public function __construct(FieldSpecification $inputFieldSpec, SourceInterface $dataSource) {
-    $this->dataSource = $dataSource;
+    parent::__construct($dataSource);
     $this->inputFieldSpec = $inputFieldSpec;
     $this->outputFieldSpecification = clone $inputFieldSpec;
     $this->outputFieldSpecification->alias = $this->getName();

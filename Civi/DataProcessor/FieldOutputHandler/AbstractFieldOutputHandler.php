@@ -16,6 +16,11 @@ abstract class AbstractFieldOutputHandler {
   protected $outputFieldSpecification;
 
   /**
+   * @var \Civi\DataProcessor\Source\SourceInterface
+   */
+  protected $dataSource;
+
+  /**
    * Returns the name of the handler type.
    *
    * @return String
@@ -46,8 +51,20 @@ abstract class AbstractFieldOutputHandler {
    */
   abstract public function formatField($rawRecord, $formattedRecord);
 
-  public function __construct() {
-    $this->outputFieldSpecification = new FieldSpecification($this->getName(), $this->getType(), $this->getName());
+  /**
+   * AbstractFieldOutputHandler constructor.
+   *
+   * @param \Civi\DataProcessor\Source\SourceInterface $dataSource
+   */
+  public function __construct(\Civi\DataProcessor\Source\SourceInterface $dataSource) {
+    $this->dataSource = $dataSource;
+  }
+
+  /**
+   * @return \Civi\DataProcessor\Source\SourceInterface
+   */
+  public function getDataSource() {
+    return $this->dataSource;
   }
 
   /**

@@ -60,7 +60,7 @@ class InMemoryDataFlow extends AbstractDataFlow {
    * @return array
    * @throws EndOfFlowException
    */
-  protected function retrieveNextRecord($fieldNameprefix='') {
+  public function retrieveNextRecord($fieldNameprefix='') {
     if (!isset($this->data[$this->currentPointer])) {
       throw new EndOfFlowException();
     }
@@ -68,7 +68,8 @@ class InMemoryDataFlow extends AbstractDataFlow {
     $record = array();
     foreach($this->dataSpecification->getFields() as $field) {
       $alias = $field->alias;
-      $record[$fieldNameprefix.$field->alias] = $data[$alias];
+      $name = $field->name;
+      $record[$fieldNameprefix.$alias] = $data[$name];
     }
     $this->currentPointer++;
     return $record;

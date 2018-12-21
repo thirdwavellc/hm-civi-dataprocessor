@@ -84,7 +84,7 @@ abstract class AbstractDataFlow {
    * @return array
    * @throws EndOfFlowException
    */
-  abstract protected function retrieveNextRecord($fieldNameprefix='');
+  abstract public function retrieveNextRecord($fieldNameprefix='');
 
   /**
    * Returns a name for this data flow.
@@ -228,10 +228,10 @@ abstract class AbstractDataFlow {
   /**
    * Returns debug information
    *
-   * @return string
+   * @return array
    */
   public function getDebugInformation() {
-    return "";
+    return array();
   }
 
   public function addAggregateField(FieldSpecification $aggregateField) {

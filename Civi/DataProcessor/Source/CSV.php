@@ -7,6 +7,7 @@
 namespace Civi\DataProcessor\Source;
 
 
+use Civi\DataProcessor\DataFlow\CsvDataFlow;
 use Civi\DataProcessor\DataFlow\InMemoryDataFlow;
 use Civi\DataProcessor\DataSpecification\DataSpecification;
 use Civi\DataProcessor\DataSpecification\FieldSpecification;
@@ -33,31 +34,25 @@ class CSV extends AbstractSource {
     }
 
     $this->availableFields = new DataSpecification();
-
-    // Read the header row
-    $handle = fopen('/var/www/html/test.csv', 'r');
-    if (!$handle) {
-      return;
+    $uri = $this->configuration['uri'];
+    $skipRows = 0;
+    $headerRowNumber = 0;
+    if (isset($this->configuration['first_row_as_header']) && $this->configuration['first_row_as_header']) {
+      $skipRows = 1;
+      $headerRowNumber = 1;
     }
+    $delimiter = $this->configuration['delimiter'];
+    $enclosure = $this->configuration['enclosure'];
+    $escape = $this->configuration['escape'];
+    $this->dataFlow = new CsvDataFlow($uri, $skipRows, $delimiter, $enclosure, $escape);
+    $this->headerRow = $this->dataFlow->getHeaderRow($headerRowNumber);
 
-    $this->headerRow = fgetcsv($handle);
     foreach($this->headerRow as  $idx => $colName) {
-      $field = new FieldSpecification('col_'.$idx, 'String', $colName);
-      $this->availableFields->addFieldSpecification('col_'.$idx, $field);
+      $name = 'col_'.$idx;
+      $alias = $this->getSourceName().$name;
+      $field = new FieldSpecification($name, 'String', $colName, null, $alias);
+      $this->availableFields->addFieldSpecification($name, $field);
     }
-    $this->rows = array();
-    while ($row = fgetcsv($handle)) {
-      $record = array();
-      foreach ($row as $idx => $value) {
-        $record['col_'.$idx] = $value;
-      }
-
-      $this->rows[] = $record;
-    }
-    fclose($handle);
-
-    $this->dataFlow = new InMemoryDataFlow($this->rows);
-
   }
 
 
@@ -72,7 +67,10 @@ class CSV extends AbstractSource {
    */
   public function ensureField($fieldName) {
     $field = $this->getAvailableFields()->getFieldSpecificationByName($fieldName);
-    $this->dataFlow->getDataSpecification()->addFieldSpecification($fieldName, $field);
+    if ($field) {
+      $this->dataFlow->getDataSpecification()
+        ->addFieldSpecification($fieldName, $field);
+    }
     return $this->dataFlow;
   }
 
@@ -122,7 +120,7 @@ class CSV extends AbstractSource {
    * @return \Civi\DataProcessor\DataSpecification\AggregationField[]
    */
   public function getAvailableAggregationFields() {
-    return $this->availableFields;
+    return array();
   }
 
   /**
@@ -131,7 +129,7 @@ class CSV extends AbstractSource {
    * @return false|string
    */
   public function getConfigurationUrl() {
-    return false;
+    return 'civicrm/dataprocessor/form/source/csv';
   }
 
 }
