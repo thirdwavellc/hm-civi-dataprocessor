@@ -82,9 +82,6 @@ abstract class SqlDataFlow extends AbstractDataFlow {
         $limitStatement = "LIMIT 0, {$this->limit}";
       }
       elseif ($this->offset !== FALSE && $this->limit === FALSE) {
-        echo $this->getName();
-        var_dump($this->offset);
-
         $calculatedLimit = $this->count - $this->offset;
         $limitStatement = "LIMIT {$this->offset}, {$calculatedLimit}";
       }
