@@ -8,6 +8,7 @@ namespace Civi\DataProcessor\Source;
 
 use Civi\DataProcessor\DataFlow\SqlDataFlow\SimpleWhereClause;
 use Civi\DataProcessor\DataFlow\SqlTableDataFlow;
+use Civi\DataProcessor\DataSpecification\CustomFieldSpecification;
 use Civi\DataProcessor\DataSpecification\DataSpecification;
 use Civi\DataProcessor\DataSpecification\FieldSpecification;
 

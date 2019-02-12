@@ -8,6 +8,7 @@ namespace Civi\DataProcessor\Source;
 
 
 use Civi\DataProcessor\DataFlow\MultipleDataFlows\JoinInterface;
+use Civi\DataProcessor\DataSpecification\FieldSpecification;
 use Civi\DataProcessor\ProcessorType\AbstractProcessorType;
 
 abstract class AbstractSource implements SourceInterface {
@@ -107,6 +108,64 @@ abstract class AbstractSource implements SourceInterface {
    */
   public function setJoin(JoinInterface $join) {
     return $this;
+  }
+
+  /**
+   * Ensure that filter field is accesible in the query
+   *
+   * @param String $fieldName
+   * @return \Civi\DataProcessor\DataFlow\AbstractDataFlow|null
+   * @throws \Exception
+   */
+  public function ensureField($fieldName) {
+    $field = $this->getAvailableFields()->getFieldSpecificationByName($fieldName);
+    if ($field) {
+      $this->dataFlow->getDataSpecification()
+        ->addFieldSpecification($fieldName, $field);
+    }
+    return $this->dataFlow;
+  }
+
+  /**
+   * Ensures a field is in the data source
+   *
+   * @param \Civi\DataProcessor\DataSpecification\FieldSpecification $fieldSpecification
+   *
+   * @return \Civi\DataProcessor\Source\SourceInterface
+   * @throws \Exception
+   */
+  public function ensureFieldInSource(FieldSpecification $fieldSpecification) {
+    if (!$this->dataFlow->getDataSpecification()->doesFieldExist($fieldSpecification->name)) {
+      $this->dataFlow->getDataSpecification()->addFieldSpecification($fieldSpecification->name, $fieldSpecification);
+    }
+    return $this;
+  }
+
+  /**
+   * Ensures an aggregation field in the data source
+   *
+   * @param \Civi\DataProcessor\DataSpecification\FieldSpecification $fieldSpecification
+   *
+   * @return \Civi\DataProcessor\Source\SourceInterface
+   * @throws \Exception
+   */
+  public function ensureAggregationFieldInSource(FieldSpecification $fieldSpecification) {
+    $this->dataFlow->getDataSpecification()->addFieldSpecification($fieldSpecification->name, $fieldSpecification);
+    return $this;
+  }
+
+  /**
+   * @return \Civi\DataProcessor\DataSpecification\DataSpecification
+   */
+  public function getAvailableFilterFields() {
+    return $this->getAvailableFields();
+  }
+
+  /**
+   * @return \Civi\DataProcessor\DataSpecification\AggregationField[]
+   */
+  public function getAvailableAggregationFields() {
+    return array();
   }
 
 }
