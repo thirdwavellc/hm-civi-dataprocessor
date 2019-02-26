@@ -11,9 +11,13 @@ use Civi\DataProcessor\DataFlow\CombinedDataFlow\CombinedSqlDataFlow;
 use Civi\DataProcessor\DataFlow\SqlDataFlow;
 use Civi\DataProcessor\DataFlow\SqlTableDataFlow;
 use Civi\DataProcessor\ProcessorType\AbstractProcessorType;
+use Civi\DataProcessor\DataFlow\SqlDataFlow\WhereClauseInterface;
 
 class SimpleNonRequiredJoin  extends  SimpleJoin {
 
+  /**
+   * @var WhereClauseInterface[]
+   */
   protected $filterClauses = array();
 
   public function __construct($left_prefix = null, $left_field = null, $right_prefix = null, $right_field = null, $type = "INNER") {
@@ -36,6 +40,17 @@ class SimpleNonRequiredJoin  extends  SimpleJoin {
   public function setConfiguration($configuration) {
     $configuration[' type'] = 'LEFT';
     return parent::setConfiguration($configuration);
+  }
+
+
+  /**
+   * @param WhereClauseInterface $clause
+   *
+   * @return \Civi\DataProcessor\DataFlow\MultipleDataFlows\JoinInterface
+   */
+  public function addFilterClause(WhereClauseInterface $clause) {
+    $this->filterClauses[] = $clause;
+    return $this;
   }
 
   /**
@@ -75,7 +90,11 @@ class SimpleNonRequiredJoin  extends  SimpleJoin {
       }
     }
     if (count($this->filterClauses)) {
-      $extraClause = " AND (".implode(" AND ", $this->filterClauses). ")";
+      $extraClauses = array();
+      foreach($this->filterClauses as $filterClause) {
+        $extraClauses[] = $filterClause->getWhereClause();
+      }
+      $extraClause = " AND (".implode(" AND ", $extraClauses). ")";
     }
 
     return "{$this->type} JOIN `{$table}` `{$table_alias}` {$joinClause} {$extraClause}";
