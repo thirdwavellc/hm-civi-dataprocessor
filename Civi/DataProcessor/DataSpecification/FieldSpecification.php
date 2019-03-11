@@ -6,7 +6,7 @@
 
 namespace Civi\DataProcessor\DataSpecification;
 
-class FieldSpecification {
+class FieldSpecification implements SqlFieldSpecification {
 
   /**
    * @var String
@@ -47,6 +47,17 @@ class FieldSpecification {
 
   public function getOptions() {
     return $this->options;
+  }
+
+  /**
+   * Returns the select statement for this field.
+   * E.g. COUNT(civicrm_contact.id) AS contact_id_count
+   *
+   * @param String $table_alias
+   * @return string
+   */
+  public function getSqlSelectStatement($table_alias) {
+    return "`{$table_alias}`.`{$this->name}` AS `{$this->alias}`";
   }
 
 }

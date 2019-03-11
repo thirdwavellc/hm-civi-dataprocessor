@@ -8,6 +8,7 @@ namespace Civi\DataProcessor\DataFlow;
 
 use Civi\DataProcessor\DataSpecification\DataSpecification;
 use Civi\DataProcessor\DataSpecification\FieldSpecification;
+use Civi\DataProcessor\DataSpecification\SqlFieldSpecification;
 
 class SqlTableDataFlow extends SqlDataFlow {
 
@@ -52,7 +53,11 @@ class SqlTableDataFlow extends SqlDataFlow {
   public function getFieldsForSelectStatement() {
     $fields = array();
     foreach($this->getDataSpecification()->getFields() as $field) {
-      $fields[] = "`{$this->table_alias}`.`{$field->name}` AS `{$field->alias}`";
+      if ($field instanceof SqlFieldSpecification) {
+        $fields[] = $field->getSqlSelectStatement($this->table_alias);
+      } else {
+        $fields[] = "`{$this->table_alias}`.`{$field->name}` AS `{$field->alias}`";
+      }
     }
     return $fields;
   }
