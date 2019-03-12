@@ -109,6 +109,9 @@ class Factory {
     $this->addDataSource('mailing', 'Civi\DataProcessor\Source\MailingSource', E::ts('Mailing'));
     $this->addDataSource('mailing_job', 'Civi\DataProcessor\Source\MailingJobSource', E::ts('Mailing Job'));
     $this->addDataSource('mailing_group', 'Civi\DataProcessor\Source\MailingGroupSource', E::ts('Mailing Group'));
+    $this->addDataSource('membership', 'Civi\DataProcessor\Source\MembershipSource', E::ts('Membership'));
+    $this->addDataSource('membership_type', 'Civi\DataProcessor\Source\MembershipTypeSource', E::ts('Membership Type'));
+    $this->addDataSource('membership_status', 'Civi\DataProcessor\Source\MembershipStatusSource', E::ts('Membership Status'));
     $this->addDataSource('csv', 'Civi\DataProcessor\Source\CSV', E::ts('CSV File'));
     $this->addOutput('api', 'Civi\DataProcessor\Output\Api', E::ts('API'));
     $this->addFilter('simple_sql_filter', 'Civi\DataProcessor\FilterHandler\SimpleSqlFilter', E::ts('Simple Filter'));
