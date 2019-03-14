@@ -21,6 +21,11 @@ class SortSpecification {
   protected $field;
 
   /**
+   * @var String
+   */
+  protected $fieldName;
+
+  /**
    * @var string
    *   The direction of the sort either ASC or DESC
    */
@@ -39,6 +44,7 @@ class SortSpecification {
   public function __construct(AbstractDataFlow $dataFlow=null, $fieldName="", $direction=self::ASC) {
     $this->dataFlow = $dataFlow;
     $this->direction = $direction;
+    $this->fieldName = $fieldName;
     $this->setField($fieldName);
   }
 
@@ -110,7 +116,7 @@ class SortSpecification {
    */
   public function compare($row_a, $row_b) {
     $comparer = $this->getComparer();
-    $compareValue = $comparer->sort($row_a[$this->field->name], $row_b[$this->field->name]);
+    $compareValue = $comparer->sort($row_a[$this->fieldName], $row_b[$this->fieldName]);
     if ($this->direction == self::DESC) {
       if ($compareValue < 0) {
         $compareValue = 1;

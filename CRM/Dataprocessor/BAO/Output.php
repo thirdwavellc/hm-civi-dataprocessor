@@ -38,6 +38,12 @@ class CRM_Dataprocessor_BAO_Output extends CRM_Dataprocessor_DAO_Output {
         $row['type_name'] = '';
       }
 
+      if (isset($row['configuration']) && is_string($row['configuration']) && strlen($row['configuration'])) {
+        $row['configuration'] = json_decode($row['configuration'], true);
+      } else {
+        $row['configuration'] = array();
+      }
+
       $result[$row['id']] = $row;
     }
     return $result;

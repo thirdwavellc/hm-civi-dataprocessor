@@ -52,7 +52,7 @@ CREATE TABLE IF NOT EXISTS `civicrm_data_processor_output` (
   `data_processor_id` INT UNSIGNED NOT NULL,
   `type` VARCHAR(128) NOT NULL,
   `configuration` TEXT NULL,
-  `api_permission` VARCHAR(255) NULL,
+  `permission` VARCHAR(255) NULL,
   `api_entity` VARCHAR(255) NULL,
   `api_action` VARCHAR(255) NULL,
   `api_count_action` VARCHAR(255) NULL,

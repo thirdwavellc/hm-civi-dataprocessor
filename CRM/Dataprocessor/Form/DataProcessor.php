@@ -47,7 +47,7 @@ class CRM_Dataprocessor_Form_DataProcessor extends CRM_Core_Form {
       $this->addFields();
       $this->addFilters();
       $this->addAggregateFields();
-      $this->assign('outputs', CRM_Dataprocessor_BAO_Output::getValues(array('data_processor_id' => $this->dataProcessorId)));
+      $this->addOutputs();
       $dataSourceAddUrl = CRM_Utils_System::url('civicrm/dataprocessor/form/source', 'reset=1&action=add&data_processor_id='.$this->dataProcessorId, TRUE);
       $addAggregateFieldUrl = CRM_Utils_System::url('civicrm/dataprocessor/form/aggregate_field', 'reset=1&action=add&id='.$this->dataProcessorId, TRUE);
       $addFieldUrl = CRM_Utils_System::url('civicrm/dataprocessor/form/field', 'reset=1&action=add&data_processor_id='.$this->dataProcessorId, TRUE);
@@ -109,6 +109,24 @@ class CRM_Dataprocessor_Form_DataProcessor extends CRM_Core_Form {
       $fields[$alias] = $aggregationFieldsFormatted[$alias];
     }
     $this->assign('aggregateFields', $fields);
+  }
+
+  protected function addOutputs() {
+    $factory = dataprocessor_get_factory();
+    $outputs = CRM_Dataprocessor_BAO_Output::getValues(array('data_processor_id' => $this->dataProcessorId));
+    foreach($outputs as $idx => $output) {
+      $outputs[$idx]['configuration_link'] = '';
+      $outputClass  = $factory->getOutputByName($output['type']);
+      if  ($outputClass->getConfigurationUrl()) {
+        $outputs[$idx]['configuration_link'] = CRM_Utils_System::url($outputClass->getConfigurationUrl(), [
+          'reset' => 1,
+          'action' =>  'update',
+          'id' => $output['id'],
+          'data_processor_id' => $this->dataProcessorId
+        ]);
+      }
+    }
+    $this->assign('outputs', $outputs);
   }
 
   public function buildQuickForm() {

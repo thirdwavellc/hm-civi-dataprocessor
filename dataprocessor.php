@@ -62,8 +62,54 @@ function dataprocessor_civicrm_alterAPIPermissions($entity, $action, &$params, &
       4 => array($actionCamelCase, 'String'))
   );
   while ($dao->fetch()) {
-    $permissions[$entity][$action] = array($dao->api_permission);
+    $permissions[$entity][$action] = array($dao->permission);
   }
+}
+
+/**
+ * Implements hook_civicrm_alterMenu().
+ *
+ * @link https://docs.civicrm.org/dev/en/latest/hooks/hook_civicrm_alterMenu/
+ */
+function dataprocessor_civicrm_alterMenu(&$items) {
+  $sql = "
+    SELECT o.permission, p.id, p.title, o.configuration 
+    FROM civicrm_data_processor_output o 
+    INNER JOIN civicrm_data_processor p ON o.data_processor_id = p.id 
+    WHERE p.is_active = 1 AND o.type = 'search'";
+  $dao = CRM_Core_DAO::executeQuery($sql);
+  while ($dao->fetch()) {
+    $url = 'civicrm/dataprocessor_search/'.$dao->id;
+    $configuration = json_decode($dao->configuration, TRUE);
+    $title = $dao->title;
+    if (isset($configuration['title'])) {
+      $title = $configuration['title'];
+    }
+    $item = array(
+      'title' => $title,
+      'page_callback' => 'CRM_DataprocessorSearch_Controller_Search',
+      'access_arguments' => array($dao->permission),
+    );
+    $items[$url] = $item;
+  }
+}
+
+/**
+ * Implements hook_civicrm_pre().
+ *
+ * @link https://docs.civicrm.org/dev/en/latest/hooks/hook_civicrm_pre/
+ *
+ * @param $op
+ * @param $objectName
+ * @param $objectId
+ * @param $params
+ */
+function dataprocessor_civicrm_pre($op, $objectName, $objectId, &$params) {
+  CRM_Dataprocessor_Form_Output_Search::preHook($op, $objectName, $objectId, $params);
+}
+
+function dataprocessor_civicrm_dataprocessor_export(&$dataProcessor) {
+  CRM_Dataprocessor_Form_Output_Search::hookExport($dataProcessor);
 }
 
 /**

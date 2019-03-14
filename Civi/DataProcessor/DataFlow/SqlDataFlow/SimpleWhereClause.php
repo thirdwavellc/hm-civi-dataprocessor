@@ -25,7 +25,11 @@ class SimpleWhereClause implements WhereClauseInterface {
       foreach($value as $val) {
         $esacpedValues[] = "'". \CRM_Utils_Type::escape($val, $valueType)."'";
       }
-      $this->value = "(".implode(", ",$esacpedValues).")";
+      if ($operator == 'BETWEEN' || $operator == 'NOT BETWEEN') {
+        $this->value = implode(" AND ", $esacpedValues);
+      } else {
+        $this->value = "(" . implode(", ", $esacpedValues) . ")";
+      }
     } else {
       $this->value = \CRM_Utils_Type::escape($value, $valueType);
     }
@@ -38,6 +42,10 @@ class SimpleWhereClause implements WhereClauseInterface {
    * @return string
    */
   public function getWhereClause() {
+    if ($this->operator == 'NOT IN') {
+      // If the operator is NOT IN also include NULL values.
+      return "(`{$this->table_alias}`.`{$this->field}` {$this->operator} {$this->value} OR `{$this->table_alias}`.`{$this->field}` IS NULL)";
+    }
     return "`{$this->table_alias}`.`{$this->field}` {$this->operator} {$this->value}";
   }
 

@@ -6,23 +6,23 @@
     <h3>{ts}Output configuration{/ts}</h3>
     <div class="crm-block crm-form-block crm-data-processor_output-block">
         <div class="crm-section">
-            <div class="label">{$form.api_entity.label}</div>
-            <div class="content">{$form.api_entity.html}</div>
+            <div class="label">{$form.title.label}</div>
+            <div class="content">{$form.title.html}</div>
             <div class="clear"></div>
         </div>
         <div class="crm-section">
-            <div class="label">{$form.api_action.label}</div>
-            <div class="content">{$form.api_action.html}</div>
-            <div class="clear"></div>
-        </div>
-        <div class="crm-section">
-            <div class="label">{$form.api_count_action.label}</div>
-            <div class="content">{$form.api_count_action.html}</div>
+            <div class="label">{$form.navigation_parent_path.label}</div>
+            <div class="content">{$form.navigation_parent_path.html}</div>
             <div class="clear"></div>
         </div>
         <div class="crm-section">
             <div class="label">{$form.permission.label}</div>
             <div class="content">{$form.permission.html}</div>
+            <div class="clear"></div>
+        </div>
+        <div class="crm-section">
+            <div class="label">{$form.contact_id_field.label}</div>
+            <div class="content">{$form.contact_id_field.html}</div>
             <div class="clear"></div>
         </div>
     </div>

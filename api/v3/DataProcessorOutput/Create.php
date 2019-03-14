@@ -36,9 +36,9 @@ function _civicrm_api3_data_processor_output_create_spec(&$spec) {
     'type' => CRM_Utils_Type::T_TEXT,
     'api.required' => false,
 	);
-  $spec['api_permission'] = array(
-    'name' => 'api_permission',
-    'title' => E::ts('API Permission'),
+  $spec['permission'] = array(
+    'name' => 'permission',
+    'title' => E::ts('Permission'),
     'type' => CRM_Utils_Type::T_STRING
   );
   $spec['api_entity'] = array(

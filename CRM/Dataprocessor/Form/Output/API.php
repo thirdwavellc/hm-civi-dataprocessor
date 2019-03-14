@@ -12,7 +12,7 @@ class CRM_Dataprocessor_Form_Output_API extends CRM_Dataprocessor_Form_Output_Ab
 
   public function buildQuickForm() {
     parent::buildQuickForm();
-    $this->add('select','api_permission', E::ts('Permission'), CRM_Core_Permission::basicPermissions(), true);
+    $this->add('select','permission', E::ts('Permission'), CRM_Core_Permission::basicPermissions(), true);
     $this->add('text', 'api_entity', E::ts('API Entity'), true);
     $this->add('text', 'api_action', E::ts('API Action Name'), true);
     $this->add('text', 'api_count_action', E::ts('API GetCount Action Name'), true);
@@ -21,12 +21,12 @@ class CRM_Dataprocessor_Form_Output_API extends CRM_Dataprocessor_Form_Output_Ab
   function setDefaultValues() {
     $defaults = parent::setDefaultValues();
     if ($this->output) {
-      $defaults['api_permission'] = $this->output['api_permission'];
+      $defaults['permission'] = $this->output['permission'];
       $defaults['api_entity'] = $this->output['api_entity'];
       $defaults['api_action'] = $this->output['api_action'];
       $defaults['api_count_action'] = $this->output['api_count_action'];
     } else {
-      $defaults['api_permission'] = 'access CiviCRM';
+      $defaults['permission'] = 'access CiviCRM';
     }
     return $defaults;
   }
@@ -37,7 +37,7 @@ class CRM_Dataprocessor_Form_Output_API extends CRM_Dataprocessor_Form_Output_Ab
 
     $values = $this->exportValues();
     $params['id'] = $this->id;
-    $params['api_permission'] = $values['api_permission'];
+    $params['permission'] = $values['permission'];
     $params['api_entity'] = $values['api_entity'];
     $params['api_action'] = $values['api_action'];
     $params['api_count_action'] = $values['api_count_action'];

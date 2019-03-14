@@ -240,8 +240,10 @@ abstract class SqlDataFlow extends AbstractDataFlow {
           $dir = 'DESC';
           break;
       }
-      $fieldName = $sortSpecification->getField()->alias;
-      $orderBys[] = "{$fieldName} {$dir}";
+      if ($sortSpecification->getField()) {
+        $fieldName = $sortSpecification->getField()->alias;
+        $orderBys[] = "{$fieldName} {$dir}";
+      }
     }
     if (count($orderBys)) {
       return "ORDER BY ".implode(", ", $orderBys);

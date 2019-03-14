@@ -55,9 +55,9 @@ class CRM_Dataprocessor_DAO_Output extends CRM_Core_DAO {
           'title' => E::ts('Configuration'),
           'type' => CRM_Utils_Type::T_TEXT,
         ),
-        'api_permission' => array(
-          'name' => 'api_permission',
-          'title' => E::ts('API Permission'),
+        'permission' => array(
+          'name' => 'permission',
+          'title' => E::ts('Permission'),
           'type' => CRM_Utils_Type::T_STRING
         ),
         'api_entity' => array(

@@ -203,18 +203,22 @@ class CRM_Dataprocessor_BAO_DataProcessor extends CRM_Dataprocessor_DAO_DataProc
    * @throws \Exception when no data processor is found.
    */
   public static function getDataProcessorById($id) {
-    $sql = "
-      SELECT civicrm_data_processor.* 
-      FROM civicrm_data_processor 
-      WHERE id = %1
-    ";
-    $params[1] = array($id, 'Integer');
-    $dao = CRM_Dataprocessor_BAO_DataProcessor::executeQuery($sql, $params, TRUE, 'CRM_Dataprocessor_BAO_DataProcessor');
-    if ($dao->N != 1) {
-      throw new \Exception('Could not find Data Processor');
+    static $processors = array();
+    if (!isset($processors[$id])) {
+      $sql = "
+        SELECT civicrm_data_processor.* 
+        FROM civicrm_data_processor 
+        WHERE id = %1
+      ";
+      $params[1] = [$id, 'Integer'];
+      $dao = CRM_Dataprocessor_BAO_DataProcessor::executeQuery($sql, $params, TRUE, 'CRM_Dataprocessor_BAO_DataProcessor');
+      if ($dao->N != 1) {
+        throw new \Exception('Could not find Data Processor');
+      }
+      $dao->fetch();
+      $processors[$id] = $dao->getDataProcessor();
     }
-    $dao->fetch();
-    return $dao->getDataProcessor();
+    return $processors[$id];
   }
 
   /**
@@ -319,6 +323,13 @@ class CRM_Dataprocessor_BAO_DataProcessor extends CRM_Dataprocessor_DAO_DataProc
     return $dataProcessor->getAvailableFilterHandlers();
   }
 
+  /**
+   * Returns an array with all available fields for aggregation
+   *
+   * @param $data_processor_id
+   *
+   * @return array
+   */
   public static function getAvailableAggregationFields($data_processor_id) {
     $availableAggregationFields = array();
     $dao = new CRM_Dataprocessor_BAO_DataProcessor();
@@ -460,6 +471,11 @@ class CRM_Dataprocessor_BAO_DataProcessor extends CRM_Dataprocessor_DAO_DataProc
       unset($output['data_processor_id']);
       $dataProcessor['outputs'][] = $output;
     }
+
+    $eventData['data_processor'] = &$dataProcessor;
+    $event = \Civi\Core\Event\GenericHookEvent::create($eventData);
+    \Civi::dispatcher()->dispatch('hook_civicrm_dataprocessor_export', $event);
+
     return $dataProcessor;
   }
 
