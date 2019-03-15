@@ -114,6 +114,11 @@ class CRM_Dataprocessor_BAO_DataProcessor extends CRM_Dataprocessor_DAO_DataProc
 
     CRM_Utils_Hook::pre('delete', 'DataProcessor', $id, CRM_Core_DAO::$_nullArray);
 
+    CRM_Dataprocessor_BAO_Output::deleteWithDataProcessorId($id);
+    CRM_Dataprocessor_BAO_Filter::deleteWithDataProcessorId($id);
+    CRM_Dataprocessor_BAO_Field::deleteWithDataProcessorId($id);
+    CRM_Dataprocessor_BAO_Source::deleteWithDataProcessorId($id);
+
     $dataProcessor = new CRM_Dataprocessor_DAO_DataProcessor();
     $dataProcessor->id = $id;
     $dataProcessor->delete();

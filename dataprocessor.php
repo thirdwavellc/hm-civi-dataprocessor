@@ -105,11 +105,11 @@ function dataprocessor_civicrm_alterMenu(&$items) {
  * @param $params
  */
 function dataprocessor_civicrm_pre($op, $objectName, $objectId, &$params) {
-  CRM_Dataprocessor_Form_Output_Search::preHook($op, $objectName, $objectId, $params);
+  CRM_DataprocessorSearch_Search::preHook($op, $objectName, $objectId, $params);
 }
 
 function dataprocessor_civicrm_dataprocessor_export(&$dataProcessor) {
-  CRM_Dataprocessor_Form_Output_Search::hookExport($dataProcessor);
+  CRM_DataprocessorSearch_Search::hookExport($dataProcessor);
 }
 
 /**

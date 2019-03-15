@@ -26,7 +26,7 @@ class CRM_Dataprocessor_Form_Output_API extends CRM_Dataprocessor_Form_Output_Ab
       $defaults['api_action'] = $this->output['api_action'];
       $defaults['api_count_action'] = $this->output['api_count_action'];
     } else {
-      $defaults['permission'] = 'access CiviCRM';
+      $defaults['permission'] = 'access CiviCRM backend and API';
     }
     return $defaults;
   }
