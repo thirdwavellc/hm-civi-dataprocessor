@@ -8,6 +8,8 @@ use Civi\DataProcessor\Output\OutputInterface;
 
 class CRM_DataprocessorSearch_Search implements OutputInterface {
 
+  private static $rebuildMenu = false;
+
   /**
    * Return the url to a configuration page.
    * Or return false when no configuration page exists.
@@ -19,6 +21,34 @@ class CRM_DataprocessorSearch_Search implements OutputInterface {
   }
 
   /**
+   * Delegation of the alter menu hook. Add the search outputs to the menu system.
+   *
+   * @param $items
+   */
+  public static function alterMenu(&$items) {
+    $sql = "
+    SELECT o.permission, p.id, p.title, o.configuration 
+    FROM civicrm_data_processor_output o 
+    INNER JOIN civicrm_data_processor p ON o.data_processor_id = p.id 
+    WHERE p.is_active = 1 AND o.type = 'search'";
+    $dao = CRM_Core_DAO::executeQuery($sql);
+    while ($dao->fetch()) {
+      $url = 'civicrm/dataprocessor_search/'.$dao->id;
+      $configuration = json_decode($dao->configuration, TRUE);
+      $title = $dao->title;
+      if (isset($configuration['title'])) {
+        $title = $configuration['title'];
+      }
+      $item = array(
+        'title' => $title,
+        'page_callback' => 'CRM_DataprocessorSearch_Controller_Search',
+        'access_arguments' => array($dao->permission),
+      );
+      $items[$url] = $item;
+    }
+  }
+
+  /**
    * Update the navigation data when an output is saved/deleted from the database.
    *
    * @param $op
@@ -27,7 +57,6 @@ class CRM_DataprocessorSearch_Search implements OutputInterface {
    * @param $objectRef
    */
   public static function preHook($op, $objectName, $id, &$params) {
-    $rebuildMenu = false;
     if ($objectName != 'DataProcessorOutput') {
       return;
     }
@@ -37,7 +66,7 @@ class CRM_DataprocessorSearch_Search implements OutputInterface {
         $navId = $outputs[$id]['configuration']['navigation_id'];
         CRM_Core_BAO_Navigation::processDelete($navId);
         CRM_Core_BAO_Navigation::resetNavigation();
-        $rebuildMenu = TRUE;
+        self::$rebuildMenu = TRUE;
       }
     } elseif ($op == 'edit') {
       $outputs = CRM_Dataprocessor_BAO_Output::getValues(array('id' => $id));
@@ -49,7 +78,7 @@ class CRM_DataprocessorSearch_Search implements OutputInterface {
         $navId = $outputs[$id]['configuration']['navigation_id'];
         CRM_Core_BAO_Navigation::processDelete($navId);
         CRM_Core_BAO_Navigation::resetNavigation();
-        $rebuildMenu = TRUE;
+        self::$rebuildMenu = TRUE;
       } else {
         $dataProcessors = CRM_Dataprocessor_BAO_DataProcessor::getValues(['id' => $output['data_processor_id']]);
         $dataProcessor = $dataProcessors[$output['data_processor_id']];
@@ -67,19 +96,36 @@ class CRM_DataprocessorSearch_Search implements OutputInterface {
             $navigationParams['parent_id'] = !empty($navigationDefaults['parent_id']) ? $navigationDefaults['parent_id'] : NULL;
           }
         }
-        $rebuildMenu = self::newNavigationItem($params, $dataProcessor, $navigationParams);
+        self::$rebuildMenu = self::newNavigationItem($params, $dataProcessor, $navigationParams);
       }
     }
     elseif ($op == 'create' && isset($params['configuration']['navigation_parent_path'])) {
       $dataProcessors = CRM_Dataprocessor_BAO_DataProcessor::getValues(array('id' => $params['data_processor_id']));
       $dataProcessor = $dataProcessors[$params['data_processor_id']];
-      $rebuildMenu = self::newNavigationItem($params, $dataProcessor);
+      self::$rebuildMenu = self::newNavigationItem($params, $dataProcessor);
+    }
+  }
+
+  /**
+   * Update the navigation data when an output is saved/deleted from the database.
+   *
+   * @param $op
+   * @param $objectName
+   * @param $objectId
+   * @param $objectRef
+   */
+  public static function postHook($op, $objectName, $id, &$objectRef) {
+    if ($objectName != 'DataProcessorOutput') {
+      return;
     }
 
-    if ($rebuildMenu) {
+    if (self::$rebuildMenu) {
       // Rebuild the CiviCRM Menu (which holds all the pages)
-      CRM_Core_Menu::store(TRUE);
-      CRM_Utils_System::flushCache();
+      CRM_Core_Menu::store();
+
+      // also reset navigation
+      CRM_Core_BAO_Navigation::resetNavigation();
+      self::$rebuildMenu = false;
     }
   }
 
@@ -107,6 +153,7 @@ class CRM_DataprocessorSearch_Search implements OutputInterface {
    */
   private static function newNavigationItem(&$params, $dataProcessor, $navigationParams=array()) {
     $navigation = CRM_DataprocessorSearch_Utils_Navigation::singleton();
+    $navigationParams['domain_id'] = CRM_Core_Config::domainID();
     $navigationParams['permission'] = array();
     $navigationParams['label'] = isset($params['configuration']['title']) ? $params['configuration']['title'] : $dataProcessor['title'];
     $navigationParams['name'] = $dataProcessor['name'];
