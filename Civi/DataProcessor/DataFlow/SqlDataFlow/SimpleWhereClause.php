@@ -73,11 +73,19 @@ class SimpleWhereClause implements WhereClauseInterface {
    * @return string
    */
   public function getWhereClause() {
-    if ($this->operator == 'NOT IN') {
-      // If the operator is NOT IN also include NULL values.
-      return "(`{$this->table_alias}`.`{$this->field}` {$this->operator} {$this->value} OR `{$this->table_alias}`.`{$this->field}` IS NULL)";
+    if ($this->isJoinClause()) {
+      return "`{$this->table_alias}`.`{$this->field}` {$this->operator} {$this->value}";
     }
-    return "`{$this->table_alias}`.`{$this->field}` {$this->operator} {$this->value}";
+    switch ($this->operator) {
+      case 'NOT IN':
+      case 'NOT LIKE':
+      case '!=':
+        return "(`{$this->table_alias}`.`{$this->field}` {$this->operator} {$this->value} OR `{$this->table_alias}`.`{$this->field}` IS NULL)";
+        break;
+      default:
+        return "`{$this->table_alias}`.`{$this->field}` {$this->operator} {$this->value}";
+        break;
+    }
   }
 
 }

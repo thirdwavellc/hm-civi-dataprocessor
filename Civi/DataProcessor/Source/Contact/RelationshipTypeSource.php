@@ -4,12 +4,9 @@
  * @license AGPL-3.0
  */
 
-namespace Civi\DataProcessor\Source;
+namespace Civi\DataProcessor\Source\Contact;
 
-use Civi\DataProcessor\DataFlow\SqlDataFlow\SimpleWhereClause;
-use Civi\DataProcessor\DataFlow\SqlTableDataFlow;
-use Civi\DataProcessor\DataSpecification\DataSpecification;
-use Civi\DataProcessor\DataSpecification\FieldSpecification;
+use Civi\DataProcessor\Source\AbstractCivicrmEntitySource;
 
 use CRM_Dataprocessor_ExtensionUtil as E;
 

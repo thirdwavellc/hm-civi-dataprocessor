@@ -4,15 +4,13 @@
  * @license AGPL-3.0
  */
 
-namespace Civi\DataProcessor\Source;
+namespace Civi\DataProcessor\Source\Contact;
 
-use Civi\DataProcessor\DataFlow\SqlTableDataFlow;
-use Civi\DataProcessor\DataSpecification\DataSpecification;
-use Civi\DataProcessor\DataSpecification\FieldSpecification;
+use Civi\DataProcessor\Source\AbstractCivicrmEntitySource;
 
 use CRM_Dataprocessor_ExtensionUtil as E;
 
-class PhoneSource extends AbstractCivicrmEntitySource {
+class AddressSource extends AbstractCivicrmEntitySource {
 
   /**
    * Returns the entity name
@@ -20,7 +18,7 @@ class PhoneSource extends AbstractCivicrmEntitySource {
    * @return String
    */
   protected function getEntity() {
-    return 'Phone';
+    return 'Address';
   }
 
   /**
@@ -29,7 +27,7 @@ class PhoneSource extends AbstractCivicrmEntitySource {
    * @return String
    */
   protected function getTable() {
-    return 'civicrm_phone';
+    return 'civicrm_address';
   }
 
 }

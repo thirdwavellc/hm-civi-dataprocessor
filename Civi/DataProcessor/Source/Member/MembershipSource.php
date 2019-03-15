@@ -4,15 +4,13 @@
  * @license AGPL-3.0
  */
 
-namespace Civi\DataProcessor\Source;
+namespace Civi\DataProcessor\Source\Member;
 
-use Civi\DataProcessor\DataFlow\SqlTableDataFlow;
-use Civi\DataProcessor\DataSpecification\DataSpecification;
-use Civi\DataProcessor\DataSpecification\FieldSpecification;
+use Civi\DataProcessor\Source\AbstractCivicrmEntitySource;
 
 use CRM_Dataprocessor_ExtensionUtil as E;
 
-class MailingJobSource extends AbstractCivicrmEntitySource {
+class MembershipSource extends AbstractCivicrmEntitySource {
 
   /**
    * Returns the entity name
@@ -20,7 +18,7 @@ class MailingJobSource extends AbstractCivicrmEntitySource {
    * @return String
    */
   protected function getEntity() {
-    return 'MailingJob';
+    return 'Membership';
   }
 
   /**
@@ -29,7 +27,7 @@ class MailingJobSource extends AbstractCivicrmEntitySource {
    * @return String
    */
   protected function getTable() {
-    return 'civicrm_mailing_job';
+    return 'civicrm_membership';
   }
 
 }

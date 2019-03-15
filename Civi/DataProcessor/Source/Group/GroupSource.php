@@ -4,15 +4,13 @@
  * @license AGPL-3.0
  */
 
-namespace Civi\DataProcessor\Source;
+namespace Civi\DataProcessor\Source\Group;
 
-use Civi\DataProcessor\DataFlow\SqlTableDataFlow;
-use Civi\DataProcessor\DataSpecification\DataSpecification;
-use Civi\DataProcessor\DataSpecification\FieldSpecification;
+use Civi\DataProcessor\Source\AbstractCivicrmEntitySource;
 
 use CRM_Dataprocessor_ExtensionUtil as E;
 
-class ParticipantSource extends AbstractCivicrmEntitySource {
+class GroupSource extends AbstractCivicrmEntitySource {
 
   /**
    * Returns the entity name
@@ -20,7 +18,7 @@ class ParticipantSource extends AbstractCivicrmEntitySource {
    * @return String
    */
   protected function getEntity() {
-    return 'Participant';
+    return 'Group';
   }
 
   /**
@@ -29,7 +27,7 @@ class ParticipantSource extends AbstractCivicrmEntitySource {
    * @return String
    */
   protected function getTable() {
-    return 'civicrm_participant';
+    return 'civicrm_group';
   }
 
 }

@@ -4,15 +4,13 @@
  * @license AGPL-3.0
  */
 
-namespace Civi\DataProcessor\Source;
+namespace Civi\DataProcessor\Source\Event;
 
-use Civi\DataProcessor\DataFlow\SqlTableDataFlow;
-use Civi\DataProcessor\DataSpecification\DataSpecification;
-use Civi\DataProcessor\DataSpecification\FieldSpecification;
+use Civi\DataProcessor\Source\AbstractCivicrmEntitySource;
 
 use CRM_Dataprocessor_ExtensionUtil as E;
 
-class MembershipTypeSource extends AbstractCivicrmEntitySource {
+class EventSource extends AbstractCivicrmEntitySource {
 
   /**
    * Returns the entity name
@@ -20,7 +18,7 @@ class MembershipTypeSource extends AbstractCivicrmEntitySource {
    * @return String
    */
   protected function getEntity() {
-    return 'MembershipType';
+    return 'Event';
   }
 
   /**
@@ -29,7 +27,7 @@ class MembershipTypeSource extends AbstractCivicrmEntitySource {
    * @return String
    */
   protected function getTable() {
-    return 'civicrm_membership_type';
+    return 'civicrm_event';
   }
 
 }
