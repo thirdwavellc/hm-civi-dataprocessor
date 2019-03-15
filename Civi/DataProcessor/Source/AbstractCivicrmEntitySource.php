@@ -102,7 +102,7 @@ abstract class AbstractCivicrmEntitySource extends AbstractSource {
       }
     }
     else {
-      $this->dataFlow = clone $this->primaryDataFlow;
+      $this->dataFlow = $this->primaryDataFlow;
     }
   }
 

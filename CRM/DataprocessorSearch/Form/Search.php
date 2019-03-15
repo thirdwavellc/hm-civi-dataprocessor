@@ -24,6 +24,8 @@ class CRM_DataprocessorSearch_Form_Search extends CRM_Core_Form_Search {
 
   protected $pageId;
 
+  protected $_debug = FALSE;
+
   /**
    * @var \CRM_Utils_Sort
    */
@@ -40,11 +42,13 @@ class CRM_DataprocessorSearch_Form_Search extends CRM_Core_Form_Search {
     $this->defaults = [];
     // we allow the controller to set force/reset externally, useful when we are being
     // driven by the wizard framework
+    $this->_debug = CRM_Utils_Request::retrieve('debug', 'Boolean', $this, FALSE);
     $this->_reset = CRM_Utils_Request::retrieve('reset', 'Boolean', CRM_Core_DAO::$_nullObject);
     $this->_force = CRM_Utils_Request::retrieve('force', 'Boolean', $this, FALSE);
     $this->_context = CRM_Utils_Request::retrieve('context', 'String', $this, FALSE, 'search');
     $this->set('context', $this->_context);
     $this->assign("context", $this->_context);
+    $this->assign('debug', $this->_debug);
     if (!empty($_POST) && !$this->controller->isModal()) {
       $this->_formValues = $this->controller->exportValues($this->_name);
     }
@@ -104,9 +108,9 @@ class CRM_DataprocessorSearch_Form_Search extends CRM_Core_Form_Search {
     $prevnextData = array();
 
     $offset = ($pageId - 1) * $limit;
-    $this->setFilters();
     $this->dataProcessor->getDataFlow()->setLimit($limit);
     $this->dataProcessor->getDataFlow()->setOffset($offset);
+    $this->setFilters();
 
     // Set the sort
     $sortDirection = 'ASC';
@@ -164,6 +168,8 @@ class CRM_DataprocessorSearch_Form_Search extends CRM_Core_Form_Search {
     $cacheKey = "civicrm search {$this->controller->_key}";
     Civi::service('prevnext')->fillWithArray($cacheKey, $prevnextData);
     $this->assign('rows', $rows);
+
+    $this->assign('debug_info', $this->dataProcessor->getDataFlow()->getDebugInformation());
   }
 
   /**
@@ -217,20 +223,20 @@ class CRM_DataprocessorSearch_Form_Search extends CRM_Core_Form_Search {
       } elseif (isset($this->_formValues[$filterName.'_op'])) {
         switch ($this->_formValues[$filterName . '_op']) {
           case 'IN':
-            if (isset($this->_formValues[$filterSpec->alias . '_value']) && $this->_formValues[$filterSpec->alias . '_value']) {
+            if (isset($this->_formValues[$filterName . '_value']) && $this->_formValues[$filterName . '_value']) {
               $filterParams = [
                 'op' => 'IN',
-                'value' => $this->_formValues[$filterSpec->alias . '_value'],
+                'value' => $this->_formValues[$filterName . '_value'],
               ];
               $filter->setFilter($filterParams);
               $isFilterSet = TRUE;
             }
             break;
           case 'NOT IN':
-            if (isset($this->_formValues[$filterSpec->alias . '_value']) && $this->_formValues[$filterSpec->alias . '_value']) {
+            if (isset($this->_formValues[$filterName . '_value']) && $this->_formValues[$filterName . '_value']) {
               $filterParams = [
                 'op' => 'NOT IN',
-                'value' => $this->_formValues[$filterSpec->alias . '_value'],
+                'value' => $this->_formValues[$filterName . '_value'],
               ];
               $filter->setFilter($filterParams);
               $isFilterSet = TRUE;
@@ -242,50 +248,50 @@ class CRM_DataprocessorSearch_Form_Search extends CRM_Core_Form_Search {
           case '<':
           case '>=':
           case '<=':
-            if (isset($this->_formValues[$filterSpec->alias . '_value']) && $this->_formValues[$filterSpec->alias . '_value']) {
+            if (isset($this->_formValues[$filterName . '_value']) && $this->_formValues[$filterName . '_value']) {
               $filterParams = [
-                'op' => $this->_formValues[$filterSpec->alias . '_op'],
-                'value' => $this->_formValues[$filterSpec->alias . '_value'],
+                'op' => $this->_formValues[$filterName . '_op'],
+                'value' => $this->_formValues[$filterName . '_value'],
               ];
               $filter->setFilter($filterParams);
               $isFilterSet = TRUE;
             }
             break;
           case 'has':
-            if (isset($this->_formValues[$filterSpec->alias . '_value']) && $this->_formValues[$filterSpec->alias . '_value']) {
+            if (isset($this->_formValues[$filterName . '_value']) && $this->_formValues[$filterName . '_value']) {
               $filterParams = [
                 'op' => 'LIKE',
-                'value' => '%'.$this->_formValues[$filterSpec->alias . '_value'].'%',
+                'value' => '%'.$this->_formValues[$filterName . '_value'].'%',
               ];
               $filter->setFilter($filterParams);
               $isFilterSet = TRUE;
             }
             break;
           case 'nhas':
-            if (isset($this->_formValues[$filterSpec->alias . '_value']) && $this->_formValues[$filterSpec->alias . '_value']) {
+            if (isset($this->_formValues[$filterName . '_value']) && $this->_formValues[$filterName . '_value']) {
               $filterParams = [
                 'op' => 'NOT LIKE',
-                'value' => '%'.$this->_formValues[$filterSpec->alias . '_value'].'%',
+                'value' => '%'.$this->_formValues[$filterName . '_value'].'%',
               ];
               $filter->setFilter($filterParams);
               $isFilterSet = TRUE;
             }
             break;
           case 'sw':
-            if (isset($this->_formValues[$filterSpec->alias . '_value']) && $this->_formValues[$filterSpec->alias . '_value']) {
+            if (isset($this->_formValues[$filterName . '_value']) && $this->_formValues[$filterName . '_value']) {
               $filterParams = [
                 'op' => 'LIKE',
-                'value' => $this->_formValues[$filterSpec->alias . '_value'].'%',
+                'value' => $this->_formValues[$filterName . '_value'].'%',
               ];
               $filter->setFilter($filterParams);
               $isFilterSet = TRUE;
             }
             break;
           case 'ew':
-            if (isset($this->_formValues[$filterSpec->alias . '_value']) && $this->_formValues[$filterSpec->alias . '_value']) {
+            if (isset($this->_formValues[$filterName . '_value']) && $this->_formValues[$filterName . '_value']) {
               $filterParams = [
                 'op' => 'LIKE',
-                'value' => '%'.$this->_formValues[$filterSpec->alias . '_value'],
+                'value' => '%'.$this->_formValues[$filterName . '_value'],
               ];
               $filter->setFilter($filterParams);
               $isFilterSet = TRUE;
