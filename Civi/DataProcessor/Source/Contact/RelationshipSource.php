@@ -73,7 +73,7 @@ class RelationshipSource extends AbstractCivicrmEntitySource {
         $customGroupDataFlow = $this->ensureCustomGroup($spec->customGroupTableName, $spec->customGroupName);
         $customGroupTableAlias = $customGroupDataFlow->getTableAlias();
         $customGroupDataFlow->addWhereClause(
-          new SimpleWhereClause($customGroupTableAlias, $spec->customFieldColumnName, $op, $values)
+          new SimpleWhereClause($customGroupTableAlias, $spec->customFieldColumnName, $op, $values, $spec->type, TRUE)
         );
       } else {
         if ($filter_field_alias == 'relationship_type_id') {
@@ -95,7 +95,7 @@ class RelationshipSource extends AbstractCivicrmEntitySource {
           }
         }
         $entityDataFlow = $this->ensureEntity();
-        $entityDataFlow->addWhereClause(new SimpleWhereClause($this->getSourceName(), $spec->name,$op, $values));
+        $entityDataFlow->addWhereClause(new SimpleWhereClause($this->getSourceName(), $spec->name,$op, $values, $spec->type, TRUE));
       }
     }
   }

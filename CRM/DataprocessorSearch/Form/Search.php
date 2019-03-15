@@ -31,6 +31,8 @@ class CRM_DataprocessorSearch_Form_Search extends CRM_Core_Form_Search {
    */
   protected $sort;
 
+  protected $formHasRequiredFilters = FALSE;
+
   public function preProcess() {
     parent::preProcess();
 
@@ -55,7 +57,7 @@ class CRM_DataprocessorSearch_Form_Search extends CRM_Core_Form_Search {
     else {
       $this->_formValues = $this->get('formValues');
     }
-    if (!empty($this->_formValues)) {
+    if (!$this->formHasRequiredFilters || !empty($this->_formValues)) {
       $limit = CRM_Utils_Request::retrieve('crmRowCount', 'Positive', $this, FALSE, CRM_Utils_Pager::ROWCOUNT);
       $pageId = CRM_Utils_Request::retrieve('crmPID', 'Positive', $this, FALSE, 1);
 
@@ -214,93 +216,96 @@ class CRM_DataprocessorSearch_Form_Search extends CRM_Core_Form_Search {
   }
 
   protected function setFilters() {
-    foreach($this->dataProcessor->getFilterHandlers() as $filter) {
-      $isFilterSet = false;
-      $filterSpec = $filter->getFieldSpecification();
-      $filterName = $filterSpec->alias;
-      if ($filterSpec->type == 'Date') {
-        $isFilterSet = $this->setDateFilter($filter);
-      } elseif (isset($this->_formValues[$filterName.'_op'])) {
-        switch ($this->_formValues[$filterName . '_op']) {
-          case 'IN':
-            if (isset($this->_formValues[$filterName . '_value']) && $this->_formValues[$filterName . '_value']) {
-              $filterParams = [
-                'op' => 'IN',
-                'value' => $this->_formValues[$filterName . '_value'],
-              ];
-              $filter->setFilter($filterParams);
-              $isFilterSet = TRUE;
-            }
-            break;
-          case 'NOT IN':
-            if (isset($this->_formValues[$filterName . '_value']) && $this->_formValues[$filterName . '_value']) {
-              $filterParams = [
-                'op' => 'NOT IN',
-                'value' => $this->_formValues[$filterName . '_value'],
-              ];
-              $filter->setFilter($filterParams);
-              $isFilterSet = TRUE;
-            }
-            break;
-          case '=':
-          case '!=':
-          case '>':
-          case '<':
-          case '>=':
-          case '<=':
-            if (isset($this->_formValues[$filterName . '_value']) && $this->_formValues[$filterName . '_value']) {
-              $filterParams = [
-                'op' => $this->_formValues[$filterName . '_op'],
-                'value' => $this->_formValues[$filterName . '_value'],
-              ];
-              $filter->setFilter($filterParams);
-              $isFilterSet = TRUE;
-            }
-            break;
-          case 'has':
-            if (isset($this->_formValues[$filterName . '_value']) && $this->_formValues[$filterName . '_value']) {
-              $filterParams = [
-                'op' => 'LIKE',
-                'value' => '%'.$this->_formValues[$filterName . '_value'].'%',
-              ];
-              $filter->setFilter($filterParams);
-              $isFilterSet = TRUE;
-            }
-            break;
-          case 'nhas':
-            if (isset($this->_formValues[$filterName . '_value']) && $this->_formValues[$filterName . '_value']) {
-              $filterParams = [
-                'op' => 'NOT LIKE',
-                'value' => '%'.$this->_formValues[$filterName . '_value'].'%',
-              ];
-              $filter->setFilter($filterParams);
-              $isFilterSet = TRUE;
-            }
-            break;
-          case 'sw':
-            if (isset($this->_formValues[$filterName . '_value']) && $this->_formValues[$filterName . '_value']) {
-              $filterParams = [
-                'op' => 'LIKE',
-                'value' => $this->_formValues[$filterName . '_value'].'%',
-              ];
-              $filter->setFilter($filterParams);
-              $isFilterSet = TRUE;
-            }
-            break;
-          case 'ew':
-            if (isset($this->_formValues[$filterName . '_value']) && $this->_formValues[$filterName . '_value']) {
-              $filterParams = [
-                'op' => 'LIKE',
-                'value' => '%'.$this->_formValues[$filterName . '_value'],
-              ];
-              $filter->setFilter($filterParams);
-              $isFilterSet = TRUE;
-            }
-            break;
+    if ($this->dataProcessor->getFilterHandlers()) {
+      foreach ($this->dataProcessor->getFilterHandlers() as $filter) {
+        $isFilterSet = FALSE;
+        $filterSpec = $filter->getFieldSpecification();
+        $filterName = $filterSpec->alias;
+        if ($filterSpec->type == 'Date') {
+          $isFilterSet = $this->setDateFilter($filter);
         }
-      }
-      if ($filter->isRequired() && !$isFilterSet) {
-        throw new \Exception('Field '.$filterSpec->title.' is required');
+        elseif (isset($this->_formValues[$filterName . '_op'])) {
+          switch ($this->_formValues[$filterName . '_op']) {
+            case 'IN':
+              if (isset($this->_formValues[$filterName . '_value']) && $this->_formValues[$filterName . '_value']) {
+                $filterParams = [
+                  'op' => 'IN',
+                  'value' => $this->_formValues[$filterName . '_value'],
+                ];
+                $filter->setFilter($filterParams);
+                $isFilterSet = TRUE;
+              }
+              break;
+            case 'NOT IN':
+              if (isset($this->_formValues[$filterName . '_value']) && $this->_formValues[$filterName . '_value']) {
+                $filterParams = [
+                  'op' => 'NOT IN',
+                  'value' => $this->_formValues[$filterName . '_value'],
+                ];
+                $filter->setFilter($filterParams);
+                $isFilterSet = TRUE;
+              }
+              break;
+            case '=':
+            case '!=':
+            case '>':
+            case '<':
+            case '>=':
+            case '<=':
+              if (isset($this->_formValues[$filterName . '_value']) && $this->_formValues[$filterName . '_value']) {
+                $filterParams = [
+                  'op' => $this->_formValues[$filterName . '_op'],
+                  'value' => $this->_formValues[$filterName . '_value'],
+                ];
+                $filter->setFilter($filterParams);
+                $isFilterSet = TRUE;
+              }
+              break;
+            case 'has':
+              if (isset($this->_formValues[$filterName . '_value']) && $this->_formValues[$filterName . '_value']) {
+                $filterParams = [
+                  'op' => 'LIKE',
+                  'value' => '%' . $this->_formValues[$filterName . '_value'] . '%',
+                ];
+                $filter->setFilter($filterParams);
+                $isFilterSet = TRUE;
+              }
+              break;
+            case 'nhas':
+              if (isset($this->_formValues[$filterName . '_value']) && $this->_formValues[$filterName . '_value']) {
+                $filterParams = [
+                  'op' => 'NOT LIKE',
+                  'value' => '%' . $this->_formValues[$filterName . '_value'] . '%',
+                ];
+                $filter->setFilter($filterParams);
+                $isFilterSet = TRUE;
+              }
+              break;
+            case 'sw':
+              if (isset($this->_formValues[$filterName . '_value']) && $this->_formValues[$filterName . '_value']) {
+                $filterParams = [
+                  'op' => 'LIKE',
+                  'value' => $this->_formValues[$filterName . '_value'] . '%',
+                ];
+                $filter->setFilter($filterParams);
+                $isFilterSet = TRUE;
+              }
+              break;
+            case 'ew':
+              if (isset($this->_formValues[$filterName . '_value']) && $this->_formValues[$filterName . '_value']) {
+                $filterParams = [
+                  'op' => 'LIKE',
+                  'value' => '%' . $this->_formValues[$filterName . '_value'],
+                ];
+                $filter->setFilter($filterParams);
+                $isFilterSet = TRUE;
+              }
+              break;
+          }
+        }
+        if ($filter->isRequired() && !$isFilterSet) {
+          throw new \Exception('Field ' . $filterSpec->title . ' is required');
+        }
       }
     }
   }
@@ -337,51 +342,57 @@ class CRM_DataprocessorSearch_Form_Search extends CRM_Core_Form_Search {
     $count = 1;
     $filterElements = array();
     $types = \CRM_Utils_Type::getValidTypes();
-    foreach($this->dataProcessor->getFilterHandlers() as $filterHandler) {
-      $fieldSpec = $filterHandler->getFieldSpecification();
-      $type = \CRM_Utils_Type::T_STRING;
-      if (isset($types[$fieldSpec->type])) {
-        $type = $types[$fieldSpec->type];
-      }
-      if (!$fieldSpec) {
-        continue;
-      }
-      $filter['title'] = $fieldSpec->title;
-      $filter['type'] = $fieldSpec->type;
-      $operations = $this->getOperatorOptions($fieldSpec);
-      if ($fieldSpec->getOptions()) {
-        $element = $this->addElement('select', "{$fieldSpec->alias}_op",E::ts('Operator:'), $operations);
-        $this->addElement('select', "{$fieldSpec->alias}_value", NULL, $fieldSpec->getOptions(), array(
-          'style' => 'min-width:250px',
-          'class' => 'crm-select2 huge',
-          'multiple' => TRUE,
-          'placeholder' => E::ts('- select -'),
-        ));
-      } else {
-        switch ($type) {
-          case \CRM_Utils_Type::T_DATE:
-            CRM_Core_Form_Date::buildDateRange($this, $fieldSpec->alias, $count, '_from', '_to', E::ts('From:'), $filterHandler->isRequired(), $operations);
-            $count ++;
-            break;
-          case CRM_Report_Form::OP_INT:
-          case CRM_Report_Form::OP_FLOAT:
-            // and a min value input box
-            $this->add('text', "{$fieldSpec->alias}_min", E::ts('Min'));
-            // and a max value input box
-            $this->add('text', "{$fieldSpec->alias}_max", E::ts('Max'));
-          default:
-            // default type is string
-            $this->addElement('select', "{$fieldSpec->alias}_op", E::ts('Operator:'), $operations,
-              array('onchange' => "return showHideMaxMinVal( '$fieldSpec->alias', this.value );")
-            );
-            // we need text box for value input
-            $this->add('text', "{$fieldSpec->alias}_value", NULL, array('class' => 'huge'));
-            break;
+    if ($this->dataProcessor->getFilterHandlers()) {
+      foreach ($this->dataProcessor->getFilterHandlers() as $filterHandler) {
+        $fieldSpec = $filterHandler->getFieldSpecification();
+        $type = \CRM_Utils_Type::T_STRING;
+        if (isset($types[$fieldSpec->type])) {
+          $type = $types[$fieldSpec->type];
         }
+        if (!$fieldSpec) {
+          continue;
+        }
+        $filter['title'] = $fieldSpec->title;
+        $filter['type'] = $fieldSpec->type;
+        $operations = $this->getOperatorOptions($fieldSpec);
+        if ($fieldSpec->getOptions()) {
+          $element = $this->addElement('select', "{$fieldSpec->alias}_op", E::ts('Operator:'), $operations);
+          $this->addElement('select', "{$fieldSpec->alias}_value", NULL, $fieldSpec->getOptions(), [
+            'style' => 'min-width:250px',
+            'class' => 'crm-select2 huge',
+            'multiple' => TRUE,
+            'placeholder' => E::ts('- select -'),
+          ]);
+        }
+        else {
+          switch ($type) {
+            case \CRM_Utils_Type::T_DATE:
+              CRM_Core_Form_Date::buildDateRange($this, $fieldSpec->alias, $count, '_from', '_to', E::ts('From:'), $filterHandler->isRequired(), $operations);
+              $count++;
+              break;
+            case CRM_Report_Form::OP_INT:
+            case CRM_Report_Form::OP_FLOAT:
+              // and a min value input box
+              $this->add('text', "{$fieldSpec->alias}_min", E::ts('Min'));
+              // and a max value input box
+              $this->add('text', "{$fieldSpec->alias}_max", E::ts('Max'));
+            default:
+              // default type is string
+              $this->addElement('select', "{$fieldSpec->alias}_op", E::ts('Operator:'), $operations,
+                ['onchange' => "return showHideMaxMinVal( '$fieldSpec->alias', this.value );"]
+              );
+              // we need text box for value input
+              $this->add('text', "{$fieldSpec->alias}_value", NULL, ['class' => 'huge']);
+              break;
+          }
+        }
+        if ($filterHandler->isRequired()) {
+          $this->formHasRequiredFilters = TRUE;
+        }
+        $filterElements[$fieldSpec->alias] = $filter;
       }
-      $filterElements[$fieldSpec->alias] = $filter;
+      $this->assign('filters', $filterElements);
     }
-    $this->assign('filters', $filterElements);
   }
 
   protected function getOperatorOptions(\Civi\DataProcessor\DataSpecification\FieldSpecification $fieldSpec) {
