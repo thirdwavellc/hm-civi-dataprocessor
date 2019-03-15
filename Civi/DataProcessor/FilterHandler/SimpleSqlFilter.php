@@ -67,7 +67,7 @@ class SimpleSqlFilter extends AbstractFilterHandler {
   public function setFilter($filter) {
     $dataFlow  = $this->dataSource->ensureField($this->fieldSpecification->name);
     if ($dataFlow && $dataFlow instanceof  SqlTableDataFlow) {
-      $whereClause = new SqlDataFlow\SimpleWhereClause($dataFlow->getTableAlias(), $this->fieldSpecification->name, $filter['op'], $filter['value']);
+      $whereClause = new SqlDataFlow\SimpleWhereClause($dataFlow->getTableAlias(), $this->fieldSpecification->name, $filter['op'], $filter['value'], $this->fieldSpecification->type);
       $dataFlow->addWhereClause($whereClause);
     }
   }

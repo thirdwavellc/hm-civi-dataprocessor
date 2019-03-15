@@ -57,9 +57,13 @@ abstract class CRM_Dataprocessor_Form_Filter_AbstractFilterForm extends CRM_Core
    * @throws \Exception
    */
   protected function addFieldSelect($label) {
-    $fieldSelect = array(E::ts('- Select -')) + $this->getFieldOptions();
+    $fieldSelect = $this->getFieldOptions();
 
-    $this->add('select', 'field', $label, $fieldSelect, true, array('class' => 'crm-select2 crm-huge40'));
+    $this->add('select', 'field', $label, $fieldSelect, true, array(
+      'style' => 'min-width:250px',
+      'class' => 'crm-select2 huge',
+      'placeholder' => E::ts('- select -'),
+    ));
   }
 
   /**

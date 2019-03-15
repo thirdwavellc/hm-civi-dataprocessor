@@ -61,7 +61,11 @@ class CRM_Dataprocessor_Form_Source extends CRM_Core_Form {
 
       $factory = dataprocessor_get_factory();
       $types = array(' - select - ')  + $factory->getDataSources();
-      $this->add('select', 'type', ts('Select source'), $types, true, array('class' => 'crm-select2'));
+      $this->add('select', 'type', ts('Select source'), $types, true, array(
+        'style' => 'min-width:250px',
+        'class' => 'crm-select2 huge',
+        'placeholder' => E::ts('- select -'),
+      ));
 
       if (!$this->isFirstDataSource) {
         $joins = [' - select - '] + $factory->getJoins();

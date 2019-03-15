@@ -16,14 +16,26 @@ class SimpleWhereClause implements WhereClauseInterface {
 
   protected $value;
 
-  public function __construct($table_alias, $field, $operator, $value, $valueType = 'String') {
+  protected $isJoinClause = FALSE;
+
+  public function __construct($table_alias, $field, $operator, $value, $valueType = 'String', $isJoinClause=FALSE) {
+    $this->isJoinClause = $isJoinClause;
     $this->table_alias = $table_alias;
     $this->field = $field;
     $this->operator = $operator;
     if (is_array($value)) {
       $esacpedValues = array();
       foreach($value as $val) {
-        $esacpedValues[] = "'". \CRM_Utils_Type::escape($val, $valueType)."'";
+        switch ($valueType) {
+          case 'String':
+          case 'Text':
+          case 'Memo':
+            $esacpedValues[] = "'" . \CRM_Utils_Type::escape($val, $valueType) . "'";
+            break;
+          default:
+            $esacpedValues[] = \CRM_Utils_Type::escape($val, $valueType);
+            break;
+        }
       }
       if ($operator == 'BETWEEN' || $operator == 'NOT BETWEEN') {
         $this->value = implode(" AND ", $esacpedValues);
@@ -31,8 +43,27 @@ class SimpleWhereClause implements WhereClauseInterface {
         $this->value = "(" . implode(", ", $esacpedValues) . ")";
       }
     } else {
-      $this->value = \CRM_Utils_Type::escape($value, $valueType);
+      switch ($valueType) {
+        case 'String':
+        case 'Text':
+        case 'Memo':
+          $this->value = "'" . \CRM_Utils_Type::escape($value, $valueType) . "'";
+          break;
+        default:
+          $this->value = \CRM_Utils_Type::escape($value, $valueType);
+          break;
+      }
     }
+  }
+
+  /**
+   * Returns true when this where clause can be added to the
+   * join or whether this clause should be propagated to the where part of the query
+   *
+   * @return bool
+   */
+  public function isJoinClause() {
+    return $this->isJoinClause;
   }
 
   /**

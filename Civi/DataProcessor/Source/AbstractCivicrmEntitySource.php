@@ -230,11 +230,11 @@ abstract class AbstractCivicrmEntitySource extends AbstractSource {
         $customGroupDataFlow = $this->ensureCustomGroup($spec->customGroupTableName, $spec->customGroupName);
         $customGroupTableAlias = $customGroupDataFlow->getTableAlias();
         $customGroupDataFlow->addWhereClause(
-          new SimpleWhereClause($customGroupTableAlias, $spec->customFieldColumnName, $op, $values)
+          new SimpleWhereClause($customGroupTableAlias, $spec->customFieldColumnName, $op, $values, $spec->type, TRUE)
         );
       } else {
         $entityDataFlow = $this->ensureEntity();
-        $entityDataFlow->addWhereClause(new SimpleWhereClause($this->getSourceName(), $spec->name,$op, $values));
+        $entityDataFlow->addWhereClause(new SimpleWhereClause($this->getSourceName(), $spec->name,$op, $values, $spec->type, TRUE));
       }
     }
   }

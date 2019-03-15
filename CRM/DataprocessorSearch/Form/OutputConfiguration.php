@@ -31,8 +31,16 @@ class CRM_DataprocessorSearch_Form_OutputConfiguration extends CRM_Dataprocessor
 
     $this->add('text', 'title', E::ts('Title'), true);
 
-    $this->add('select','permission', E::ts('Permission'), CRM_Core_Permission::basicPermissions(), true, array('class' => 'crm-select2 crm-huge40'));
-    $this->add('select', 'contact_id_field', E::ts('Contact ID field'), $fields, true, array('class' => 'crm-select2 crm-huge40'));
+    $this->add('select','permission', E::ts('Permission'), CRM_Core_Permission::basicPermissions(), true, array(
+      'style' => 'min-width:250px',
+      'class' => 'crm-select2 huge',
+      'placeholder' => E::ts('- select -'),
+    ));
+    $this->add('select', 'contact_id_field', E::ts('Contact ID field'), $fields, true, array(
+      'style' => 'min-width:250px',
+      'class' => 'crm-select2 huge',
+      'placeholder' => E::ts('- select -'),
+    ));
 
     // navigation field
     $navigationOptions = $this->navigation->getNavigationOptions();
@@ -65,7 +73,7 @@ class CRM_DataprocessorSearch_Form_OutputConfiguration extends CRM_Dataprocessor
       }
     }
     if (!isset($defaults['permission'])) {
-      $defaults['permission'] = 'access CiviCRM backend and API';
+      $defaults['permission'] = 'access CiviCRM';
     }
     if (empty($defaults['title'])) {
       $defaults['title'] = $dataProcessor['title'];

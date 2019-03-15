@@ -22,7 +22,10 @@ class InTableWhereClause implements WhereClauseInterface {
 
   protected $operator;
 
-  public function __construct($select_field, $table, $table_alias, $filters, $source_table_alias, $source_field, $operator='IN') {
+  protected $isJoinClause = FALSE;
+
+  public function __construct($select_field, $table, $table_alias, $filters, $source_table_alias, $source_field, $operator='IN', $isJoinClause=FALSE) {
+    $this->isJoinClause = $isJoinClause;
     $this->source_field = $source_field;
     $this->select_field = $select_field;
     $this->table = $table;
@@ -30,6 +33,16 @@ class InTableWhereClause implements WhereClauseInterface {
     $this->filters = $filters;
     $this->operator = $operator;
     $this->source_table_alias = $source_table_alias;
+  }
+
+  /**
+   * Returns true when this where clause can be added to the
+   * join or whether this clause should be propagated to the where part of the query
+   *
+   * @return bool
+   */
+  public function isJoinClause() {
+    return $this->isJoinClause;
   }
 
   /**

@@ -78,7 +78,7 @@ class CRM_DataprocessorSearch_Search implements OutputInterface {
 
     if ($rebuildMenu) {
       // Rebuild the CiviCRM Menu (which holds all the pages)
-      CRM_Core_Menu::store();
+      CRM_Utils_System::flushCache();
     }
   }
 

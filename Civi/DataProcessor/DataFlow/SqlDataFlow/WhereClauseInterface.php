@@ -16,4 +16,12 @@ interface WhereClauseInterface {
    */
   public function getWhereClause();
 
+  /**
+   * Returns true when this where clause can be added to the
+   * join or whether this clause should be propagated to the where part of the query
+   *
+   * @return bool
+   */
+  public function isJoinClause();
+
 }

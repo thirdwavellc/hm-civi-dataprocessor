@@ -61,7 +61,7 @@ class OptionFieldOutputHandler extends AbstractFieldOutputHandler implements Out
    * @return String
    */
   public function getTitle() {
-    return E::ts('%1::%2 (Option)', array(1 => $this->dataSource->getSourceTitle(), 2 => $this->inputFieldSpec->title));
+    return E::ts('%1 :: %2 (Option)', array(1 => $this->dataSource->getSourceTitle(), 2 => $this->inputFieldSpec->title));
   }
 
   /**

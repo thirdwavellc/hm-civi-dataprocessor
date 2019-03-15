@@ -55,7 +55,7 @@ class RawFieldOutputHandler extends AbstractFieldOutputHandler implements Output
    * @return String
    */
   public function getTitle() {
-    return E::ts('%1::%2 (Raw)', array(1 => $this->dataSource->getSourceTitle(), 2 => $this->inputFieldSpec->title));
+    return E::ts('%1 :: %2', array(1 => $this->dataSource->getSourceTitle(), 2 => $this->inputFieldSpec->title));
   }
 
   /**

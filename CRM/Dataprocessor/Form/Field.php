@@ -46,12 +46,15 @@ class CRM_Dataprocessor_Form_Field extends CRM_Core_Form {
       $this->add('text', 'title', E::ts('Title'), array('size' => CRM_Utils_Type::HUGE), TRUE);
 
       $outputHandlers = CRM_Dataprocessor_BAO_DataProcessor::getAvailableOutputHandlers($this->dataProcessorId);
-      $outputHandlersSelect = array(E::ts('- Select -'));
       foreach($outputHandlers as $outputHandler) {
         $outputHandlersSelect[$outputHandler->getName()] = $outputHandler->getTitle();
       }
 
-      $this->add('select', 'type', E::ts('Select Field'), $outputHandlersSelect, true, array('class' => 'crm-select2 crm-huge40'));
+      $this->add('select', 'type', E::ts('Select Field'), $outputHandlersSelect, true, array(
+        'style' => 'min-width:250px',
+        'class' => 'crm-select2 huge',
+        'placeholder' => E::ts('- select -'),
+      ));
     }
     if ($this->_action == CRM_Core_Action::ADD) {
       $this->addButtons(array(

@@ -36,10 +36,18 @@ class CRM_Dataprocessor_Form_Join_Simple extends CRM_Core_Form {
     $this->add('hidden', 'data_processor_id');
     $this->add('hidden', 'source_id');
 
-    $fields = array(' - select - ') + $this->buildFieldList();
+    $fields = $this->buildFieldList();
 
-    $this->add('select', 'left_field', ts('Select field'), $fields, true, array('class' => 'crm-select2'));
-    $this->add('select', 'right_field', ts('Select field'), $fields, true, array('class' => 'crm-select2'));
+    $this->add('select', 'left_field', ts('Select field'), $fields, true, array(
+      'style' => 'min-width:250px',
+      'class' => 'crm-select2 huge',
+      'placeholder' => E::ts('- select -'),
+    ));
+    $this->add('select', 'right_field', ts('Select field'), $fields, true, array(
+      'style' => 'min-width:250px',
+      'class' => 'crm-select2 huge',
+      'placeholder' => E::ts('- select -'),
+    ));
 
     if ($this->_action == CRM_Core_Action::ADD) {
       $this->addButtons(array(

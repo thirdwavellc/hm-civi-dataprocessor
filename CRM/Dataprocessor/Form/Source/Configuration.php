@@ -65,7 +65,12 @@ class CRM_Dataprocessor_Form_Source_Configuration extends CRM_Dataprocessor_Form
               'IN' => E::ts('Is one of'),
               'NOT IN' => E::ts('Is not one of'),
             ]);
-            $this->addElement('select', "{$alias}_value", $fieldSpec->title, $fieldSpec->getOptions(), array('class' => 'crm-select2', 'multiple' => 'multiple'));
+            $this->addElement('select', "{$alias}_value", $fieldSpec->title, $fieldSpec->getOptions(), array(
+              'style' => 'min-width:250px',
+              'class' => 'crm-select2 huge',
+              'multiple' => 'multiple',
+              'placeholder' => E::ts('- select -'),
+            ));
           }
       }
     }

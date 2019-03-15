@@ -12,7 +12,11 @@ class CRM_Dataprocessor_Form_Output_API extends CRM_Dataprocessor_Form_Output_Ab
 
   public function buildQuickForm() {
     parent::buildQuickForm();
-    $this->add('select','permission', E::ts('Permission'), CRM_Core_Permission::basicPermissions(), true);
+    $this->add('select','permission', E::ts('Permission'), CRM_Core_Permission::basicPermissions(), true, array(
+      'style' => 'min-width:250px',
+      'class' => 'crm-select2 huge',
+      'placeholder' => E::ts('- select -'),
+    ));
     $this->add('text', 'api_entity', E::ts('API Entity'), true);
     $this->add('text', 'api_action', E::ts('API Action Name'), true);
     $this->add('text', 'api_count_action', E::ts('API GetCount Action Name'), true);
@@ -26,7 +30,7 @@ class CRM_Dataprocessor_Form_Output_API extends CRM_Dataprocessor_Form_Output_Ab
       $defaults['api_action'] = $this->output['api_action'];
       $defaults['api_count_action'] = $this->output['api_count_action'];
     } else {
-      $defaults['permission'] = 'access CiviCRM backend and API';
+      $defaults['permission'] = 'access CiviCRM';
     }
     return $defaults;
   }

@@ -26,12 +26,25 @@ class MultiValueFieldWhereClause implements WhereClauseInterface {
 
   protected $valueType;
 
-  public function __construct($table_alias, $field, $operator, $value, $valueType = 'String') {
+  protected $isJoinClause = FALSE;
+
+  public function __construct($table_alias, $field, $operator, $value, $valueType = 'String', $isJoinClause=FALSE) {
+    $this->isJoinClause = $isJoinClause;
     $this->table_alias = $table_alias;
     $this->field = $field;
     $this->operator = $operator;
     $this->value = $value;
     $this->valueType = $valueType;
+  }
+
+  /**
+   * Returns true when this where clause can be added to the
+   * join or whether this clause should be propagated to the where part of the query
+   *
+   * @return bool
+   */
+  public function isJoinClause() {
+    return $this->isJoinClause;
   }
 
   /**

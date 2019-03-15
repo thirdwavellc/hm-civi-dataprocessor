@@ -299,7 +299,6 @@ class CRM_DataprocessorSearch_Form_Search extends CRM_Core_Form_Search {
             break;
         }
       }
-
       if ($filter->isRequired() && !$isFilterSet) {
         throw new \Exception('Field '.$filterSpec->title.' is required');
       }
@@ -351,28 +350,28 @@ class CRM_DataprocessorSearch_Form_Search extends CRM_Core_Form_Search {
       $filter['type'] = $fieldSpec->type;
       $operations = $this->getOperatorOptions($fieldSpec);
       if ($fieldSpec->getOptions()) {
-        $element = $this->addElement('select', "{$fieldSpec->alias}_op", ts('Operator:'), $operations);
+        $element = $this->addElement('select', "{$fieldSpec->alias}_op",E::ts('Operator:'), $operations);
         $this->addElement('select', "{$fieldSpec->alias}_value", NULL, $fieldSpec->getOptions(), array(
           'style' => 'min-width:250px',
           'class' => 'crm-select2 huge',
           'multiple' => TRUE,
-          'placeholder' => ts('- select -'),
+          'placeholder' => E::ts('- select -'),
         ));
       } else {
         switch ($type) {
           case \CRM_Utils_Type::T_DATE:
-            CRM_Core_Form_Date::buildDateRange($this, $fieldSpec->alias, $count, '_from', '_to', ts('From:'), $filterHandler->isRequired(), $operations);
+            CRM_Core_Form_Date::buildDateRange($this, $fieldSpec->alias, $count, '_from', '_to', E::ts('From:'), $filterHandler->isRequired(), $operations);
             $count ++;
             break;
           case CRM_Report_Form::OP_INT:
           case CRM_Report_Form::OP_FLOAT:
             // and a min value input box
-            $this->add('text', "{$fieldSpec->alias}_min", ts('Min'));
+            $this->add('text', "{$fieldSpec->alias}_min", E::ts('Min'));
             // and a max value input box
-            $this->add('text', "{$fieldSpec->alias}_max", ts('Max'));
+            $this->add('text', "{$fieldSpec->alias}_max", E::ts('Max'));
           default:
             // default type is string
-            $this->addElement('select', "{$fieldSpec->alias}_op", ts('Operator:'), $operations,
+            $this->addElement('select', "{$fieldSpec->alias}_op", E::ts('Operator:'), $operations,
               array('onchange' => "return showHideMaxMinVal( '$fieldSpec->alias', this.value );")
             );
             // we need text box for value input
@@ -388,8 +387,8 @@ class CRM_DataprocessorSearch_Form_Search extends CRM_Core_Form_Search {
   protected function getOperatorOptions(\Civi\DataProcessor\DataSpecification\FieldSpecification $fieldSpec) {
     if ($fieldSpec->getOptions()) {
       return array(
-        'IN' => ts('Is one of'),
-        'NOT IN' => ts('Is not one of'),
+        'IN' => E::ts('Is one of'),
+        'NOT IN' => E::ts('Is not one of'),
       );
     }
     $types = \CRM_Utils_Type::getValidTypes();
@@ -404,22 +403,22 @@ class CRM_DataprocessorSearch_Form_Search extends CRM_Core_Form_Search {
       case \CRM_Utils_Type::T_INT:
       case \CRM_Utils_Type::T_FLOAT:
         return array(
-          '=' => ts('Is equal to'),
-          '<=' => ts('Is less than or equal to'),
-          '>=' => ts('Is greater than or equal to'),
-          '<' => ts('Is less than'),
-          '>' => ts('Is greater than'),
-          '!=' => ts('Is not equal to'),
+          '=' => E::ts('Is equal to'),
+          '<=' => E::ts('Is less than or equal to'),
+          '>=' => E::ts('Is greater than or equal to'),
+          '<' => E::ts('Is less than'),
+          '>' => E::ts('Is greater than'),
+          '!=' => E::ts('Is not equal to'),
         );
         break;
     }
     return array(
-      '=' => ts('Is equal to'),
-      '!=' => ts('Is not equal to'),
-      'has' => ts('Contains'),
-      'sw' => ts('Starts with'),
-      'ew' => ts('Ends with'),
-      'nhas' => ts('Does not contain'),
+      '=' => E::ts('Is equal to'),
+      '!=' => E::ts('Is not equal to'),
+      'has' => E::ts('Contains'),
+      'sw' => E::ts('Starts with'),
+      'ew' => E::ts('Ends with'),
+      'nhas' => E::ts('Does not contain'),
     );
   }
 
@@ -429,7 +428,7 @@ class CRM_DataprocessorSearch_Form_Search extends CRM_Core_Form_Search {
   protected function getPagerParams() {
     $params = [];
     $params['total'] = 0;
-    $params['status'] = ts('%%StatusMessage%%');
+    $params['status'] =E::ts('%%StatusMessage%%');
     $params['csvString'] = NULL;
     $params['rowCount'] =  CRM_Utils_Pager::ROWCOUNT;
     $params['buttonTop'] = 'PagerTopButton';
