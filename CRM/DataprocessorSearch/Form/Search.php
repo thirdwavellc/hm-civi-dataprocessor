@@ -109,7 +109,6 @@ class CRM_DataprocessorSearch_Form_Search extends CRM_Core_Form_Search {
     $this->dataProcessor->getDataFlow()->setOffset($offset);
 
     // Set the sort
-    $sortField = '';
     $sortDirection = 'ASC';
     if (!empty($this->sort->_vars[$this->sort->getCurrentSortID()])) {
       $sortField = $this->sort->_vars[$this->sort->getCurrentSortID()];

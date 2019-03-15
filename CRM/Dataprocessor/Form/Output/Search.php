@@ -24,7 +24,8 @@ class CRM_Dataprocessor_Form_Output_Search extends CRM_Dataprocessor_Form_Output
 
     $dataProcessor = CRM_Dataprocessor_BAO_DataProcessor::getDataProcessorById($this->dataProcessorId);
     $fields = array();
-    foreach($dataProcessor->getDataFlow()->getDataSpecification()->getFields() as $field) {
+    foreach($dataProcessor->getDataFlow()->getOutputFieldHandlers() as $outputFieldHandler) {
+      $field = $outputFieldHandler->getOutputFieldSpecification();
       $fields[$field->alias] = $field->title;
     }
 
