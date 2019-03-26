@@ -38,7 +38,7 @@ class ContactSource extends AbstractCivicrmEntitySource {
   public function getAvailableFilterFields() {
     if (!$this->availableFilterFields) {
       $this->availableFilterFields = new DataSpecification();
-      $this->loadFields($this->availableFilterFields, array('contact_type'));
+      $this->loadFields($this->availableFilterFields);
       $this->loadCustomGroupsAndFields($this->availableFilterFields, true);
     }
     return $this->availableFilterFields;

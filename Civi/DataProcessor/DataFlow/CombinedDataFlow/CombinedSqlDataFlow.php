@@ -68,9 +68,10 @@ class CombinedSqlDataFlow extends SqlDataFlow implements MultipleSourceDataFlows
   public function getFromStatement() {
     $fromStatements = array();
     $sourceDataFlowDescription = reset($this->sourceDataFlowDescriptions);
-    if ($sourceDataFlowDescription->getDataFlow() instanceof SqlTableDataFlow) {
-      $fromStatements[] = "FROM `{$sourceDataFlowDescription->getDataFlow()->getTable()}` `{$sourceDataFlowDescription->getDataFlow()->getTableAlias()}`";
-    } elseif ($sourceDataFlowDescription->getDataFlow() instanceof CombinedSqlDataFlow) {
+    $dataFlow = $sourceDataFlowDescription->getDataFlow();
+    if ($dataFlow instanceof SqlTableDataFlow) {
+      $fromStatements[] = "FROM `{$dataFlow->getTable()}` `{$dataFlow->getTableAlias()}`";
+    } elseif ($dataFlow instanceof CombinedSqlDataFlow) {
       $fromStatements[] = "FROM `{$sourceDataFlowDescription->getDataFlow()->getPrimaryTable()}` `{$sourceDataFlowDescription->getDataFlow()->getPrimaryTableAlias()}`";
     }
     $fromStatements = array_merge($fromStatements, $this->getJoinStatement(0));

@@ -139,9 +139,10 @@ abstract class AbstractCivicrmEntitySource extends AbstractSource {
    *
    * @param DataSpecification $dataSpecification
    * @param bool $onlySearchAbleFields
+   * @param $entity
    * @throws \Civi\DataProcessor\DataSpecification\FieldExistsException
    */
-  protected function loadCustomGroupsAndFields(DataSpecification $dataSpecification, $onlySearchAbleFields) {
+  protected function loadCustomGroupsAndFields(DataSpecification $dataSpecification, $onlySearchAbleFields, $entity=null) {
     $customGroupToReturnParam = array(
       'custom_field' => array(
         'id',
@@ -181,7 +182,10 @@ abstract class AbstractCivicrmEntitySource extends AbstractSource {
         'max_multiple',
       ),
     );
-    $customGroups = \CRM_Core_BAO_CustomGroup::getTree($this->getEntity(), $customGroupToReturnParam,NULL,NULL,NULL,NULL,NULL,NULL,TRUE,FALSE,FALSE);
+    if (!$entity) {
+      $entity = $this->getEntity();
+    }
+    $customGroups = \CRM_Core_BAO_CustomGroup::getTree($entity, $customGroupToReturnParam,NULL,NULL,NULL,NULL,NULL,NULL,TRUE,FALSE,FALSE);
     foreach($customGroups as $cgId => $customGroup) {
       if ($cgId == 'info') {
         continue;

@@ -36,6 +36,16 @@ class SqlTableDataFlow extends SqlDataFlow {
   }
 
   /**
+   * @param $table_alias
+   *
+   * @return SqlTableDataFlow
+   */
+  public function setTableAlias($table_alias) {
+    $this->table_alias = $table_alias;
+    return $this;
+  }
+
+  /**
    * Returns the From Statement.
    *
    * @return string

@@ -95,7 +95,11 @@ class Factory {
     $this->dispatcher = \Civi::dispatcher();
 
     $this->addDataProcessorType('default', 'Civi\DataProcessor\ProcessorType\DefaultProcessorType', E::ts('Default'));
+    $this->addDataSource('activity', 'Civi\DataProcessor\Source\Activity\ActivitySource', E::ts('Activity'));
     $this->addDataSource('contact', 'Civi\DataProcessor\Source\Contact\ContactSource', E::ts('Contact'));
+    $this->addDataSource('individual', 'Civi\DataProcessor\Source\Contact\IndividualSource', E::ts('Individual'));
+    $this->addDataSource('household', 'Civi\DataProcessor\Source\Contact\HouseholdSource', E::ts('Household'));
+    $this->addDataSource('organization', 'Civi\DataProcessor\Source\Contact\OrganizationSource', E::ts('Organization'));
     $this->addDataSource('group', 'Civi\DataProcessor\Source\Group\GroupSource', E::ts('Group'));
     $this->addDataSource('group_contact', 'Civi\DataProcessor\Source\Group\GroupContactSource', E::ts('Contacts in a group'));
     $this->addDataSource('email', 'Civi\DataProcessor\Source\Contact\EmailSource', E::ts('E-mail'));

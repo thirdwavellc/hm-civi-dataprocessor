@@ -97,7 +97,10 @@ abstract class SqlDataFlow extends AbstractDataFlow {
         "Error in DataFlow query.
         \r\nData flow: {$this->getName()}
         \r\nCount query: {$countSql}
-        \r\nQuery: $sql", 0, $e);
+        \r\nQuery: $sql
+        \r\nMessage: {$e->getMessage()}", 0, $e);
+
+
     }
   }
 
@@ -242,7 +245,7 @@ abstract class SqlDataFlow extends AbstractDataFlow {
       }
       if ($sortSpecification->getField()) {
         $fieldName = $sortSpecification->getField()->alias;
-        $orderBys[] = "{$fieldName} {$dir}";
+        $orderBys[] = "`{$fieldName}` {$dir}";
       }
     }
     if (count($orderBys)) {

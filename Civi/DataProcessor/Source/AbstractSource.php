@@ -38,6 +38,10 @@ abstract class AbstractSource implements SourceInterface {
    */
   protected $dataFlow;
 
+  public function __construct() {
+
+  }
+
   /**
    * @return String
    */

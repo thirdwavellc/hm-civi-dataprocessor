@@ -108,9 +108,11 @@ class CRM_Dataprocessor_Form_Join_Simple extends CRM_Core_Form {
   function buildFieldList() {
     $factory = dataprocessor_get_factory();
     $fields = array();
+    $dataProcessor = CRM_Dataprocessor_BAO_DataProcessor::getDataProcessorById($this->dataProcessorId);
     $sources = CRM_Dataprocessor_BAO_Source::getValues(array('data_processor_id' => $this->dataProcessorId));
     foreach($sources as $source) {
       $sourceClass = $factory->getDataSourceByName($source['type']);
+      $sourceClass->setDataProcessor($dataProcessor);
       $sourceClass->initialize($source['configuration'], $source['name']);
       $sourceFields = $sourceClass->getAvailableFields()->getFields();
       foreach($sourceFields as $sourceField) {
