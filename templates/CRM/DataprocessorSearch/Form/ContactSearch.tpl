@@ -27,6 +27,7 @@
                     <thead class="sticky">
                     <tr>
                         <th scope="col" title="Select Rows">{$form.toggleSelect.html}</th>
+                        <th scope="col"></th>
                         {foreach from=$columnHeaders key=headerName item=headerTitle}
                             <th scope="col">
                                 {$sort->_response.$headerName.link}
@@ -42,6 +43,7 @@
                             {assign var=id value=$row.id}
                             {assign var=record value=$row.record}
                             <td>{$form.$cbName.html}</td>
+                            <td>{$row.contact_type}</td>
                             {foreach from=$columnHeaders key=headerName item=headerTitle}
                                 {assign var=columnValue value=$record.$headerName}
                                 <td>{$columnValue->formattedValue}</td>

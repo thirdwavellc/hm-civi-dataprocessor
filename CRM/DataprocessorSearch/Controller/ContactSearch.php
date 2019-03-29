@@ -14,7 +14,7 @@
  *
  * The second form is used to process search results with the associated actions.
  */
-class CRM_DataprocessorSearch_Controller_Search extends CRM_Core_Controller {
+class CRM_DataprocessorSearch_Controller_ContactSearch extends CRM_Core_Controller {
 
   /**
    * Class constructor.
@@ -26,7 +26,7 @@ class CRM_DataprocessorSearch_Controller_Search extends CRM_Core_Controller {
   public function __construct($title = NULL, $modal = TRUE, $action = CRM_Core_Action::NONE) {
     parent::__construct($title, $modal);
 
-    $this->_stateMachine = new CRM_DataprocessorSearch_StateMachine_Search($this, $action);
+    $this->_stateMachine = new CRM_DataprocessorSearch_StateMachine_ContactSearch($this, $action);
 
     // create and instantiate the pages
     $this->addPages($this->_stateMachine, $action);
@@ -54,7 +54,7 @@ class CRM_DataprocessorSearch_Controller_Search extends CRM_Core_Controller {
     list($pageName, $action) = $actionName;
     // Hack to replace to userContext for redirecting after a Task has been completed.
     // We want the redirect
-    if (!$this->_pages[$pageName] instanceof CRM_DataprocessorSearch_Form_Search) {
+    if (!$this->_pages[$pageName] instanceof CRM_DataprocessorSearch_Form_ContactSearch) {
       $session = CRM_Core_Session::singleton();
       $qfKey = CRM_Utils_Request::retrieve('qfKey', 'String', $this);
       $urlPath = CRM_Utils_System::getUrlPath();

@@ -118,7 +118,8 @@ class Factory {
     $this->addDataSource('membership_status', 'Civi\DataProcessor\Source\Member\MembershipStatusSource', E::ts('Membership Status'));
     $this->addDataSource('csv', 'Civi\DataProcessor\Source\CSV', E::ts('CSV File'));
     $this->addOutput('api', 'Civi\DataProcessor\Output\Api', E::ts('API'));
-    $this->addOutput('search', 'CRM_DataprocessorSearch_Search', E::ts('Search'));
+    $this->addOutput('contact_search', 'CRM_DataprocessorSearch_ContactSearch', E::ts('Contact Search'));
+    $this->addOutput('activity_search', 'CRM_DataprocessorSearch_ActivitySearch', E::ts('Activity Search'));
     $this->addFilter('simple_sql_filter', 'Civi\DataProcessor\FilterHandler\SimpleSqlFilter', E::ts('Simple Filter'));
     $this->addjoinType('simple_join', 'Civi\DataProcessor\DataFlow\MultipleDataFlows\SimpleJoin', E::ts('Simple Join'));
     $this->addjoinType('simple_non_required_join', 'Civi\DataProcessor\DataFlow\MultipleDataFlows\SimpleNonRequiredJoin', E::ts('Simple  (but not required) Join'));

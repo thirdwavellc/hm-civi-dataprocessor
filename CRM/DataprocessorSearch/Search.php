@@ -6,19 +6,9 @@
 
 use Civi\DataProcessor\Output\OutputInterface;
 
-class CRM_DataprocessorSearch_Search implements OutputInterface {
+class CRM_DataprocessorSearch_Search {
 
   private static $rebuildMenu = false;
-
-  /**
-   * Return the url to a configuration page.
-   * Or return false when no configuration page exists.
-   *
-   * @return string|false
-   */
-  public function getConfigurationUrl() {
-    return 'civicrm/dataprocessor/form/output/search';
-  }
 
   /**
    * Delegation of the alter menu hook. Add the search outputs to the menu system.
@@ -26,25 +16,35 @@ class CRM_DataprocessorSearch_Search implements OutputInterface {
    * @param $items
    */
   public static function alterMenu(&$items) {
+    $factory = dataprocessor_get_factory();
+
     $sql = "
-    SELECT o.permission, p.id, p.title, o.configuration 
+    SELECT o.permission, p.id, p.title, o.configuration, o.type, o.id as output_id 
     FROM civicrm_data_processor_output o 
     INNER JOIN civicrm_data_processor p ON o.data_processor_id = p.id 
-    WHERE p.is_active = 1 AND o.type = 'search'";
+    WHERE p.is_active = 1";
     $dao = CRM_Core_DAO::executeQuery($sql);
     while ($dao->fetch()) {
-      $url = 'civicrm/dataprocessor_search/'.$dao->id;
-      $configuration = json_decode($dao->configuration, TRUE);
-      $title = $dao->title;
-      if (isset($configuration['title'])) {
-        $title = $configuration['title'];
+      $outputClass = $factory->getOutputByName($dao->type);
+      if ($outputClass instanceof CRM_DataprocessorSearch_SearchInterface) {
+        $outputs = CRM_Dataprocessor_BAO_Output::getValues(['id' => $dao->output_id]);
+        $output = $outputs[$dao->output_id];
+        $dataprocessors = CRM_Dataprocessor_BAO_DataProcessor::getValues(['id' => $dao->id]);
+        $dataprocessor = $dataprocessors[$dao->id];
+        $url = $outputClass->getSearchUrl($output, $dataprocessor);
+
+        $configuration = json_decode($dao->configuration, TRUE);
+        $title = $dao->title;
+        if (isset($configuration['title'])) {
+          $title = $configuration['title'];
+        }
+        $item = [
+          'title' => $title,
+          'page_callback' => $outputClass->getSearchControllerClass(),
+          'access_arguments' => [$dao->permission],
+        ];
+        $items[$url] = $item;
       }
-      $item = array(
-        'title' => $title,
-        'page_callback' => 'CRM_DataprocessorSearch_Controller_Search',
-        'access_arguments' => array($dao->permission),
-      );
-      $items[$url] = $item;
     }
   }
 
@@ -96,7 +96,7 @@ class CRM_DataprocessorSearch_Search implements OutputInterface {
             $navigationParams['parent_id'] = !empty($navigationDefaults['parent_id']) ? $navigationDefaults['parent_id'] : NULL;
           }
         }
-        self::$rebuildMenu = self::newNavigationItem($params, $dataProcessor, $navigationParams);
+        self::$rebuildMenu = self::newNavigationItem($params, $dataProcessor, $navigationParams, $output);
       }
     }
     elseif ($op == 'create' && isset($params['configuration']['navigation_parent_path'])) {
@@ -151,7 +151,20 @@ class CRM_DataprocessorSearch_Search implements OutputInterface {
    *
    * @return bool
    */
-  private static function newNavigationItem(&$params, $dataProcessor, $navigationParams=array()) {
+  private static function newNavigationItem(&$params, $dataProcessor, $navigationParams=array(), $output=null) {
+    $url = "";
+    $factory = dataprocessor_get_factory();
+    $outputClass = FALSE;
+    if (isset($params['type'])) {
+      $outputClass = $factory->getOutputByName($params['type']);
+    } elseif(isset($output['type'])) {
+      $outputClass = $factory->getOutputByName($output['type']);
+    }
+
+    if ($outputClass && $outputClass instanceof CRM_DataprocessorSearch_SearchInterface) {
+      $url = $outputClass->getSearchUrl($params, $dataProcessor);
+    }
+
     $navigation = CRM_DataprocessorSearch_Utils_Navigation::singleton();
     $navigationParams['domain_id'] = CRM_Core_Config::domainID();
     $navigationParams['permission'] = array();
@@ -167,7 +180,7 @@ class CRM_DataprocessorSearch_Search implements OutputInterface {
 
     unset($params['configuration']['navigation_parent_path']);
 
-    $navigationParams['url'] = "civicrm/dataprocessor_search/{$dataProcessor['id']}?reset=1";
+    $navigationParams['url'] = $url.'?reset=1';
     $navigation = CRM_Core_BAO_Navigation::add($navigationParams);
     CRM_Core_BAO_Navigation::resetNavigation();
 

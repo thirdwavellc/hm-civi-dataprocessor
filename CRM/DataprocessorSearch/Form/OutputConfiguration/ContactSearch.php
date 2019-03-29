@@ -7,7 +7,7 @@ use CRM_Dataprocessor_ExtensionUtil as E;
  *
  * @see https://wiki.civicrm.org/confluence/display/CRMDOC/QuickForm+Reference
  */
-class CRM_DataprocessorSearch_Form_OutputConfiguration extends CRM_Dataprocessor_Form_Output_AbstractOutputForm {
+class CRM_DataprocessorSearch_Form_OutputConfiguration_ContactSearch extends CRM_Dataprocessor_Form_Output_AbstractOutputForm {
 
   /**
    * @var CRM_DataprocessorSearch_Utils_Navigation
@@ -41,6 +41,7 @@ class CRM_DataprocessorSearch_Form_OutputConfiguration extends CRM_Dataprocessor
       'class' => 'crm-select2 huge',
       'placeholder' => E::ts('- select -'),
     ));
+    $this->add('select', 'hide_id_field', E::ts('Show Contact ID field'), array(0=>'Contact ID is Visible', 1=> 'Contact ID is hidden'));
 
     // navigation field
     $navigationOptions = $this->navigation->getNavigationOptions();
@@ -70,6 +71,9 @@ class CRM_DataprocessorSearch_Form_OutputConfiguration extends CRM_Dataprocessor
         if (isset($this->output['configuration']['title'])) {
           $defaults['title'] = $this->output['configuration']['title'];
         }
+        if (isset($this->output['configuration']['hide_id_field'])) {
+          $defaults['hide_id_field'] = $this->output['configuration']['hide_id_field'];
+        }
       }
     }
     if (!isset($defaults['permission'])) {
@@ -93,6 +97,7 @@ class CRM_DataprocessorSearch_Form_OutputConfiguration extends CRM_Dataprocessor
     $params['configuration']['title'] = $values['title'];
     $params['configuration']['contact_id_field'] = $values['contact_id_field'];
     $params['configuration']['navigation_parent_path'] = $values['navigation_parent_path'];
+    $params['configuration']['hide_id_field'] = $values['hide_id_field'];
 
     CRM_Dataprocessor_BAO_Output::add($params);
 

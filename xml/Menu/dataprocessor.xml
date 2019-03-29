@@ -78,8 +78,15 @@
     <access_arguments>administer CiviCRM</access_arguments>
   </item>
   <item>
-    <path>civicrm/dataprocessor/form/output/search</path>
-    <page_callback>CRM_DataprocessorSearch_Form_OutputConfiguration</page_callback>
+    <path>civicrm/dataprocessor/form/output/contact_search</path>
+    <page_callback>CRM_DataprocessorSearch_Form_OutputConfiguration_ContactSearch</page_callback>
+    <title>DataProcessor</title>
+    <access_arguments>access CiviCRM</access_arguments>
+    <access_arguments>administer CiviCRM</access_arguments>
+  </item>
+  <item>
+    <path>civicrm/dataprocessor/form/output/activity_search</path>
+    <page_callback>CRM_DataprocessorSearch_Form_OutputConfiguration_ActivitySearch</page_callback>
     <title>DataProcessor</title>
     <access_arguments>access CiviCRM</access_arguments>
     <access_arguments>administer CiviCRM</access_arguments>

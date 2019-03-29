@@ -4,7 +4,7 @@
  * @license AGPL-3.0
  */
 
-class CRM_DataprocessorSearch_StateMachine_Search extends CRM_Core_StateMachine {
+class CRM_DataprocessorSearch_StateMachine_ContactSearch extends CRM_Core_StateMachine {
 
   /**
    * The task that the wizard is currently processing
@@ -24,7 +24,7 @@ class CRM_DataprocessorSearch_StateMachine_Search extends CRM_Core_StateMachine 
 
     $this->_pages = array();
     $this->_pages['Basic'] = array(
-      'className' => 'CRM_DataprocessorSearch_Form_Search',
+      'className' => 'CRM_DataprocessorSearch_Form_ContactSearch',
     );
     list($task, $result) = $this->taskName($controller);
     $this->_task = $task;

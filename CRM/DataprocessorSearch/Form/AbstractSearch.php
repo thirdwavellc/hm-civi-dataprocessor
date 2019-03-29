@@ -6,24 +6,41 @@
 
 use CRM_Dataprocessor_ExtensionUtil as E;
 
-class CRM_DataprocessorSearch_Form_Search extends CRM_Core_Form_Search {
+abstract class CRM_DataprocessorSearch_Form_AbstractSearch extends CRM_Core_Form_Search {
 
   /**
    * @var \Civi\DataProcessor\ProcessorType\AbstractProcessorType;
    */
   protected $dataProcessor;
 
+  /**
+   * @var int
+   */
   protected $dataProcessorId;
+
+  /**
+   * @var String
+   */
+  protected $title;
 
   /**
    * @var \CRM_Dataprocessor_BAO_Output
    */
   protected $dataProcessorOutput;
 
+  /**
+   * @var int
+   */
   protected $limit;
 
+  /**
+   * @var int
+   */
   protected $pageId;
 
+  /**
+   * @var bool
+   */
   protected $_debug = FALSE;
 
   /**
@@ -31,7 +48,83 @@ class CRM_DataprocessorSearch_Form_Search extends CRM_Core_Form_Search {
    */
   protected $sort;
 
+  /**
+   * @var bool
+   */
   protected $formHasRequiredFilters = FALSE;
+
+  /**
+   * Checks whether the output has a valid configuration
+   *
+   * @return bool
+   */
+  abstract protected function isConfigurationValid();
+
+  /**
+   * Return the data processor ID
+   *
+   * @return String
+   */
+  abstract protected function getDataProcessorName();
+
+  /**
+   * Returns the name of the output for this search
+   *
+   * @return string
+   */
+  abstract protected function getOutputName();
+
+  /**
+   * Returns the name of the ID field in the dataset.
+   *
+   * @return string
+   */
+  abstract protected function getIdFieldName();
+
+  /**
+   * @return string
+   */
+  abstract protected function getEntityTable();
+
+  /**
+   * Builds the list of tasks or actions that a searcher can perform on a result set.
+   *
+   * @return array
+   */
+  public function buildTaskList() {
+    return $this->_taskList;
+  }
+
+  /**
+   * Returns whether we want to use the prevnext cache.
+   * @return bool
+   */
+  protected function usePrevNextCache() {
+    return false;
+  }
+
+  /**
+   * Returns whether the ID field is Visible
+   *
+   * @return bool
+   */
+  protected function isIdFieldVisible() {
+    if (isset($this->dataProcessorOutput['configuration']['hide_id_field']) && $this->dataProcessorOutput['configuration']['hide_id_field']) {
+      return false;
+    }
+    return true;
+  }
+
+  /**
+   * Return altered rows
+   *
+   * @param array $rows
+   * @param array $ids
+   *
+   */
+  protected function alterRows(&$rows, $ids) {
+
+  }
 
   public function preProcess() {
     parent::preProcess();
@@ -62,7 +155,7 @@ class CRM_DataprocessorSearch_Form_Search extends CRM_Core_Form_Search {
       $pageId = CRM_Utils_Request::retrieve('crmPID', 'Positive', $this, FALSE, 1);
 
       $this->addColumnHeaders();
-      $this->findRows($pageId, $limit);
+      $this->buildRows($pageId, $limit);
     }
 
   }
@@ -73,27 +166,30 @@ class CRM_DataprocessorSearch_Form_Search extends CRM_Core_Form_Search {
    * @throws \Exception
    */
   protected function findDataProcessor() {
-    $dataProcessorId = str_replace('civicrm/dataprocessor_search/', '', CRM_Utils_System::getUrlPath());
-    $sql = "
-      SELECT civicrm_data_processor.id as data_processor_id,  civicrm_data_processor_output.id AS output_id
-      FROM civicrm_data_processor 
-      INNER JOIN civicrm_data_processor_output ON civicrm_data_processor.id = civicrm_data_processor_output.data_processor_id
-      WHERE is_active = 1 AND civicrm_data_processor.id = %1 AND civicrm_data_processor_output.type = 'search'
-    ";
-    $params[1] = array($dataProcessorId, 'Integer');
-    $dao = CRM_Dataprocessor_BAO_DataProcessor::executeQuery($sql, $params, TRUE, 'CRM_Dataprocessor_BAO_DataProcessor');
-    if (!$dao->fetch()) {
-      throw new \Exception('Could not find Data Processor with id '.$dataProcessorId);
+    if (!$this->dataProcessorId) {
+      $dataProcessorName = $this->getDataProcessorName();
+      $sql = "
+        SELECT civicrm_data_processor.id as data_processor_id,  civicrm_data_processor_output.id AS output_id
+        FROM civicrm_data_processor 
+        INNER JOIN civicrm_data_processor_output ON civicrm_data_processor.id = civicrm_data_processor_output.data_processor_id
+        WHERE is_active = 1 AND civicrm_data_processor.name = %1 AND civicrm_data_processor_output.type = %2
+      ";
+      $params[1] = [$dataProcessorName, 'String'];
+      $params[2] = [$this->getOutputName(), 'String'];
+      $dao = CRM_Dataprocessor_BAO_DataProcessor::executeQuery($sql, $params, TRUE, 'CRM_Dataprocessor_BAO_DataProcessor');
+      if (!$dao->fetch()) {
+        throw new \Exception('Could not find Data Processor "' . $dataProcessorName.'"');
+      }
+      $this->dataProcessor = CRM_Dataprocessor_BAO_DataProcessor::getDataProcessorById($dao->data_processor_id);
+      $this->dataProcessorId = $dao->data_processor_id;
+
+      $output = CRM_Dataprocessor_BAO_Output::getValues(['id' => $dao->output_id]);
+      $this->dataProcessorOutput = $output[$dao->output_id];
+
+      if (!$this->isConfigurationValid()) {
+        throw new \Exception('Invalid configuration found for the Search output of the data processor "' . $dataProcessorName . '"');
+      }
     }
-    $this->dataProcessor = CRM_Dataprocessor_BAO_DataProcessor::getDataProcessorById($dao->data_processor_id);
-
-    $output = CRM_Dataprocessor_BAO_Output::getValues(array('id' => $dao->output_id));
-    $this->dataProcessorOutput = $output[$dao->output_id];
-
-    if (!isset($this->dataProcessorOutput['configuration']['contact_id_field'])) {
-      throw new \Exception('Invalid configuration found for the Search output of the data processor (id = '.$dataProcessorId.')');
-    }
-
   }
 
   /**
@@ -104,9 +200,9 @@ class CRM_DataprocessorSearch_Form_Search extends CRM_Core_Form_Search {
    *
    * @throws \Civi\DataProcessor\DataFlow\InvalidFlowException
    */
-  protected function findRows($pageId, $limit) {
+  protected function buildRows($pageId, $limit) {
     $rows = [];
-    $contact_ids = array();
+    $ids = array();
     $prevnextData = array();
 
     $offset = ($pageId - 1) * $limit;
@@ -131,47 +227,39 @@ class CRM_DataprocessorSearch_Form_Search extends CRM_Core_Form_Search {
     $this->pager = new CRM_Utils_Pager($pagerParams);
     $this->assign('pager', $this->pager);
 
-    $contact_id_field = $this->dataProcessorOutput['configuration']['contact_id_field'];
-    $this->assign('contact_id_field', $contact_id_field);
+    $id_field = $this->getIdFieldName();
+    $this->assign('id_field', $id_field);
 
     try {
       while($record = $this->dataProcessor->getDataFlow()->nextRecord()) {
         $row = array();
-        $row['contact_id'] = $record[$contact_id_field]->formattedValue;
-        $row['checkbox'] = CRM_Core_Form::CB_PREFIX.$row['contact_id'];
+        $row['id'] = $record[$id_field]->formattedValue;
+        $row['checkbox'] = CRM_Core_Form::CB_PREFIX.$row['id'];
         $row['record'] = $record;
         $this->addElement('checkbox', $row['checkbox'], NULL, NULL, ['class' => 'select-row']);
 
         $prevnextData[] = array(
-          'entity_id1' => $row['contact_id'],
+          'entity_id1' => $row['id'],
+          'entity_table' => $this->getEntityTable(),
           'data' => $record,
         );
-        $contact_ids[] = $row['contact_id'];
+        $ids[] = $row['id'];
 
-        $rows[$row['contact_id']] = $row;
+        $rows[$row['id']] = $row;
       }
     } catch (\Civi\DataProcessor\DataFlow\EndOfFlowException $e) {
       // Do nothing
     }
 
-    // Add the contact type image
-    if (count($contact_ids)) {
-      $contactDao = CRM_Core_DAO::executeQuery("SELECT id, contact_type, contact_sub_type FROM civicrm_contact WHERE `id` IN (".implode(",", $contact_ids).")");
-      while($contactDao->fetch()) {
-        $rows[$contactDao->id]['contact_type'] = CRM_Contact_BAO_Contact_Utils::getImage($contactDao->contact_sub_type ? $contactDao->contact_sub_type : $contactDao->contact_type,
-          FALSE,
-          $contactDao->id
-        );
-      }
-    }
+    $this->alterRows($rows, $ids);
 
     $this->addElement('checkbox', 'toggleSelect', NULL, NULL, ['class' => 'select-rows']);
-
-    $cacheKey = "civicrm search {$this->controller->_key}";
-    Civi::service('prevnext')->fillWithArray($cacheKey, $prevnextData);
     $this->assign('rows', $rows);
-
     $this->assign('debug_info', $this->dataProcessor->getDataFlow()->getDebugInformation());
+    if ($this->usePrevNextCache()) {
+      $cacheKey = "civicrm search {$this->controller->_key}";
+      CRM_DataprocessorSearch_Utils_PrevNextCache::fillWithArray($cacheKey, $prevnextData);
+    }
   }
 
   /**
@@ -317,12 +405,19 @@ class CRM_DataprocessorSearch_Form_Search extends CRM_Core_Form_Search {
    */
   protected function addColumnHeaders() {
     $sortFields = array();
-    $contact_id_field = $this->dataProcessorOutput['configuration']['contact_id_field'];
+    $id_field = $this->getIdFieldName();
+    $idFieldVisible = $this->isIdFieldVisible();
     $columnHeaders = array();
     $sortColumnNr = 1;
     foreach($this->dataProcessor->getDataFlow()->getOutputFieldHandlers() as $outputFieldHandler) {
       $field = $outputFieldHandler->getOutputFieldSpecification();
-      if ($field->alias != $contact_id_field) {
+      $hiddenField = true;
+      if ($field->alias != $id_field) {
+        $hiddenField = false;
+      } elseif ($field->alias == $id_field && $idFieldVisible) {
+        $hiddenField = false;
+      }
+      if (!$hiddenField) {
         $columnHeaders[$field->alias] = $field->title;
         $sortFields[$sortColumnNr] = array(
           'name' => $field->title,
@@ -338,6 +433,9 @@ class CRM_DataprocessorSearch_Form_Search extends CRM_Core_Form_Search {
     $this->assign_by_ref('sort', $this->sort);
   }
 
+  /**
+   * Build the criteria form
+   */
   protected function buildCriteriaForm() {
     $count = 1;
     $filterElements = array();
@@ -452,17 +550,17 @@ class CRM_DataprocessorSearch_Form_Search extends CRM_Core_Form_Search {
 
     $this->buildCriteriaForm();
 
-    $selectedContactIds = array();
+    $selectedIds = array();
     $qfKeyParam = CRM_Utils_Array::value('qfKey', $this->_formValues);
     // We use ajax to handle selections only if the search results component_mode is set to "contacts"
-    if ($qfKeyParam) {
+    if ($qfKeyParam && $this->usePrevNextCache()) {
       $this->addClass('crm-ajax-selection-form');
-      $qfKeyParam = "civicrm search {$qfKeyParam}";
-      $selectedContactIdsArr = Civi::service('prevnext')->getSelection($qfKeyParam);
-      $selectedContactIds = array_keys($selectedContactIdsArr[$qfKeyParam]);
+        $qfKeyParam = "civicrm search {$qfKeyParam}";
+        $selectedIdsArr = CRM_DataprocessorSearch_Utils_PrevNextCache::getSelection($qfKeyParam);
+        $selectedIds = array_keys($selectedIdsArr[$qfKeyParam]);
     }
 
-    $this->assign_by_ref('selectedContactIds', $selectedContactIds);
+    $this->assign_by_ref('selectedIds', $selectedIds);
     $this->add('hidden', 'context');
     $this->add('hidden', CRM_Utils_Sort::SORT_ID);
   }
@@ -474,17 +572,6 @@ class CRM_DataprocessorSearch_Form_Search extends CRM_Core_Form_Search {
       $defaults[CRM_Utils_Sort::SORT_ID] = $this->sort->getCurrentSortID();
     }
     return $defaults;
-  }
-
-  /**
-   * Builds the list of tasks or actions that a searcher can perform on a result set.
-   *
-   * @return array
-   */
-  public function buildTaskList() {
-    $taskParams['deletedContacts'] = FALSE;
-    $this->_taskList += CRM_Contact_Task::permissionedTaskTitles(CRM_Core_Permission::getPermission(), $taskParams);
-    return $this->_taskList;
   }
 
   public function postProcess() {
@@ -502,7 +589,7 @@ class CRM_DataprocessorSearch_Form_Search extends CRM_Core_Form_Search {
     ) {
       //reset the cache table for new search
       $cacheKey = "civicrm search {$this->controller->_key}";
-      Civi::service('prevnext')->deleteItem(NULL, $cacheKey);
+      CRM_DataprocessorSearch_Utils_PrevNextCache::deleteItem(NULL, $cacheKey);
     }
 
     if (!empty($_POST)) {
@@ -513,10 +600,20 @@ class CRM_DataprocessorSearch_Form_Search extends CRM_Core_Form_Search {
     if ($buttonName == $this->_actionButtonName) {
       // check actionName and if next, then do not repeat a search, since we are going to the next page
       // hack, make sure we reset the task values
-      $stateMachine = $this->controller->getStateMachine();
-      $formName = $stateMachine->getTaskFormName();
+      $formName = $this->controller->getStateMachine()->getTaskFormName();
       $this->controller->resetPage($formName);
       return;
     }
   }
+
+  /**
+   * Return a descriptive name for the page, used in wizard header
+   *
+   * @return string
+   */
+  public function getTitle() {
+    $this->findDataProcessor();
+    return $this->dataProcessorOutput['configuration']['title'];
+  }
+
 }
