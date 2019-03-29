@@ -116,6 +116,24 @@ abstract class CRM_DataprocessorSearch_Form_AbstractSearch extends CRM_Core_Form
   }
 
   /**
+   * Returns the url for view of the record action
+   *
+   * @param $row
+   *
+   * @return false|string
+   */
+  abstract protected function link($row);
+
+  /**
+   * Returns the link text for view of the record action
+   *
+   * @param $row
+   *
+   * @return false|string
+   */
+  abstract protected function linkText($row);
+
+  /**
    * Return altered rows
    *
    * @param array $rows
@@ -236,6 +254,13 @@ abstract class CRM_DataprocessorSearch_Form_AbstractSearch extends CRM_Core_Form
         $row['id'] = $record[$id_field]->formattedValue;
         $row['checkbox'] = CRM_Core_Form::CB_PREFIX.$row['id'];
         $row['record'] = $record;
+
+        $link = $this->link($row);
+        if ($link) {
+          $row['url'] = $link;
+          $row['link_text'] = $this->linkText($row);
+        }
+
         $this->addElement('checkbox', $row['checkbox'], NULL, NULL, ['class' => 'select-row']);
 
         $prevnextData[] = array(

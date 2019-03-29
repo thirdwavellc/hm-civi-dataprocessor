@@ -50,6 +50,11 @@
                             {/foreach}
 
                             <td>
+                                {if ($row.url)}
+                                    <a href="{$row.url}">
+                                        {$row.link_text}
+                                    </a>
+                                {/if}
                                 <a href="{crmURL p='civicrm/contact/view' q="reset=1&cid=`$contact_id`"}">
                                     {ts}View contact{/ts}
                                 </a>

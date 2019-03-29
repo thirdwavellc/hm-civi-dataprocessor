@@ -9,6 +9,28 @@ use CRM_Dataprocessor_ExtensionUtil as E;
 class CRM_DataprocessorSearch_Form_ContactSearch extends CRM_DataprocessorSearch_Form_AbstractSearch {
 
   /**
+   * Returns the url for view of the record action
+   *
+   * @param $row
+   *
+   * @return false|string
+   */
+  protected function link($row) {
+    return CRM_Utils_System::url('civicrm/contact/view', 'reset=1&cid='.$row['id']);
+  }
+
+  /**
+   * Returns the link text for view of the record action
+   *
+   * @param $row
+   *
+   * @return false|string
+   */
+  protected function linkText($row) {
+    return E::ts('View contact');
+  }
+
+  /**
    * Checks whether the output has a valid configuration
    *
    * @return bool
