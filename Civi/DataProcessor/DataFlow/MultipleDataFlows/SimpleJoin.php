@@ -299,7 +299,15 @@ class SimpleJoin implements JoinInterface, SqlJoinInterface {
     $this->initialize();
     $joinClause = "";
     if ($sourceDataFlowDescription->getJoinSpecification()) {
-      $joinClause = "ON `{$this->left_table}`.`{$this->left_field}` = `{$this->right_table}`.`{$this->right_field}`";
+      $leftColumnName = "`{$this->left_table}`.`{$this->left_field}`";
+      if ($this->leftFieldSpec) {
+        $leftColumnName = $this->leftFieldSpec->getSqlColumnName($this->left_table);
+      }
+      $rightColumnName = "`{$this->right_table}`.`{$this->right_field}`";
+      if ($this->rightFieldSpec) {
+        $rightColumnName = $this->rightFieldSpec->getSqlColumnName($this->right_table);
+      }
+      $joinClause = "ON {$leftColumnName}  = {$rightColumnName}";
     }
     if ($sourceDataFlowDescription->getDataFlow() instanceof SqlTableDataFlow) {
       $table = $sourceDataFlowDescription->getDataFlow()->getTable();

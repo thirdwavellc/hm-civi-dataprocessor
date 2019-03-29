@@ -70,7 +70,6 @@ class CRM_DataprocessorSearch_StateMachine_ActivitySearch extends CRM_Core_State
    * @return string
    */
   public function getTaskFormName() {
-    var_dump($this->_task);
     return CRM_Utils_String::getClassName($this->_task);
   }
 

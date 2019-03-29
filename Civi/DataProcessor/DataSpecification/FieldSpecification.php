@@ -60,4 +60,15 @@ class FieldSpecification implements SqlFieldSpecification {
     return "`{$table_alias}`.`{$this->name}` AS `{$this->alias}`";
   }
 
+  /**
+   * Returns the SQL column name for this field.
+   * This could be used in join statements
+   *
+   * @param $table_alias
+   * @return string
+   */
+  public function getSqlColumnName($table_alias) {
+    return "`{$table_alias}`.`{$this->name}`";
+  }
+
 }
