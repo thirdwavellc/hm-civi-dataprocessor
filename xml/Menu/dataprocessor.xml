@@ -1,6 +1,13 @@
 <?xml version="1.0"?>
 <menu>
   <item>
+    <path>civicrm/dataprocessor/manage</path>
+    <page_callback>CRM_Dataprocessor_Form_ManageDataProcessors</page_callback>
+    <title>DataProcessor</title>
+    <access_arguments>access CiviCRM</access_arguments>
+    <access_arguments>administer CiviCRM</access_arguments>
+  </item>
+  <item>
     <path>civicrm/dataprocessor/form/edit</path>
     <page_callback>CRM_Dataprocessor_Form_DataProcessor</page_callback>
     <title>DataProcessor</title>

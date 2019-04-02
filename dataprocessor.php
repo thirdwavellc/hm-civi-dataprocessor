@@ -255,8 +255,6 @@ function dataprocessor_civicrm_preProcess($formName, &$form) {
  * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_navigationMenu
  */
 function dataprocessor_civicrm_navigationMenu(&$menu) {
-  $customSearchID = CRM_Dataprocessor_Form_Search_DataProcessor::findCustomSearchId();
-
   _dataprocessor_civix_insert_navigation_menu($menu, 'Administer', array(
     'label' => E::ts('Data Processor'),
     'name' => 'data_processor',
@@ -266,9 +264,9 @@ function dataprocessor_civicrm_navigationMenu(&$menu) {
     'separator' => 0
   ));
   _dataprocessor_civix_insert_navigation_menu($menu, 'Administer/data_processor', array(
-    'label' => E::ts('Find Data Processors'),
-    'name' => 'find_data_processors',
-    'url' => CRM_Utils_System::url('civicrm/contact/search/custom', 'reset=1&csid=' . $customSearchID, true),
+    'label' => E::ts('Manage Data Processors'),
+    'name' => 'manage_data_processors',
+    'url' => CRM_Utils_System::url('civicrm/dataprocessor/manage', 'reset=1', true),
     'permission' => 'administer CiviCRM',
     'operator' => 'OR',
     'separator' => 0,
