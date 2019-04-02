@@ -96,6 +96,7 @@ class Factory {
 
     $this->addDataProcessorType('default', 'Civi\DataProcessor\ProcessorType\DefaultProcessorType', E::ts('Default'));
     $this->addDataSource('activity', 'Civi\DataProcessor\Source\Activity\ActivitySource', E::ts('Activity'));
+    $this->addDataSource('activity_contact', 'Civi\DataProcessor\Source\Activity\ActivityContactSource', E::ts('Activity Contact'));
     $this->addDataSource('contact', 'Civi\DataProcessor\Source\Contact\ContactSource', E::ts('Contact'));
     $this->addDataSource('individual', 'Civi\DataProcessor\Source\Contact\IndividualSource', E::ts('Individual'));
     $this->addDataSource('household', 'Civi\DataProcessor\Source\Contact\HouseholdSource', E::ts('Household'));
