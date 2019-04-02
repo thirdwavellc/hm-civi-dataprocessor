@@ -684,15 +684,6 @@ abstract class CRM_DataprocessorSearch_Form_AbstractSearch extends CRM_Core_Form
       // hack, make sure we reset the task values
       $formName = $this->controller->getStateMachine()->getTaskFormName();
       $this->controller->resetPage($formName);
-
-      $session = CRM_Core_Session::singleton();
-      $qfKey = CRM_Utils_Request::retrieve('qfKey', 'String', $this);
-      $urlPath = CRM_Utils_System::getUrlPath();
-      $urlParams = 'force=1';
-      if ($qfKey) {
-        $urlParams .= "&qfKey=$qfKey";
-      }
-      $session->pushUserContext(CRM_Utils_System::url($urlPath, $urlParams));
       return;
     }
   }
