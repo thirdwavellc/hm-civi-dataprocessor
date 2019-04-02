@@ -63,6 +63,7 @@ class CRM_DataprocessorSearch_Controller_ActivitySearch extends CRM_Core_Control
       if ($qfKey) {
         $urlParams .= "&qfKey=$qfKey";
       }
+
       $this->setDestination(CRM_Utils_System::url($urlPath, $urlParams));
     }
 
