@@ -165,7 +165,7 @@ abstract class CRM_DataprocessorSearch_Form_AbstractSearch extends CRM_Core_Form
     $this->assign("context", $this->_context);
     $this->assign('debug', $this->_debug);
 
-    if (!$this->hasRequiredFilters() || !empty($this->_formValues)) {
+    if (!$this->hasRequiredFilters() || (!empty($this->_formValues) && count($this->validateFilters()) == 0)) {
       $limit = CRM_Utils_Request::retrieve('crmRowCount', 'Positive', $this, FALSE, CRM_Utils_Pager::ROWCOUNT);
       $pageId = CRM_Utils_Request::retrieve('crmPID', 'Positive', $this, FALSE, 1);
 
@@ -339,6 +339,35 @@ abstract class CRM_DataprocessorSearch_Form_AbstractSearch extends CRM_Core_Form
       }
     }
     return false;
+  }
+
+  protected function validateFilters() {
+    $errors = array();
+    if ($this->dataProcessor->getFilterHandlers()) {
+      foreach ($this->dataProcessor->getFilterHandlers() as $filter) {
+        if ($filter->isRequired()) {
+          $isFilterSet = FALSE;
+          $filterSpec = $filter->getFieldSpecification();
+          $filterName = $filterSpec->alias;
+          if ($filterSpec->type == 'Date') {
+            $relative = CRM_Utils_Array::value("{$filterName}_relative", $this->_formValues);
+            $from = CRM_Utils_Array::value("{$filterName}_from", $this->_formValues);
+            $to = CRM_Utils_Array::value("{$filterName}_to", $this->_formValues);
+            $fromTime = CRM_Utils_Array::value("{$filterName}_from_time", $this->_formValues);
+            $toTime = CRM_Utils_Array::value("{$filterName}_to_time", $this->_formValues);
+
+            list($from, $to) = CRM_Utils_Date::getFromTo($relative, $from, $to, $fromTime, $toTime);
+            if (!$from && !$to) {
+              $errors[$filterName . '_relative'] = E::ts('Field %1 is required', [1 => $filterSpec->title]);
+            }
+          }
+          elseif (!isset($this->_formValues[$filterName . '_op']) || !(isset($this->_formValues[$filterName . '_value']) && $this->_formValues[$filterName . '_value'])) {
+            $errors[$filterName . '_value'] = E::ts('Field %1 is required', [1 => $filterSpec->title]);
+          }
+        }
+      }
+    }
+    return $errors;
   }
 
   protected function setFilters() {
@@ -528,6 +557,7 @@ abstract class CRM_DataprocessorSearch_Form_AbstractSearch extends CRM_Core_Form
         $filterElements[$fieldSpec->alias] = $filter;
       }
       $this->assign('filters', $filterElements);
+
     }
   }
 
@@ -610,6 +640,11 @@ abstract class CRM_DataprocessorSearch_Form_AbstractSearch extends CRM_Core_Form
       $defaults[CRM_Utils_Sort::SORT_ID] = $this->sort->getCurrentSortID();
     }
     return $defaults;
+  }
+
+  public function validate() {
+    $this->_errors = $this->validateFilters();
+    return parent::validate();
   }
 
   public function postProcess() {
