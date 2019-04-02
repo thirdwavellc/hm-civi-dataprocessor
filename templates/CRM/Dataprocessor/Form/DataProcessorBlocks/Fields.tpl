@@ -9,11 +9,13 @@
             <th></th>
             <th></th>
             <th></th>
+            <th></th>
         </tr>
         {foreach from=$fields item=field}
             <tr>
                 <td>{$field.title}</td>
                 <td>{$field.name}</td>
+                <td>{$field.weight}</td>
                 <td>
                     {if $field.configuration_link}
                         <a href="{$source.configuration_link}">{ts}Configure Field{/ts}</a>

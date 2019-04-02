@@ -36,6 +36,12 @@ class CRM_Dataprocessor_DAO_Field extends CRM_Core_DAO {
           'type' => CRM_Utils_Type::T_INT,
           'required' => true
         ) ,
+        'weight' => array(
+          'name' => 'weight',
+          'title' => E::ts('Weight'),
+          'type' => CRM_Utils_Type::T_INT,
+          'required' => true
+        ) ,
         'data_processor_id' => array(
           'name' => 'data_processor_id',
           'title' => E::ts('Data Processor ID'),
@@ -84,6 +90,7 @@ class CRM_Dataprocessor_DAO_Field extends CRM_Core_DAO {
     if (!(self::$_fieldKeys)) {
       self::$_fieldKeys = array(
         'id' => 'id',
+        'weight' => 'weight',
         'data_processor_id' => 'data_processor_id',
         'type' => 'type',
         'name' => 'name',

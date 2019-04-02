@@ -27,6 +27,7 @@ class CRM_Dataprocessor_BAO_Field extends CRM_Dataprocessor_DAO_Field {
         }
       }
     }
+    $field->orderBy("weight ASC");
     $field->find();
     while ($field->fetch()) {
       $row = array();
@@ -66,6 +67,10 @@ class CRM_Dataprocessor_BAO_Field extends CRM_Dataprocessor_DAO_Field {
     $result = array();
     if (empty($params)) {
       throw new Exception('Params can not be empty when adding or updating a data processor field');
+    }
+
+    if (!isset($params['weight'])) {
+      $params['weight'] = CRM_Utils_Weight::getDefaultWeight('CRM_Dataprocessor_DAO_Field', array('data_processor_id' => $params['data_processor_id']));
     }
 
     if (!empty($params['id'])) {

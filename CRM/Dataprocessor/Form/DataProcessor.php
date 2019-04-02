@@ -11,6 +11,8 @@ class CRM_Dataprocessor_Form_DataProcessor extends CRM_Core_Form {
 
   private $dataProcessorId;
 
+  private $currentUrl;
+
   /**
    * Function to perform processing before displaying form (overrides parent function)
    *
@@ -18,6 +20,7 @@ class CRM_Dataprocessor_Form_DataProcessor extends CRM_Core_Form {
    */
   function preProcess() {
     $this->dataProcessorId = CRM_Utils_Request::retrieve('id', 'Integer');
+    $this->currentUrl = CRM_Utils_System::url('civicrm/dataprocessor/form/edit', array('reset' => 1, 'action' => 'update', 'id' => $this->dataProcessorId));
     $this->assign('data_processor_id', $this->dataProcessorId);
 
     $session = CRM_Core_Session::singleton();
@@ -84,6 +87,7 @@ class CRM_Dataprocessor_Form_DataProcessor extends CRM_Core_Form {
     foreach($fields as $idx => $field) {
       $fields[$idx]['configuration_link'] = '';
     }
+    CRM_Utils_Weight::addOrder($fields, 'CRM_Dataprocessor_DAO_Field', 'id', $this->currentUrl, 'data_processor_id='.$this->dataProcessorId);
     $this->assign('fields', $fields);
   }
 
@@ -145,6 +149,10 @@ class CRM_Dataprocessor_Form_DataProcessor extends CRM_Core_Form {
       $this->addButtons(array(
         array('type' => 'next', 'name' => E::ts('Delete'), 'isDefault' => TRUE,),
         array('type' => 'cancel', 'name' => E::ts('Cancel'))));
+    } elseif ($this->_action == CRM_Core_Action::EXPORT) {
+      $this->addButtons(array(
+        array('type' => 'cancel', 'name' => E::ts('Go back'), 'isDefault' => TRUE),
+      ));
     } else {
       $this->addButtons(array(
         array('type' => 'next', 'name' => E::ts('Save'), 'isDefault' => TRUE,),
@@ -178,7 +186,7 @@ class CRM_Dataprocessor_Form_DataProcessor extends CRM_Core_Form {
     if ($this->_action == CRM_Core_Action::DELETE) {
       CRM_Dataprocessor_BAO_DataProcessor::deleteWithId($this->dataProcessorId);
       $session->setStatus(E::ts('Data Processor removed'), E::ts('Removed'), 'success');
-      $redirectUrl = $session->readUserContext();
+      $redirectUrl = $session->popUserContext();
       CRM_Utils_System::redirect($redirectUrl);
     }
 
@@ -192,11 +200,7 @@ class CRM_Dataprocessor_Form_DataProcessor extends CRM_Core_Form {
     }
 
     $result = CRM_Dataprocessor_BAO_DataProcessor::add($params);
-    if ($this->_action == CRM_Core_Action::ADD) {
-      $redirectUrl = CRM_Utils_System::url('civicrm/dataprocessor/form/edit', array('reset' => 1, 'action' => 'update', 'id' => $result['id']));
-    } else {
-      $redirectUrl = $session->readUserContext();
-    }
+    $redirectUrl = CRM_Utils_System::url('civicrm/dataprocessor/form/edit', array('reset' => 1, 'action' => 'update', 'id' => $result['id']));
     CRM_Utils_System::redirect($redirectUrl);
   }
 

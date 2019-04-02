@@ -49,6 +49,15 @@ class CRM_Dataprocessor_Form_ManageDataProcessors extends CRM_Core_Form {
       $dataProcessors[] = $row;
     }
     $this->assign('data_processors', $dataProcessors);
+
+    $session = CRM_Core_Session::singleton();
+    $qfKey = CRM_Utils_Request::retrieve('qfKey', 'String', $this);
+    $urlPath = CRM_Utils_System::getUrlPath();
+    $urlParams = 'force=1';
+    if ($qfKey) {
+      $urlParams .= "&qfKey=$qfKey";
+    }
+    $session->replaceUserContext(CRM_Utils_System::url($urlPath, $urlParams));
   }
 
   public function buildQuickForm() {

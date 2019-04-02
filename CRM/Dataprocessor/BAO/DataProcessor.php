@@ -69,7 +69,7 @@ class CRM_Dataprocessor_BAO_DataProcessor extends CRM_Dataprocessor_DAO_DataProc
         $dataProcessor->$key = $value;
       }
     }
-    if (empty($dataProcessor->name)) {
+    if (empty($dataProcessor->name) && !empty($dataProcessor->title)) {
       $dataProcessor->name = self::buildNameFromTitle($dataProcessor->title);
     }
     if (empty($dataProcessor->type)) {

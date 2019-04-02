@@ -16,6 +16,11 @@ function _civicrm_api3_data_processor_field_create_spec(&$spec) {
 		'type' => CRM_Utils_Type::T_INT,
 		'api.required' => false
 	);
+  $spec['weight'] = array(
+    'title' => E::ts('Weight'),
+    'type' => CRM_Utils_Type::T_INT,
+    'api.required' => false
+  );
   $spec['data_processor_id'] = array(
     'title' => E::ts('Data Processor ID'),
     'type' => CRM_Utils_Type::T_INT,

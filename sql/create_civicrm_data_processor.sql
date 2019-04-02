@@ -39,6 +39,7 @@ CREATE TABLE IF NOT EXISTS `civicrm_data_processor_filter` (
 
 CREATE TABLE IF NOT EXISTS `civicrm_data_processor_field` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `weight` INT UNSIGNED NOT NULL DEFAULT 0,
   `data_processor_id` INT UNSIGNED NOT NULL,
   `name` VARCHAR(128) NOT NULL,
   `type` VARCHAR(128) NOT NULL,
