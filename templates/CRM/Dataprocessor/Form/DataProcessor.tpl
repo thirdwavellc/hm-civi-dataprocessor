@@ -14,7 +14,7 @@
   <h3>{ts}Export Data Processor{/ts}</h3>
   <div class="crm-block crm-form-block crm-data-processor_label-block">
     <div class="crm-section">
-      <pre>{$export}</pre>
+      <textarea style="width:100%;">{$export}</textarea>
     </div>
   </div>
 {else}

@@ -49,11 +49,6 @@ abstract class CRM_DataprocessorSearch_Form_AbstractSearch extends CRM_Core_Form
   protected $sort;
 
   /**
-   * @var bool
-   */
-  protected $formHasRequiredFilters = FALSE;
-
-  /**
    * Checks whether the output has a valid configuration
    *
    * @return bool
@@ -147,6 +142,13 @@ abstract class CRM_DataprocessorSearch_Form_AbstractSearch extends CRM_Core_Form
   public function preProcess() {
     parent::preProcess();
 
+    if (!empty($_POST) && !$this->controller->isModal()) {
+      $this->_formValues = $this->controller->exportValues($this->_name);
+    }
+    else {
+      $this->_formValues = $this->getSubmitValues();
+    }
+
     $this->findDataProcessor();
 
     $this->_searchButtonName = $this->getButtonName('refresh');
@@ -162,13 +164,8 @@ abstract class CRM_DataprocessorSearch_Form_AbstractSearch extends CRM_Core_Form
     $this->set('context', $this->_context);
     $this->assign("context", $this->_context);
     $this->assign('debug', $this->_debug);
-    if (!empty($_POST) && !$this->controller->isModal()) {
-      $this->_formValues = $this->controller->exportValues($this->_name);
-    }
-    else {
-      $this->_formValues = $this->get('formValues');
-    }
-    if (!$this->formHasRequiredFilters || !empty($this->_formValues)) {
+
+    if (!$this->hasRequiredFilters() || !empty($this->_formValues)) {
       $limit = CRM_Utils_Request::retrieve('crmRowCount', 'Positive', $this, FALSE, CRM_Utils_Pager::ROWCOUNT);
       $pageId = CRM_Utils_Request::retrieve('crmPID', 'Positive', $this, FALSE, 1);
 
@@ -328,6 +325,22 @@ abstract class CRM_DataprocessorSearch_Form_AbstractSearch extends CRM_Core_Form
     return FALSE;
   }
 
+  /**
+   * Returns whether the search has required filters.
+   *
+   * @return bool
+   */
+  protected function hasRequiredFilters() {
+    if ($this->dataProcessor->getFilterHandlers()) {
+      foreach ($this->dataProcessor->getFilterHandlers() as $filter) {
+        if ($filter->isRequired()) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
   protected function setFilters() {
     if ($this->dataProcessor->getFilterHandlers()) {
       foreach ($this->dataProcessor->getFilterHandlers() as $filter) {
@@ -476,6 +489,9 @@ abstract class CRM_DataprocessorSearch_Form_AbstractSearch extends CRM_Core_Form
           continue;
         }
         $filter['title'] = $fieldSpec->title;
+        if ($filterHandler->isRequired()) {
+          $filter['title'] .= ' <span class="crm-marker">*</span>';
+        }
         $filter['type'] = $fieldSpec->type;
         $operations = $this->getOperatorOptions($fieldSpec);
         if ($fieldSpec->getOptions()) {
@@ -508,9 +524,6 @@ abstract class CRM_DataprocessorSearch_Form_AbstractSearch extends CRM_Core_Form
               $this->add('text', "{$fieldSpec->alias}_value", NULL, ['class' => 'huge']);
               break;
           }
-        }
-        if ($filterHandler->isRequired()) {
-          $this->formHasRequiredFilters = TRUE;
         }
         $filterElements[$fieldSpec->alias] = $filter;
       }

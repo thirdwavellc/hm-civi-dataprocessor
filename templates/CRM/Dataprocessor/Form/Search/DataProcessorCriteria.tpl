@@ -50,6 +50,14 @@
             </div><!- /.crm-accordion-body -->
         </div><!-- /.crm-accordion-wrapper -->
     </div><!-- /.crm-form-block -->
+
+    <br />
+    <div class="crm-block">
+        <div class="action-link">
+            <a class="button" href="{crmURL p="civicrm/dataprocessor/form/edit" q="reset=1&action=add" }">{ts}Add dataprocessor{/ts}</a>
+            <a class="button" href="{crmURL p="civicrm/dataprocessor/form/import" q="reset=1&action=add" }">{ts}Import data processor{/ts}</a>
+        </div>
+    </div>
 {/strip}
 {/crmScope}
 

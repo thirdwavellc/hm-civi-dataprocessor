@@ -8,6 +8,13 @@
     <access_arguments>administer CiviCRM</access_arguments>
   </item>
   <item>
+    <path>civicrm/dataprocessor/form/import</path>
+    <page_callback>CRM_Dataprocessor_Form_Import</page_callback>
+    <title>Import DataProcessor</title>
+    <access_arguments>access CiviCRM</access_arguments>
+    <access_arguments>administer CiviCRM</access_arguments>
+  </item>
+  <item>
     <path>civicrm/dataprocessor/form/source</path>
     <page_callback>CRM_Dataprocessor_Form_Source</page_callback>
     <title>DataProcessor</title>
