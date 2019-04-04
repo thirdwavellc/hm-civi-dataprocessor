@@ -151,6 +151,7 @@ class CRM_DataprocessorOutputExport_CSV implements ExportOutputInterface {
 
   protected static function createHeaderLine($filename, \Civi\DataProcessor\ProcessorType\AbstractProcessorType $dataProcessor) {
     $file = fopen($filename, 'a');
+    fwrite($file, "\xEF\xBB\xBF"); // BOF this will make sure excel opens the file correctly.
     $headerLine = array();
     foreach($dataProcessor->getDataFlow()->getOutputFieldHandlers() as $outputHandler) {
       $headerLine[] = $outputHandler->getOutputFieldSpecification()->title;
