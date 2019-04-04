@@ -10,13 +10,13 @@ use CRM_Dataprocessor_ExtensionUtil as E;
 class CRM_DataprocessorSearch_Form_OutputConfiguration_ContactSearch extends CRM_Dataprocessor_Form_Output_AbstractOutputForm {
 
   /**
-   * @var CRM_DataprocessorSearch_Utils_Navigation
+   * @var CRM_Dataprocessor_Utils_Navigation
    */
   protected $navigation;
 
   public function preProcess() {
     parent::preProcess();
-    $this->navigation = CRM_DataprocessorSearch_Utils_Navigation::singleton();
+    $this->navigation = CRM_Dataprocessor_Utils_Navigation::singleton();
   }
 
   public function buildQuickForm() {

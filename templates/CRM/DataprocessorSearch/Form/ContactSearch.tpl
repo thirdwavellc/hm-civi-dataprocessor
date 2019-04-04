@@ -1,15 +1,6 @@
-{include file="CRM/DataprocessorSearch/Form/CriteriaForm.tpl"}
+{include file="CRM/Dataprocessor/Form/Output/UIOutput/CriteriaForm.tpl"}
 
-{if $debug && isset($debug_info.query)}
-    <div class="crm-block crm-form-block">
-        <h3>Executes queries</h3>
-        {foreach from=$debug_info.query item=query}
-            <pre id="debug_info" class="linenums prettyprint prettyprinted" style="font-size: 11px; padding: 1em; border: 1px solid lightgrey; margin-top: 1em; overflow: auto;">{strip}
-                {$query|replace:"SELECT":"SELECT\r\n "|replace:"FROM":"\r\nFROM"|replace:"INNER JOIN":"\r\nINNER JOIN"|replace:"LEFT JOIN":"\r\nLEFT JOIN"|replace:"WHERE":"\r\nWHERE"|replace:"ORDER BY":"\r\nORDER BY"|replace:"LIMIT":"\r\nLIMIT"|replace:"AND":"\r\n  AND"|replace:"`, `":"`,\r\n  `"}
-            {/strip}</pre>
-        {/foreach}
-    </div>
-{/if}
+{include file="CRM/DataprocessorSearch/Form/Debug.tpl"}
 
 {if (isset($rows) && !empty($rows))}
     <div class="crm-content-block">
@@ -17,6 +8,7 @@
             {* This section handles form elements for action task select and submit *}
             <div class="crm-search-tasks">
                 {include file="CRM/common/searchResultTasks.tpl"}
+                {include file="CRM/DataprocessorSearch/Form/OtherOutputs.tpl"}
             </div>
 
             {include file="CRM/common/pager.tpl" location="top"}
@@ -55,9 +47,6 @@
                                         {$row.link_text}
                                     </a>
                                 {/if}
-                                <a href="{crmURL p='civicrm/contact/view' q="reset=1&cid=`$contact_id`"}">
-                                    {ts}View contact{/ts}
-                                </a>
                             </td>
                         </tr>
                     {/foreach}

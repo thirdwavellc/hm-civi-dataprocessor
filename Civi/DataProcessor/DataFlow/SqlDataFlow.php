@@ -71,8 +71,13 @@ abstract class SqlDataFlow extends AbstractDataFlow {
       $this->sqlCountStatements[] = $countSql;
       $countDao = \CRM_Core_DAO::executeQuery($countSql);
       $this->count = 0;
-      while($countDao->fetch()) {
-        $this->count = $this->count + $countDao->count;
+      if (count($this->getFieldsForGroupByStatement()) > 0) {
+
+        $this->count = $countDao->N;
+      } else {
+        while ($countDao->fetch()) {
+          $this->count = $this->count + $countDao->count;
+        }
       }
 
       $sql = "{$this->getSelectQueryStatement()} {$where} {$groupBy} {$orderBy}";

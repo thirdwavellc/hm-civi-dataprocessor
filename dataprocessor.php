@@ -72,7 +72,7 @@ function dataprocessor_civicrm_alterAPIPermissions($entity, $action, &$params, &
  * @link https://docs.civicrm.org/dev/en/latest/hooks/hook_civicrm_alterMenu/
  */
 function dataprocessor_civicrm_alterMenu(&$items) {
-  CRM_DataprocessorSearch_Search::alterMenu($items);
+  \Civi\DataProcessor\Output\UIOutputHelper::alterMenu($items);
 }
 
 /**
@@ -86,7 +86,7 @@ function dataprocessor_civicrm_alterMenu(&$items) {
  * @param $params
  */
 function dataprocessor_civicrm_pre($op, $objectName, $objectId, &$params) {
-  CRM_DataprocessorSearch_Search::preHook($op, $objectName, $objectId, $params);
+  \Civi\DataProcessor\Output\UIOutputHelper::preHook($op, $objectName, $objectId, $params);
 }
 
 /**
@@ -100,11 +100,11 @@ function dataprocessor_civicrm_pre($op, $objectName, $objectId, &$params) {
  * @param $objectRef
  */
 function dataprocessor_civicrm_post($op, $objectName, $objectId, &$objectRef) {
-  CRM_DataprocessorSearch_Search::postHook($op, $objectName, $objectId, $objectRef);
+  \Civi\DataProcessor\Output\UIOutputHelper::postHook($op, $objectName, $objectId, $objectRef);
 }
 
 function dataprocessor_civicrm_dataprocessor_export(&$dataProcessor) {
-  CRM_DataprocessorSearch_Search::hookExport($dataProcessor);
+  \Civi\DataProcessor\Output\UIOutputHelper::hookExport($dataProcessor);
 }
 
 /**

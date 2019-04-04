@@ -4,7 +4,7 @@
  * @license AGPL-3.0
  */
 
-class CRM_DataprocessorSearch_Utils_Navigation {
+class CRM_Dataprocessor_Utils_Navigation {
 
   private $navigationPathToIds = array();
 
@@ -24,11 +24,11 @@ class CRM_DataprocessorSearch_Utils_Navigation {
   }
 
   /**
-   * @return \CRM_DataprocessorSearch_Utils_Navigation
+   * @return \CRM_Dataprocessor_Utils_Navigation
    */
   public static function singleton() {
     if (!self::$singelton) {
-      self::$singelton = new CRM_DataprocessorSearch_Utils_Navigation();
+      self::$singelton = new CRM_Dataprocessor_Utils_Navigation();
     }
     return self::$singelton;
   }

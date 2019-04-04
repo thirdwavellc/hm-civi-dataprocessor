@@ -93,14 +93,19 @@ class CRM_DataprocessorSearch_Form_ContactSearch extends CRM_DataprocessorSearch
    *
    */
   protected function alterRows(&$rows, $ids) {
+    $contactImages = array();
     // Add the contact type image
     if (count($ids)) {
       $contactDao = CRM_Core_DAO::executeQuery("SELECT id, contact_type, contact_sub_type FROM civicrm_contact WHERE `id` IN (".implode(",", $ids).")");
       while($contactDao->fetch()) {
-        $rows[$contactDao->id]['contact_type'] = CRM_Contact_BAO_Contact_Utils::getImage($contactDao->contact_sub_type ? $contactDao->contact_sub_type : $contactDao->contact_type,
-          FALSE,
-          $contactDao->id
-        );
+        foreach($rows as $idx => $row) {
+          if ($row['id'] == $contactDao->id) {
+            if (!isset($contactImages[$contactDao->id])) {
+              $contactImages[$contactDao->id] = CRM_Contact_BAO_Contact_Utils::getImage($contactDao->contact_sub_type ? $contactDao->contact_sub_type : $contactDao->contact_type,  FALSE, $contactDao->id);
+            }
+            $rows[$idx]['contact_type'] = $contactImages[$contactDao->id];
+          }
+        }
       }
     }
   }

@@ -19,8 +19,8 @@
                         {assign var=filterMax   value=$filterName|cat:"_max"}
                         {if $filter.type == 'Date'}
                             <tr>
-                                <td>{$filter.title}</td>
-                                {include file="CRM/DataprocessorSearch/Form/DateRange.tpl" fieldName=$filterName from='_from' to='_to'}
+                                <td class="label">{$filter.title}</td>
+                                {include file="CRM/Dataprocessor/Form/Output/UIOutput/DateRange.tpl" fieldName=$filterName from='_from' to='_to'}
                             </tr>
                         {elseif $form.$fieldOp.html}
                             <tr>

@@ -105,4 +105,10 @@
     <access_arguments>access CiviCRM</access_arguments>
     <access_arguments>administer CiviCRM</access_arguments>
   </item>
+  <item>
+    <path>civicrm/dataprocessor/form/output/download</path>
+    <title>Browse Uploaded files</title>
+    <access_arguments>access uploaded files</access_arguments>
+    <page_callback>CRM_DataprocessorOutputExport_Page_Download</page_callback>
+  </item>
 </menu>

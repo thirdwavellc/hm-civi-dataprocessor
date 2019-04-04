@@ -9,7 +9,6 @@
             <th></th>
             <th></th>
             <th></th>
-            <th></th>
         </tr>
         {foreach from=$fields item=field}
             <tr>

@@ -6,27 +6,12 @@
 
 use CRM_Dataprocessor_ExtensionUtil as E;
 
-abstract class CRM_DataprocessorSearch_Form_AbstractSearch extends CRM_Core_Form_Search {
-
-  /**
-   * @var \Civi\DataProcessor\ProcessorType\AbstractProcessorType;
-   */
-  protected $dataProcessor;
-
-  /**
-   * @var int
-   */
-  protected $dataProcessorId;
+abstract class CRM_DataprocessorSearch_Form_AbstractSearch extends CRM_Dataprocessor_Form_Output_AbstractUIOutputForm {
 
   /**
    * @var String
    */
   protected $title;
-
-  /**
-   * @var \CRM_Dataprocessor_BAO_Output
-   */
-  protected $dataProcessorOutput;
 
   /**
    * @var int
@@ -49,25 +34,14 @@ abstract class CRM_DataprocessorSearch_Form_AbstractSearch extends CRM_Core_Form
   protected $sort;
 
   /**
-   * Checks whether the output has a valid configuration
-   *
-   * @return bool
+   * @var array
    */
-  abstract protected function isConfigurationValid();
+  protected $_appliedFilters;
 
   /**
-   * Return the data processor ID
-   *
-   * @return String
+   * @var string
    */
-  abstract protected function getDataProcessorName();
-
-  /**
-   * Returns the name of the output for this search
-   *
-   * @return string
-   */
-  abstract protected function getOutputName();
+  protected $currentUrl;
 
   /**
    * Returns the name of the ID field in the dataset.
@@ -142,14 +116,22 @@ abstract class CRM_DataprocessorSearch_Form_AbstractSearch extends CRM_Core_Form
   public function preProcess() {
     parent::preProcess();
 
+    $qfKey = CRM_Utils_Request::retrieve('qfKey', 'String', $this);
+    $urlPath = CRM_Utils_System::getUrlPath();
+    $urlParams = 'force=1';
+    if ($qfKey) {
+      $urlParams .= "&qfKey=$qfKey";
+    }
+    $this->currentUrl = CRM_Utils_System::url($urlPath, $urlParams);
+    $session = CRM_Core_Session::singleton();
+    $session->replaceUserContext($this->currentUrl);
+
     if (!empty($_POST) && !$this->controller->isModal()) {
       $this->_formValues = $this->controller->exportValues($this->_name);
     }
     else {
       $this->_formValues = $this->getSubmitValues();
     }
-
-    $this->findDataProcessor();
 
     $this->_searchButtonName = $this->getButtonName('refresh');
     $this->_actionButtonName = $this->getButtonName('next', 'action');
@@ -166,53 +148,29 @@ abstract class CRM_DataprocessorSearch_Form_AbstractSearch extends CRM_Core_Form
     $this->assign('debug', $this->_debug);
 
     if (!$this->hasRequiredFilters() || (!empty($this->_formValues) && count($this->validateFilters()) == 0)) {
+      $export_id = CRM_Utils_Request::retrieve('export_id', 'Positive');
+      if ($export_id) {
+        $this->runExport($export_id);
+      }
+
       $limit = CRM_Utils_Request::retrieve('crmRowCount', 'Positive', $this, FALSE, CRM_Utils_Pager::ROWCOUNT);
       $pageId = CRM_Utils_Request::retrieve('crmPID', 'Positive', $this, FALSE, 1);
 
       $this->addColumnHeaders();
       $this->buildRows($pageId, $limit);
+      $this->addExportOutputs();
     }
-
-    $session = CRM_Core_Session::singleton();
-    $qfKey = CRM_Utils_Request::retrieve('qfKey', 'String', $this);
-    $urlPath = CRM_Utils_System::getUrlPath();
-    $urlParams = 'force=1';
-    if ($qfKey) {
-      $urlParams .= "&qfKey=$qfKey";
-    }
-    $session->replaceUserContext(CRM_Utils_System::url($urlPath, $urlParams));
 
   }
 
-  /**
-   * Retrieve the data processor and the output configuration
-   *
-   * @throws \Exception
-   */
-  protected function findDataProcessor() {
-    if (!$this->dataProcessorId) {
-      $dataProcessorName = $this->getDataProcessorName();
-      $sql = "
-        SELECT civicrm_data_processor.id as data_processor_id,  civicrm_data_processor_output.id AS output_id
-        FROM civicrm_data_processor 
-        INNER JOIN civicrm_data_processor_output ON civicrm_data_processor.id = civicrm_data_processor_output.data_processor_id
-        WHERE is_active = 1 AND civicrm_data_processor.name = %1 AND civicrm_data_processor_output.type = %2
-      ";
-      $params[1] = [$dataProcessorName, 'String'];
-      $params[2] = [$this->getOutputName(), 'String'];
-      $dao = CRM_Dataprocessor_BAO_DataProcessor::executeQuery($sql, $params, TRUE, 'CRM_Dataprocessor_BAO_DataProcessor');
-      if (!$dao->fetch()) {
-        throw new \Exception('Could not find Data Processor "' . $dataProcessorName.'"');
-      }
-      $this->dataProcessor = CRM_Dataprocessor_BAO_DataProcessor::getDataProcessorById($dao->data_processor_id);
-      $this->dataProcessorId = $dao->data_processor_id;
-
-      $output = CRM_Dataprocessor_BAO_Output::getValues(['id' => $dao->output_id]);
-      $this->dataProcessorOutput = $output[$dao->output_id];
-
-      if (!$this->isConfigurationValid()) {
-        throw new \Exception('Invalid configuration found for the Search output of the data processor "' . $dataProcessorName . '"');
-      }
+  protected function runExport($export_id) {
+    $factory = dataprocessor_get_factory();
+    self::applyFilters($this->dataProcessor, $this->_formValues);
+    $outputs = CRM_Dataprocessor_BAO_Output::getValues(array('id' => $export_id));
+    $output = $outputs[$export_id];
+    $outputClass = $factory->getOutputByName($output['type']);
+    if ($outputClass instanceof \Civi\DataProcessor\Output\ExportOutputInterface) {
+      $outputClass->downloadExport($this->dataProcessor, $this->dataProcessorBAO, $output, $this->_formValues);
     }
   }
 
@@ -229,10 +187,13 @@ abstract class CRM_DataprocessorSearch_Form_AbstractSearch extends CRM_Core_Form
     $ids = array();
     $prevnextData = array();
 
+    $id_field = $this->getIdFieldName();
+    $this->assign('id_field', $id_field);
+
     $offset = ($pageId - 1) * $limit;
     $this->dataProcessor->getDataFlow()->setLimit($limit);
     $this->dataProcessor->getDataFlow()->setOffset($offset);
-    $this->setFilters();
+    self::applyFilters($this->dataProcessor, $this->_formValues);
 
     // Set the sort
     $sortDirection = 'ASC';
@@ -251,11 +212,10 @@ abstract class CRM_DataprocessorSearch_Form_AbstractSearch extends CRM_Core_Form
     $this->pager = new CRM_Utils_Pager($pagerParams);
     $this->assign('pager', $this->pager);
 
-    $id_field = $this->getIdFieldName();
-    $this->assign('id_field', $id_field);
-
+    $i=0;
     try {
       while($record = $this->dataProcessor->getDataFlow()->nextRecord()) {
+        $i ++;
         $row = array();
         $row['id'] = $record[$id_field]->formattedValue;
         $row['checkbox'] = CRM_Core_Form::CB_PREFIX.$row['id'];
@@ -276,7 +236,7 @@ abstract class CRM_DataprocessorSearch_Form_AbstractSearch extends CRM_Core_Form
         );
         $ids[] = $row['id'];
 
-        $rows[$row['id']] = $row;
+        $rows[] = $row;
       }
     } catch (\Civi\DataProcessor\DataFlow\EndOfFlowException $e) {
       // Do nothing
@@ -290,187 +250,6 @@ abstract class CRM_DataprocessorSearch_Form_AbstractSearch extends CRM_Core_Form
     if ($this->usePrevNextCache()) {
       $cacheKey = "civicrm search {$this->controller->_key}";
       CRM_DataprocessorSearch_Utils_PrevNextCache::fillWithArray($cacheKey, $prevnextData);
-    }
-  }
-
-  /**
-   * @param \Civi\DataProcessor\FilterHandler\AbstractFilterHandler $filter
-   *
-   * @return string|null
-   */
-  public function setDateFilter(\Civi\DataProcessor\FilterHandler\AbstractFilterHandler $filter) {
-    $filterName = $filter->getFieldSpecification()->alias;
-    $type = $filter->getFieldSpecification()->type;
-    $relative = CRM_Utils_Array::value("{$filterName}_relative", $this->_formValues);
-    $from = CRM_Utils_Array::value("{$filterName}_from", $this->_formValues);
-    $to = CRM_Utils_Array::value("{$filterName}_to", $this->_formValues);
-    $fromTime = CRM_Utils_Array::value("{$filterName}_from_time", $this->_formValues);
-    $toTime = CRM_Utils_Array::value("{$filterName}_to_time", $this->_formValues);
-
-    list($from, $to) = CRM_Utils_Date::getFromTo($relative, $from, $to, $fromTime, $toTime);
-    if ($from && $to) {
-      $from = ($type == "Date") ? substr($from, 0, 8) : $from;
-      $to = ($type == "Date") ? substr($to, 0, 8) : $to;
-      $filter->setFilter(array(
-        'op' => 'BETWEEN',
-        'value' => array($from, $to),
-      ));
-      return TRUE;
-    } elseif ($from) {
-      $from = ($type == "Date") ? substr($from, 0, 8) : $from;
-      $filter->setFilter(array(
-        'op' => '>=',
-        'value' => $from,
-      ));
-      return TRUE;
-    } elseif ($to) {
-      $to = ($type == "Date") ? substr($to, 0, 8) : $to;
-      $filter->setFilter(array(
-        'op' => '<=',
-        'value' => $to,
-      ));
-      return TRUE;
-    }
-    return FALSE;
-  }
-
-  /**
-   * Returns whether the search has required filters.
-   *
-   * @return bool
-   */
-  protected function hasRequiredFilters() {
-    if ($this->dataProcessor->getFilterHandlers()) {
-      foreach ($this->dataProcessor->getFilterHandlers() as $filter) {
-        if ($filter->isRequired()) {
-          return true;
-        }
-      }
-    }
-    return false;
-  }
-
-  protected function validateFilters() {
-    $errors = array();
-    if ($this->dataProcessor->getFilterHandlers()) {
-      foreach ($this->dataProcessor->getFilterHandlers() as $filter) {
-        if ($filter->isRequired()) {
-          $isFilterSet = FALSE;
-          $filterSpec = $filter->getFieldSpecification();
-          $filterName = $filterSpec->alias;
-          if ($filterSpec->type == 'Date') {
-            $relative = CRM_Utils_Array::value("{$filterName}_relative", $this->_formValues);
-            $from = CRM_Utils_Array::value("{$filterName}_from", $this->_formValues);
-            $to = CRM_Utils_Array::value("{$filterName}_to", $this->_formValues);
-            $fromTime = CRM_Utils_Array::value("{$filterName}_from_time", $this->_formValues);
-            $toTime = CRM_Utils_Array::value("{$filterName}_to_time", $this->_formValues);
-
-            list($from, $to) = CRM_Utils_Date::getFromTo($relative, $from, $to, $fromTime, $toTime);
-            if (!$from && !$to) {
-              $errors[$filterName . '_relative'] = E::ts('Field %1 is required', [1 => $filterSpec->title]);
-            }
-          }
-          elseif (!isset($this->_formValues[$filterName . '_op']) || !(isset($this->_formValues[$filterName . '_value']) && $this->_formValues[$filterName . '_value'])) {
-            $errors[$filterName . '_value'] = E::ts('Field %1 is required', [1 => $filterSpec->title]);
-          }
-        }
-      }
-    }
-    return $errors;
-  }
-
-  protected function setFilters() {
-    if ($this->dataProcessor->getFilterHandlers()) {
-      foreach ($this->dataProcessor->getFilterHandlers() as $filter) {
-        $isFilterSet = FALSE;
-        $filterSpec = $filter->getFieldSpecification();
-        $filterName = $filterSpec->alias;
-        if ($filterSpec->type == 'Date') {
-          $isFilterSet = $this->setDateFilter($filter);
-        }
-        elseif (isset($this->_formValues[$filterName . '_op'])) {
-          switch ($this->_formValues[$filterName . '_op']) {
-            case 'IN':
-              if (isset($this->_formValues[$filterName . '_value']) && $this->_formValues[$filterName . '_value']) {
-                $filterParams = [
-                  'op' => 'IN',
-                  'value' => $this->_formValues[$filterName . '_value'],
-                ];
-                $filter->setFilter($filterParams);
-                $isFilterSet = TRUE;
-              }
-              break;
-            case 'NOT IN':
-              if (isset($this->_formValues[$filterName . '_value']) && $this->_formValues[$filterName . '_value']) {
-                $filterParams = [
-                  'op' => 'NOT IN',
-                  'value' => $this->_formValues[$filterName . '_value'],
-                ];
-                $filter->setFilter($filterParams);
-                $isFilterSet = TRUE;
-              }
-              break;
-            case '=':
-            case '!=':
-            case '>':
-            case '<':
-            case '>=':
-            case '<=':
-              if (isset($this->_formValues[$filterName . '_value']) && $this->_formValues[$filterName . '_value']) {
-                $filterParams = [
-                  'op' => $this->_formValues[$filterName . '_op'],
-                  'value' => $this->_formValues[$filterName . '_value'],
-                ];
-                $filter->setFilter($filterParams);
-                $isFilterSet = TRUE;
-              }
-              break;
-            case 'has':
-              if (isset($this->_formValues[$filterName . '_value']) && $this->_formValues[$filterName . '_value']) {
-                $filterParams = [
-                  'op' => 'LIKE',
-                  'value' => '%' . $this->_formValues[$filterName . '_value'] . '%',
-                ];
-                $filter->setFilter($filterParams);
-                $isFilterSet = TRUE;
-              }
-              break;
-            case 'nhas':
-              if (isset($this->_formValues[$filterName . '_value']) && $this->_formValues[$filterName . '_value']) {
-                $filterParams = [
-                  'op' => 'NOT LIKE',
-                  'value' => '%' . $this->_formValues[$filterName . '_value'] . '%',
-                ];
-                $filter->setFilter($filterParams);
-                $isFilterSet = TRUE;
-              }
-              break;
-            case 'sw':
-              if (isset($this->_formValues[$filterName . '_value']) && $this->_formValues[$filterName . '_value']) {
-                $filterParams = [
-                  'op' => 'LIKE',
-                  'value' => $this->_formValues[$filterName . '_value'] . '%',
-                ];
-                $filter->setFilter($filterParams);
-                $isFilterSet = TRUE;
-              }
-              break;
-            case 'ew':
-              if (isset($this->_formValues[$filterName . '_value']) && $this->_formValues[$filterName . '_value']) {
-                $filterParams = [
-                  'op' => 'LIKE',
-                  'value' => '%' . $this->_formValues[$filterName . '_value'],
-                ];
-                $filter->setFilter($filterParams);
-                $isFilterSet = TRUE;
-              }
-              break;
-          }
-        }
-        if ($filter->isRequired() && !$isFilterSet) {
-          throw new \Exception('Field ' . $filterSpec->title . ' is required');
-        }
-      }
     }
   }
 
@@ -510,105 +289,6 @@ abstract class CRM_DataprocessorSearch_Form_AbstractSearch extends CRM_Core_Form
   }
 
   /**
-   * Build the criteria form
-   */
-  protected function buildCriteriaForm() {
-    $count = 1;
-    $filterElements = array();
-    $types = \CRM_Utils_Type::getValidTypes();
-    if ($this->dataProcessor->getFilterHandlers()) {
-      foreach ($this->dataProcessor->getFilterHandlers() as $filterHandler) {
-        $fieldSpec = $filterHandler->getFieldSpecification();
-        $type = \CRM_Utils_Type::T_STRING;
-        if (isset($types[$fieldSpec->type])) {
-          $type = $types[$fieldSpec->type];
-        }
-        if (!$fieldSpec) {
-          continue;
-        }
-        $filter['title'] = $fieldSpec->title;
-        if ($filterHandler->isRequired()) {
-          $filter['title'] .= ' <span class="crm-marker">*</span>';
-        }
-        $filter['type'] = $fieldSpec->type;
-        $operations = $this->getOperatorOptions($fieldSpec);
-        if ($fieldSpec->getOptions()) {
-          $element = $this->addElement('select', "{$fieldSpec->alias}_op", E::ts('Operator:'), $operations);
-          $this->addElement('select', "{$fieldSpec->alias}_value", NULL, $fieldSpec->getOptions(), [
-            'style' => 'min-width:250px',
-            'class' => 'crm-select2 huge',
-            'multiple' => TRUE,
-            'placeholder' => E::ts('- select -'),
-          ]);
-        }
-        else {
-          switch ($type) {
-            case \CRM_Utils_Type::T_DATE:
-              CRM_Core_Form_Date::buildDateRange($this, $fieldSpec->alias, $count, '_from', '_to', E::ts('From:'), $filterHandler->isRequired(), $operations);
-              $count++;
-              break;
-            case CRM_Report_Form::OP_INT:
-            case CRM_Report_Form::OP_FLOAT:
-              // and a min value input box
-              $this->add('text', "{$fieldSpec->alias}_min", E::ts('Min'));
-              // and a max value input box
-              $this->add('text', "{$fieldSpec->alias}_max", E::ts('Max'));
-            default:
-              // default type is string
-              $this->addElement('select', "{$fieldSpec->alias}_op", E::ts('Operator:'), $operations,
-                ['onchange' => "return showHideMaxMinVal( '$fieldSpec->alias', this.value );"]
-              );
-              // we need text box for value input
-              $this->add('text', "{$fieldSpec->alias}_value", NULL, ['class' => 'huge']);
-              break;
-          }
-        }
-        $filterElements[$fieldSpec->alias] = $filter;
-      }
-      $this->assign('filters', $filterElements);
-
-    }
-  }
-
-  protected function getOperatorOptions(\Civi\DataProcessor\DataSpecification\FieldSpecification $fieldSpec) {
-    if ($fieldSpec->getOptions()) {
-      return array(
-        'IN' => E::ts('Is one of'),
-        'NOT IN' => E::ts('Is not one of'),
-      );
-    }
-    $types = \CRM_Utils_Type::getValidTypes();
-    $type = \CRM_Utils_Type::T_STRING;
-    if (isset($types[$fieldSpec->type])) {
-      $type = $types[$fieldSpec->type];
-    }
-    switch ($type) {
-      case \CRM_Utils_Type::T_DATE:
-        return array();
-        break;
-      case \CRM_Utils_Type::T_INT:
-      case \CRM_Utils_Type::T_FLOAT:
-        return array(
-          '=' => E::ts('Is equal to'),
-          '<=' => E::ts('Is less than or equal to'),
-          '>=' => E::ts('Is greater than or equal to'),
-          '<' => E::ts('Is less than'),
-          '>' => E::ts('Is greater than'),
-          '!=' => E::ts('Is not equal to'),
-        );
-        break;
-    }
-    return array(
-      '=' => E::ts('Is equal to'),
-      '!=' => E::ts('Is not equal to'),
-      'has' => E::ts('Contains'),
-      'sw' => E::ts('Starts with'),
-      'ew' => E::ts('Ends with'),
-      'nhas' => E::ts('Does not contain'),
-    );
-  }
-
-  /**
    * @return array
    */
   protected function getPagerParams() {
@@ -620,6 +300,29 @@ abstract class CRM_DataprocessorSearch_Form_AbstractSearch extends CRM_Core_Form
     $params['buttonTop'] = 'PagerTopButton';
     $params['buttonBottom'] = 'PagerBottomButton';
     return $params;
+  }
+
+  /**
+   * Add buttons for other outputs of this data processor
+   */
+  protected function addExportOutputs() {
+    $factory = dataprocessor_get_factory();
+    $outputs = CRM_Dataprocessor_BAO_Output::getValues(array('data_processor_id' => $this->dataProcessorId));
+    $otherOutputs = array();
+    foreach($outputs as $output) {
+      if ($output['id'] == $this->dataProcessorOutput['id']) {
+        continue;
+      }
+      $outputClass = $factory->getOutputByName(($output['type']));
+      if ($outputClass instanceof \Civi\DataProcessor\Output\ExportOutputInterface) {
+        $otherOutput = array();
+        $otherOutput['title'] = $outputClass->getTitleForExport($output, $this->dataProcessorBAO);
+        $otherOutput['url'] = $this->currentUrl.'&export_id='.$output['id'];
+        $otherOutput['icon'] = $outputClass->getExportFileIcon($output, $this->dataProcessorBAO);
+        $otherOutputs[] = $otherOutput;
+      }
+    }
+    $this->assign('other_outputs', $otherOutputs);
   }
 
   public function buildQuickform() {
@@ -634,7 +337,9 @@ abstract class CRM_DataprocessorSearch_Form_AbstractSearch extends CRM_Core_Form
       $this->addClass('crm-ajax-selection-form');
         $qfKeyParam = "civicrm search {$qfKeyParam}";
         $selectedIdsArr = CRM_DataprocessorSearch_Utils_PrevNextCache::getSelection($qfKeyParam);
-        $selectedIds = array_keys($selectedIdsArr[$qfKeyParam]);
+        if (isset($selectedIdsArr[$qfKeyParam]) && is_array($selectedIdsArr[$qfKeyParam])) {
+          $selectedIds = array_keys($selectedIdsArr[$qfKeyParam]);
+        }
     }
 
     $this->assign_by_ref('selectedIds', $selectedIds);
@@ -694,7 +399,7 @@ abstract class CRM_DataprocessorSearch_Form_AbstractSearch extends CRM_Core_Form
    * @return string
    */
   public function getTitle() {
-    $this->findDataProcessor();
+    $this->loadDataProcessor();
     return $this->dataProcessorOutput['configuration']['title'];
   }
 

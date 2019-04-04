@@ -4,9 +4,16 @@
  * @license AGPL-3.0
  */
 
-use Civi\DataProcessor\Output\OutputInterface;
+namespace Civi\DataProcessor\Output;
 
-class CRM_DataprocessorSearch_Search {
+/**
+ * Class UIOutputHelper
+ *
+ * An helper class for the UIOutput
+ *
+ * @package Civi\DataProcessor\Output
+ */
+class UIOutputHelper {
 
   private static $rebuildMenu = false;
 
@@ -23,15 +30,15 @@ class CRM_DataprocessorSearch_Search {
     FROM civicrm_data_processor_output o 
     INNER JOIN civicrm_data_processor p ON o.data_processor_id = p.id 
     WHERE p.is_active = 1";
-    $dao = CRM_Core_DAO::executeQuery($sql);
+    $dao = \CRM_Core_DAO::executeQuery($sql);
     while ($dao->fetch()) {
       $outputClass = $factory->getOutputByName($dao->type);
-      if ($outputClass instanceof CRM_DataprocessorSearch_SearchInterface) {
-        $outputs = CRM_Dataprocessor_BAO_Output::getValues(['id' => $dao->output_id]);
+      if ($outputClass instanceof \Civi\DataProcessor\Output\UIOutputInterface) {
+        $outputs = \CRM_Dataprocessor_BAO_Output::getValues(['id' => $dao->output_id]);
         $output = $outputs[$dao->output_id];
-        $dataprocessors = CRM_Dataprocessor_BAO_DataProcessor::getValues(['id' => $dao->id]);
+        $dataprocessors = \CRM_Dataprocessor_BAO_DataProcessor::getValues(['id' => $dao->id]);
         $dataprocessor = $dataprocessors[$dao->id];
-        $url = $outputClass->getSearchUrl($output, $dataprocessor);
+        $url = $outputClass->getUrlToUi($output, $dataprocessor);
 
         $configuration = json_decode($dao->configuration, TRUE);
         $title = $dao->title;
@@ -40,7 +47,7 @@ class CRM_DataprocessorSearch_Search {
         }
         $item = [
           'title' => $title,
-          'page_callback' => $outputClass->getSearchControllerClass(),
+          'page_callback' => $outputClass->getCallbackForUi(),
           'access_arguments' => [$dao->permission],
         ];
         $items[$url] = $item;
@@ -61,26 +68,26 @@ class CRM_DataprocessorSearch_Search {
       return;
     }
     if ($op == 'delete') {
-      $outputs = CRM_Dataprocessor_BAO_Output::getValues(array('id' => $id));
+      $outputs = \CRM_Dataprocessor_BAO_Output::getValues(array('id' => $id));
       if (isset($outputs[$id]['configuration']['navigation_id'])) {
         $navId = $outputs[$id]['configuration']['navigation_id'];
-        CRM_Core_BAO_Navigation::processDelete($navId);
-        CRM_Core_BAO_Navigation::resetNavigation();
+        \CRM_Core_BAO_Navigation::processDelete($navId);
+        \CRM_Core_BAO_Navigation::resetNavigation();
         self::$rebuildMenu = TRUE;
       }
     } elseif ($op == 'edit') {
-      $outputs = CRM_Dataprocessor_BAO_Output::getValues(array('id' => $id));
+      $outputs = \CRM_Dataprocessor_BAO_Output::getValues(array('id' => $id));
       $output = $outputs[$id];
       if (!isset($output['configuration']['navigation_id']) && !isset($params['configuration']['navigation_parent_path'])) {
         return;
       } elseif (!isset($params['configuration']['navigation_parent_path'])) {
         // Delete the navigation item
         $navId = $outputs[$id]['configuration']['navigation_id'];
-        CRM_Core_BAO_Navigation::processDelete($navId);
-        CRM_Core_BAO_Navigation::resetNavigation();
+        \CRM_Core_BAO_Navigation::processDelete($navId);
+        \CRM_Core_BAO_Navigation::resetNavigation();
         self::$rebuildMenu = TRUE;
       } else {
-        $dataProcessors = CRM_Dataprocessor_BAO_DataProcessor::getValues(['id' => $output['data_processor_id']]);
+        $dataProcessors = \CRM_Dataprocessor_BAO_DataProcessor::getValues(['id' => $output['data_processor_id']]);
         $dataProcessor = $dataProcessors[$output['data_processor_id']];
 
         // Retrieve the current navigation params.
@@ -89,7 +96,7 @@ class CRM_DataprocessorSearch_Search {
           // Get the default navigation parent id.
           $navigationDefaults = [];
           $navParams = ['id' => $outputs[$id]['configuration']['navigation_id']];
-          CRM_Core_BAO_Navigation::retrieve($navParams, $navigationDefaults);
+          \CRM_Core_BAO_Navigation::retrieve($navParams, $navigationDefaults);
           if (!empty($navigationDefaults['id'])) {
             $navigationParams['id'] = $navigationDefaults['id'];
             $navigationParams['current_parent_id'] = !empty($navigationDefaults['parent_id']) ? $navigationDefaults['parent_id'] : NULL;
@@ -100,7 +107,7 @@ class CRM_DataprocessorSearch_Search {
       }
     }
     elseif ($op == 'create' && isset($params['configuration']['navigation_parent_path'])) {
-      $dataProcessors = CRM_Dataprocessor_BAO_DataProcessor::getValues(array('id' => $params['data_processor_id']));
+      $dataProcessors = \CRM_Dataprocessor_BAO_DataProcessor::getValues(array('id' => $params['data_processor_id']));
       $dataProcessor = $dataProcessors[$params['data_processor_id']];
       self::$rebuildMenu = self::newNavigationItem($params, $dataProcessor);
     }
@@ -121,10 +128,10 @@ class CRM_DataprocessorSearch_Search {
 
     if (self::$rebuildMenu) {
       // Rebuild the CiviCRM Menu (which holds all the pages)
-      CRM_Core_Menu::store();
+      \CRM_Core_Menu::store();
 
       // also reset navigation
-      CRM_Core_BAO_Navigation::resetNavigation();
+      \CRM_Core_BAO_Navigation::resetNavigation();
       self::$rebuildMenu = false;
     }
   }
@@ -134,7 +141,7 @@ class CRM_DataprocessorSearch_Search {
    * @param $dataProcessor
    */
   public static function hookExport(&$dataProcessor) {
-    $navigation = CRM_DataprocessorSearch_Utils_Navigation::singleton();
+    $navigation = CRM_Dataprocessor_Utils_Navigation::singleton();
     foreach($dataProcessor['outputs'] as $idx => $output) {
       if (isset($output['configuration']['navigation_id'])) {
         $dataProcessor['outputs'][$idx]['configuration']['navigation_parent_path'] = $navigation->getNavigationParentPathById($output['configuration']['navigation_id']);
@@ -161,12 +168,12 @@ class CRM_DataprocessorSearch_Search {
       $outputClass = $factory->getOutputByName($output['type']);
     }
 
-    if ($outputClass && $outputClass instanceof CRM_DataprocessorSearch_SearchInterface) {
-      $url = $outputClass->getSearchUrl($params, $dataProcessor);
+    if ($outputClass && $outputClass instanceof \Civi\DataProcessor\Output\UIOutputInterface) {
+      $url = $outputClass->getUrlToUi($params, $dataProcessor);
     }
 
-    $navigation = CRM_DataprocessorSearch_Utils_Navigation::singleton();
-    $navigationParams['domain_id'] = CRM_Core_Config::domainID();
+    $navigation = \CRM_Dataprocessor_Utils_Navigation::singleton();
+    $navigationParams['domain_id'] = \CRM_Core_Config::domainID();
     $navigationParams['permission'] = array();
     $navigationParams['label'] = isset($params['configuration']['title']) ? $params['configuration']['title'] : $dataProcessor['title'];
     $navigationParams['name'] = $dataProcessor['name'];
@@ -181,8 +188,8 @@ class CRM_DataprocessorSearch_Search {
     unset($params['configuration']['navigation_parent_path']);
 
     $navigationParams['url'] = $url.'?reset=1';
-    $navigation = CRM_Core_BAO_Navigation::add($navigationParams);
-    CRM_Core_BAO_Navigation::resetNavigation();
+    $navigation = \CRM_Core_BAO_Navigation::add($navigationParams);
+    \CRM_Core_BAO_Navigation::resetNavigation();
 
     $params['configuration']['navigation_id'] = $navigation->id;
 
