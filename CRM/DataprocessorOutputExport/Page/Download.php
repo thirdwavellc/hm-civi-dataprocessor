@@ -24,7 +24,7 @@ class CRM_DataprocessorOutputExport_Page_Download extends CRM_Core_Page {
       CRM_Core_Error::statusBounce("Cannot access file");
     }
 
-    if (!CRM_Utils_File::isValidFileName($fileName)) {
+    if (!self::isValidFileName($fileName)) {
       CRM_Core_Error::statusBounce("Malformed filename");
     }
 
@@ -61,6 +61,25 @@ class CRM_DataprocessorOutputExport_Page_Download extends CRM_Core_Page {
       TRUE,
       $disposition
     );
+  }
+
+  /**
+   * Is the filename a safe and valid filename passed in from URL
+   *
+   * @param string $fileName
+   * @return bool
+   */
+  protected static function isValidFileName($fileName = NULL) {
+    if ($fileName) {
+      $check = $fileName !== basename($fileName) ? FALSE : TRUE;
+      if ($check) {
+        if (substr($fileName, 0, 1) == '/' || substr($fileName, 0, 1) == '.' || substr($fileName, 0, 1) == DIRECTORY_SEPARATOR) {
+          $check = FALSE;
+        }
+      }
+      return $check;
+    }
+    return FALSE;
   }
 
 }
