@@ -42,7 +42,7 @@ class CRM_DataprocessorOutputExport_Page_Download extends CRM_Core_Page {
 
 
     $path = CRM_Core_Config::singleton()->templateCompileDir . $directory. $fileName;
-    $mimeType = CRM_Utils_Request::retrieveValue('mime-type', 'String', '', FALSE);
+    $mimeType = $outputClass->mimeType();
 
     if (!$path) {
       CRM_Core_Error::statusBounce('Could not retrieve the file');

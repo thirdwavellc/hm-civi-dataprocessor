@@ -27,6 +27,13 @@ interface ExportOutputInterface extends OutputInterface {
   public function downloadExport(\Civi\DataProcessor\ProcessorType\AbstractProcessorType $dataProcessor, $dataProcessorBAO, $outputBAO, $formValues);
 
   /**
+   * Returns the mime type of the export file.
+   *
+   * @return string
+   */
+  public function mimeType();
+
+  /**
    * Returns the url for the page/form this output will show to the user
    *
    * @param array $output

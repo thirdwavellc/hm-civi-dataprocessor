@@ -25,6 +25,15 @@ class CRM_DataprocessorOutputExport_CSV implements ExportOutputInterface {
   }
 
   /**
+   * Returns the mime type of the export file.
+   *
+   * @return string
+   */
+  public function mimeType() {
+    return 'text/csv';
+  }
+
+  /**
    * Returns the url for the page/form this output will show to the user
    *
    * @param array $output
