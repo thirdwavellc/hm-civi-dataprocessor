@@ -95,6 +95,15 @@ abstract class AbstractSource implements SourceInterface {
   }
 
   /**
+   * Returns the default configuration for this data source
+   *
+   * @return array
+   */
+  public function getDefaultConfiguration() {
+    return array();
+  }
+
+  /**
    * @return \Civi\DataProcessor\DataFlow\AbstractDataFlow|\Civi\DataProcessor\DataFlow\AbstractDataFlow
    * @throws \Exception
    */

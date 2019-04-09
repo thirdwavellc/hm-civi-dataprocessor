@@ -59,6 +59,34 @@ class ActivitySource extends AbstractCivicrmEntitySource {
   }
 
   /**
+   * Returns the default configuration for this data source
+   *
+   * @return array
+   */
+  public function getDefaultConfiguration() {
+    return array(
+      'filter' => array(
+        'is_current_revision' => array (
+          'op' => '=',
+          'value' => '1',
+        ),
+        'is_deleted' => array (
+          'op' => '=',
+          'value' => '0',
+        ),
+        'is_test' => array (
+          'op' => '=',
+          'value' => '0',
+        ),
+        'activity_contact_record_type_id' => array (
+          'op' => 'IN',
+          'value' => array(3), // Activity Targets
+        )
+      )
+    );
+  }
+
+  /**
    * @return \Civi\DataProcessor\DataFlow\SqlDataFlow
    * @throws \Exception
    */

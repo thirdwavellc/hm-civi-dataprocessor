@@ -52,6 +52,13 @@ interface SourceInterface {
   public function setConfiguration($configuration);
 
   /**
+   * Returns the default configuration for this data source
+   *
+   * @return array
+   */
+  public function getDefaultConfiguration();
+
+  /**
    * @return \Civi\DataProcessor\DataSpecification\DataSpecification
    */
   public function getAvailableFields();

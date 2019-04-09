@@ -121,6 +121,10 @@ class CRM_Dataprocessor_Form_Source extends CRM_Core_Form {
     $source = CRM_Dataprocessor_BAO_Source::getValues(array('id' => $this->id));
 
     $values = $this->exportValues();
+
+    $factory = dataprocessor_get_factory();
+    $sourceClass = $factory->getDataSourceByName($values['type']);
+
     if (!empty($values['name'])) {
       $params['name'] = $values['name'];
     } else {
@@ -138,16 +142,18 @@ class CRM_Dataprocessor_Form_Source extends CRM_Core_Form {
     }
     if ($this->id) {
       $params['id'] = $this->id;
+    } else {
+      $params['configuration'] = $sourceClass->getDefaultConfiguration();
     }
     if (isset($source[$this->id])) {
       $params['join_configuration'] = $source[$this->id]['join_configuration'];
     }
 
+
     $result = CRM_Dataprocessor_BAO_Source::add($params);
 
-    $factory = dataprocessor_get_factory();
+
     $configurationUrl = false;
-    $sourceClass = $factory->getDataSourceByName($values['type']);
     if ($sourceClass->getConfigurationUrl()) {
       $configurationUrl = CRM_Utils_System::url($sourceClass->getConfigurationUrl(), [
         'reset' => 1,

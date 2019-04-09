@@ -44,4 +44,20 @@ class ContactSource extends AbstractCivicrmEntitySource {
     return $this->availableFilterFields;
   }
 
+  /**
+   * Returns the default configuration for this data source
+   *
+   * @return array
+   */
+  public function getDefaultConfiguration() {
+    return array(
+      'filter' => array(
+        'is_deleted' => array (
+          'op' => '=',
+          'value' => '0',
+        )
+      )
+    );
+  }
+
 }
