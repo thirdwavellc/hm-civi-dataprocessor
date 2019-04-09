@@ -28,7 +28,8 @@ class CRM_DataprocessorOutputExport_Page_Download extends CRM_Core_Page {
       CRM_Core_Error::statusBounce("Malformed filename");
     }
 
-    list($prefix, $dataProcessorId, $outputId, $userId, $download_name) = explode("_", $fileName);
+    list($prefix, $dataProcessorId, $outputId, $userId, $download_name) = explode("_", $fileName, 5);
+    $download_name = $prefix.'_'.$download_name;
 
     $data_processors = CRM_Dataprocessor_BAO_DataProcessor::getValues(array('id' => $dataProcessorId));
     $outputs = CRM_Dataprocessor_BAO_Output::getValues(array('id' => $outputId));
@@ -41,8 +42,6 @@ class CRM_DataprocessorOutputExport_Page_Download extends CRM_Core_Page {
 
     $path = CRM_Core_Config::singleton()->templateCompileDir . $directory. $fileName;
     $mimeType = $outputClass->mimeType();
-    $ext = CRM_Utils_File::getFilesByExtension($path);
-    $download_name = $prefix.'_'.$download_name.'.'.$ext;
 
     if (!$path) {
       CRM_Core_Error::statusBounce('Could not retrieve the file');
