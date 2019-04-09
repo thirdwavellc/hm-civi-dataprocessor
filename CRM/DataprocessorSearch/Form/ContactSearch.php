@@ -96,6 +96,7 @@ class CRM_DataprocessorSearch_Form_ContactSearch extends CRM_DataprocessorSearch
     $contactImages = array();
     // Add the contact type image
     if (count($ids)) {
+      $ids = CRM_Utils_Type::escapeAll($ids, 'String');
       $contactDao = CRM_Core_DAO::executeQuery("SELECT id, contact_type, contact_sub_type FROM civicrm_contact WHERE `id` IN (".implode(",", $ids).")");
       while($contactDao->fetch()) {
         foreach($rows as $idx => $row) {
