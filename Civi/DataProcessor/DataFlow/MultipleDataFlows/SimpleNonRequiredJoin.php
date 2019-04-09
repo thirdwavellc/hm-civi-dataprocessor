@@ -86,7 +86,7 @@ class SimpleNonRequiredJoin  extends  SimpleJoin {
 
     $extraClause  = "";
     $dataFlow = $sourceDataFlowDescription->getDataFlow();
-    if ($dataFlow  instanceof  SqlTableDataFlow) {
+    if ($dataFlow  instanceof  SqlDataFlow) {
       $whereClauses = $dataFlow->getWhereClauses();
       foreach($whereClauses as $whereClause) {
         if ($whereClause->isJoinClause()) {
