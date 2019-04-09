@@ -1,5 +1,12 @@
 {include file="CRM/Dataprocessor/Form/Output/UIOutput/CriteriaForm.tpl"}
 
+{if (isset($output.configuration.help_text))}
+    <div class="help">
+        {$output.configuration.help_text}
+    </div>
+{/if}
+
+
 {include file="CRM/DataprocessorSearch/Form/Debug.tpl"}
 
 {if (isset($rows) && !empty($rows))}

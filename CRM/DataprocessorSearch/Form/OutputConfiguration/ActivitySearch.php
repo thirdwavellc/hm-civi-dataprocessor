@@ -43,6 +43,8 @@ class CRM_DataprocessorSearch_Form_OutputConfiguration_ActivitySearch extends CR
     ));
     $this->add('select', 'hide_id_field', E::ts('Show Activity ID field'), array(0=>'Activity ID is Visible', 1=> 'Activity ID is hidden'));
 
+    $this->add('wysiwyg', 'help_text', E::ts('Help text for this search'), array('rows' => 6, 'cols' => 80));
+
     // navigation field
     $navigationOptions = $this->navigation->getNavigationOptions();
     if (isset($this->output['configuration']['navigation_id'])) {
@@ -74,6 +76,9 @@ class CRM_DataprocessorSearch_Form_OutputConfiguration_ActivitySearch extends CR
         if (isset($this->output['configuration']['hide_id_field'])) {
           $defaults['hide_id_field'] = $this->output['configuration']['hide_id_field'];
         }
+        if (isset($this->output['configuration']['help_text'])) {
+          $defaults['help_text'] = $this->output['configuration']['help_text'];
+        }
       }
     }
     if (!isset($defaults['permission'])) {
@@ -98,6 +103,7 @@ class CRM_DataprocessorSearch_Form_OutputConfiguration_ActivitySearch extends CR
     $params['configuration']['activity_id_field'] = $values['activity_id_field'];
     $params['configuration']['navigation_parent_path'] = $values['navigation_parent_path'];
     $params['configuration']['hide_id_field'] = $values['hide_id_field'];
+    $params['configuration']['help_text'] = $values['help_text'];
 
     CRM_Dataprocessor_BAO_Output::add($params);
 

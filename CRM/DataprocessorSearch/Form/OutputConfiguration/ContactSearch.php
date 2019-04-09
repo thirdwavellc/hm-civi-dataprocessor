@@ -43,6 +43,8 @@ class CRM_DataprocessorSearch_Form_OutputConfiguration_ContactSearch extends CRM
     ));
     $this->add('select', 'hide_id_field', E::ts('Show Contact ID field'), array(0=>'Contact ID is Visible', 1=> 'Contact ID is hidden'));
 
+    $this->add('wysiwyg', 'help_text', E::ts('Help text for this search'), array('rows' => 6, 'cols' => 80));
+
     // navigation field
     $navigationOptions = $this->navigation->getNavigationOptions();
     if (isset($this->output['configuration']['navigation_id'])) {
@@ -74,6 +76,9 @@ class CRM_DataprocessorSearch_Form_OutputConfiguration_ContactSearch extends CRM
         if (isset($this->output['configuration']['hide_id_field'])) {
           $defaults['hide_id_field'] = $this->output['configuration']['hide_id_field'];
         }
+        if (isset($this->output['configuration']['help_text'])) {
+          $defaults['help_text'] = $this->output['configuration']['help_text'];
+        }
       }
     }
     if (!isset($defaults['permission'])) {
@@ -98,6 +103,7 @@ class CRM_DataprocessorSearch_Form_OutputConfiguration_ContactSearch extends CRM
     $params['configuration']['contact_id_field'] = $values['contact_id_field'];
     $params['configuration']['navigation_parent_path'] = $values['navigation_parent_path'];
     $params['configuration']['hide_id_field'] = $values['hide_id_field'];
+    $params['configuration']['help_text'] = $values['help_text'];
 
     CRM_Dataprocessor_BAO_Output::add($params);
 

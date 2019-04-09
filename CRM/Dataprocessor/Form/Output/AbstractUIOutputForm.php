@@ -82,6 +82,7 @@ abstract class CRM_Dataprocessor_Form_Output_AbstractUIOutputForm extends CRM_Co
 
       $output = CRM_Dataprocessor_BAO_Output::getValues(['id' => $dao->output_id]);
       $this->dataProcessorOutput = $output[$dao->output_id];
+      $this->assign('output', $this->dataProcessorOutput);
 
       if (!$this->isConfigurationValid()) {
         throw new \Exception('Invalid configuration found of the data processor "' . $dataProcessorName . '"');

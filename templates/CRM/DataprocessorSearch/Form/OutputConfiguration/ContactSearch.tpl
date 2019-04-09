@@ -30,6 +30,11 @@
             <div class="content">{$form.hide_id_field.html}</div>
             <div class="clear"></div>
         </div>
+        <div class="crm-section">
+            <div class="label">{$form.help_text.label}</div>
+            <div class="content">{$form.help_text.html}</div>
+            <div class="clear"></div>
+        </div>
     </div>
 
     <div class="crm-submit-buttons">
