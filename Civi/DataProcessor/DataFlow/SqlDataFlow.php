@@ -45,11 +45,20 @@ abstract class SqlDataFlow extends AbstractDataFlow {
   abstract public function getFieldsForGroupByStatement();
 
   /**
+   * Returns the Table part in the from statement.
+   *
+   * @return string
+   */
+  abstract public function getTableStatement();
+
+  /**
    * Returns the From Statement.
    *
    * @return string
    */
-  abstract public function getFromStatement();
+  public function getFromStatement() {
+    return "FROM {$this->getTableStatement()}";
+  }
 
   /**
    * Initialize the data flow

@@ -309,15 +309,11 @@ class SimpleJoin implements JoinInterface, SqlJoinInterface {
       }
       $joinClause = "ON {$leftColumnName}  = {$rightColumnName}";
     }
-    if ($sourceDataFlowDescription->getDataFlow() instanceof SqlTableDataFlow) {
-      $table = $sourceDataFlowDescription->getDataFlow()->getTable();
-      $table_alias = $sourceDataFlowDescription->getDataFlow()->getTableAlias();
-    } elseif ($sourceDataFlowDescription->getDataFlow() instanceof CombinedSqlDataFlow) {
-      $table = $sourceDataFlowDescription->getDataFlow()->getPrimaryTable();
-      $table_alias = $sourceDataFlowDescription->getDataFlow()->getPrimaryTableAlias();
+    if ($sourceDataFlowDescription->getDataFlow() instanceof SqlDataFlow) {
+      $tablePart = $sourceDataFlowDescription->getDataFlow()->getTableStatement();
     }
 
-    return "{$this->type} JOIN `{$table}` `{$table_alias}` {$joinClause} ";
+    return "{$this->type} JOIN {$tablePart} {$joinClause} ";
   }
 
 

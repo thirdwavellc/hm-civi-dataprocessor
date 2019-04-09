@@ -4,9 +4,8 @@
  * @license AGPL-3.0
  */
 
-namespace Civi\DataProcessor\DataFlow\SqlDataFlow;
+namespace Civi\DataProcessor\DataFlow\CombinedDataFlow;
 
-use Civi\DataProcessor\DataFlow\CombinedDataFlow\CombinedSqlDataFlow;
 use Civi\DataProcessor\DataFlow\EndOfFlowException;
 use Civi\DataProcessor\DataSpecification\DataSpecification;
 use Civi\DataProcessor\DataSpecification\SqlFieldSpecification;
@@ -19,6 +18,26 @@ class SubqueryDataFlow extends CombinedSqlDataFlow {
    * @return string
    */
   public function getFromStatement() {
+    return "FROM {$this->getTableStatement()}";
+  }
+
+  /**
+   * Returns the join Statement part.
+   *
+   * @param int $skip
+   * @return string
+   */
+  public function getJoinStatement($skip=0) {
+    $fromStatements = array();
+    return $fromStatements;
+  }
+
+  /**
+   * Returns the Table part in the from statement.
+   *
+   * @return string
+   */
+  public function getTableStatement() {
     $fields = array();
     foreach($this->sourceDataFlowDescriptions as $sourceDataFlowDescription) {
       $fields = array_merge($fields, $sourceDataFlowDescription->getDataFlow()->getFieldsForSelectStatement());
@@ -47,19 +66,7 @@ class SubqueryDataFlow extends CombinedSqlDataFlow {
     $from = implode(" ", $fromStatements);
 
     $select = implode(", ", $fields);
-    return "FROM (SELECT {$select} {$from}) `{$this->getPrimaryTableAlias()}`";
-  }
-
-  /**
-   * Returns the join Statement part.
-   *
-   * @param int $skip
-   * @return string
-   */
-  public function getJoinStatement($skip=0) {
-    $fromStatements = array();
-    $i = 0;
-    return $fromStatements;
+    return "(SELECT {$select} {$from}) `{$this->getPrimaryTableAlias()}`";
   }
 
   /**

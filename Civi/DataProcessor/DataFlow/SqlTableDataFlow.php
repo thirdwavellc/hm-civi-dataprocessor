@@ -46,12 +46,12 @@ class SqlTableDataFlow extends SqlDataFlow {
   }
 
   /**
-   * Returns the From Statement.
+   * Returns the Table part in the from statement.
    *
    * @return string
    */
-  public function getFromStatement() {
-    return "FROM `{$this->table}` `{$this->table_alias}`";
+  public function getTableStatement() {
+    return "`{$this->table}` `{$this->table_alias}`";
   }
 
   /**

@@ -61,6 +61,15 @@ class CombinedSqlDataFlow extends SqlDataFlow implements MultipleSourceDataFlows
   }
 
   /**
+   * Returns the Table part in the from statement.
+   *
+   * @return string
+   */
+  public function getTableStatement() {
+    return "`{$this->primary_table}` `{$this->primary_table_alias}`";
+  }
+
+  /**
    * Returns the From Statement.
    *
    * @return string

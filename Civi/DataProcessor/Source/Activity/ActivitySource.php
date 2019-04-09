@@ -8,7 +8,7 @@ namespace Civi\DataProcessor\Source\Activity;
 
 use Civi\DataProcessor\DataFlow\MultipleDataFlows\DataFlowDescription;
 use Civi\DataProcessor\DataFlow\MultipleDataFlows\SimpleJoin;
-use Civi\DataProcessor\DataFlow\SqlDataFlow\SubqueryDataFlow;
+use Civi\DataProcessor\DataFlow\CombinedDataFlow\SubqueryDataFlow;
 use Civi\DataProcessor\DataFlow\SqlTableDataFlow;
 use Civi\DataProcessor\DataSpecification\DataSpecification;
 use Civi\DataProcessor\Source\AbstractCivicrmEntitySource;
