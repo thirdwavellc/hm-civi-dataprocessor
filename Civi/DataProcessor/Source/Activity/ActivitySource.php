@@ -19,6 +19,28 @@ use CRM_Dataprocessor_ExtensionUtil as E;
 class ActivitySource extends AbstractCivicrmEntitySource {
 
   /**
+   * @var SqlTableDataFlow
+   */
+  protected $activityDataFlow;
+
+  /**
+   * @var SqlTableDataFlow
+   */
+  protected $activityContactDataFlow;
+
+  public function __construct() {
+    parent::__construct();
+
+    // Create the activity data flow and data flow description
+    $this->activityDataFlow = new SqlTableDataFlow($this->getTable(), $this->getSourceName().'_activity', $this->getSourceTitle());
+    DataSpecificationUtils::addDAOFieldsToDataSpecification('CRM_Activity_DAO_Activity', $this->activityDataFlow->getDataSpecification());
+
+    // Create the activity contact data flow and data flow description
+    $this->activityContactDataFlow = new SqlTableDataFlow('civicrm_activity_contact', $this->getSourceName().'_activity_contact');
+    DataSpecificationUtils::addDAOFieldsToDataSpecification('CRM_Activity_DAO_ActivityContact', $this->activityContactDataFlow->getDataSpecification(), array('id'), '', 'activity_contact_', E::ts('Activity Contact :: '));
+  }
+
+  /**
    * Returns the entity name
    *
    * @return String
@@ -41,17 +63,11 @@ class ActivitySource extends AbstractCivicrmEntitySource {
    * @throws \Exception
    */
   protected function getEntityDataFlow() {
-    // Create the activity data flow and data flow description
-    $activityDataFlow = new SqlTableDataFlow($this->getTable(), $this->getSourceName().'_activity', $this->getSourceTitle());
-    $activityDataDescription = new DataFlowDescription($activityDataFlow);
-    DataSpecificationUtils::addDAOFieldsToDataSpecification('CRM_Activity_DAO_Activity', $activityDataFlow->getDataSpecification());
+    $activityDataDescription = new DataFlowDescription($this->activityDataFlow);
 
-    // Create the activity contact data flow and data flow description
-    $activityContactDataFlow = new SqlTableDataFlow('civicrm_activity_contact', $this->getSourceName().'_activity_contact');
-    DataSpecificationUtils::addDAOFieldsToDataSpecification('CRM_Activity_DAO_ActivityContact', $activityContactDataFlow->getDataSpecification(), array('id'), '', 'activity_contact_', E::ts('Activity Contact :: '));
-    $join = new SimpleJoin($activityDataFlow->getTableAlias(), 'id', $activityContactDataFlow->getTableAlias(), 'activity_id');
+    $join = new SimpleJoin($this->activityDataFlow->getTableAlias(), 'id', $this->activityContactDataFlow->getTableAlias(), 'activity_id');
     $join->setDataProcessor($this->dataProcessor);
-    $activityContactDataDescription = new DataFlowDescription($activityContactDataFlow, $join);
+    $activityContactDataDescription = new DataFlowDescription($this->activityContactDataFlow, $join);
 
     // Create the subquery data flow
     $entityDataFlow = new SubqueryDataFlow($this->getSourceName(), $this->getTable(), $this->getSourceName());
