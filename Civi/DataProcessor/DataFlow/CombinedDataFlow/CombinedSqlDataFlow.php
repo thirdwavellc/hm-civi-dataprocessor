@@ -69,11 +69,7 @@ class CombinedSqlDataFlow extends SqlDataFlow implements MultipleSourceDataFlows
     $fromStatements = array();
     $sourceDataFlowDescription = reset($this->sourceDataFlowDescriptions);
     $dataFlow = $sourceDataFlowDescription->getDataFlow();
-    if ($dataFlow instanceof SqlTableDataFlow) {
-      $fromStatements[] = "FROM `{$dataFlow->getTable()}` `{$dataFlow->getTableAlias()}`";
-    } elseif ($dataFlow instanceof CombinedSqlDataFlow) {
-      $fromStatements[] = "FROM `{$sourceDataFlowDescription->getDataFlow()->getPrimaryTable()}` `{$sourceDataFlowDescription->getDataFlow()->getPrimaryTableAlias()}`";
-    }
+    $fromStatements[] = $dataFlow->getFromStatement();
     $fromStatements = array_merge($fromStatements, $this->getJoinStatement(0));
     return implode(" ", $fromStatements);
   }
@@ -181,6 +177,7 @@ class CombinedSqlDataFlow extends SqlDataFlow implements MultipleSourceDataFlows
   }
 
   public function getWhereClauses() {
+    $clauses = array();
     foreach($this->whereClauses as $clause) {
       $clauses[] = $clause;
     }

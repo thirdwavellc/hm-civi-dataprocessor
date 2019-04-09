@@ -16,6 +16,7 @@ use Civi\DataProcessor\DataSpecification\AggregationField;
 use Civi\DataProcessor\DataSpecification\CustomFieldSpecification;
 use Civi\DataProcessor\DataSpecification\DataSpecification;
 use Civi\DataProcessor\DataSpecification\FieldSpecification;
+use Civi\DataProcessor\DataSpecification\Utils as DataSpecificationUtils;
 use Civi\DataProcessor\ProcessorType\AbstractProcessorType;
 
 abstract class AbstractCivicrmEntitySource extends AbstractSource {
@@ -88,7 +89,7 @@ abstract class AbstractCivicrmEntitySource extends AbstractSource {
    */
   public function initialize() {
     if (!$this->primaryDataFlow) {
-      $this->primaryDataFlow = new SqlTableDataFlow($this->getTable(), $this->getSourceName(), $this->getSourceTitle());
+      $this->primaryDataFlow = $this->getEntityDataFlow();
     }
     $this->addFilters($this->configuration);
     if (count($this->customGroupDataFlowDescriptions) || count($this->additionalDataFlowDescriptions)) {
@@ -107,9 +108,16 @@ abstract class AbstractCivicrmEntitySource extends AbstractSource {
   }
 
   protected function reset() {
-    $this->primaryDataFlow = new SqlTableDataFlow($this->getTable(), $this->getSourceName(), $this->getSourceTitle());
+    $this->primaryDataFlow = $this->getEntityDataFlow();
     $this->dataFlow = null;
     $this->additionalDataFlowDescriptions = array();
+  }
+
+  /**
+   * @return \Civi\DataProcessor\DataFlow\SqlDataFlow
+   */
+  protected function getEntityDataFlow() {
+    return new SqlTableDataFlow($this->getTable(), $this->getSourceName(), $this->getSourceTitle());
   }
 
   /**
@@ -119,19 +127,10 @@ abstract class AbstractCivicrmEntitySource extends AbstractSource {
    * @throws \Civi\DataProcessor\DataSpecification\FieldExistsException
    */
   protected function loadFields(DataSpecification $dataSpecification, $fieldsToSkip=array()) {
-    $dao = \CRM_Core_DAO_AllCoreTables::getFullName($this->getEntity());
-    $bao = str_replace("DAO", "BAO", $dao);
-    $fields = $dao::fields();
-    foreach($fields as $field) {
-      if (in_array($field['name'], $fieldsToSkip)) {
-        continue;
-      }
-      $type = \CRM_Utils_Type::typeToString($field['type']);
-      $options = $dao::buildOptions($field['name']);
-      $alias = $this->getSourceName(). '_'.$field['name'];
-      $fieldSpec = new FieldSpecification($field['name'], $type, $field['title'], $options, $alias);
-      $dataSpecification->addFieldSpecification($fieldSpec->name, $fieldSpec);
-    }
+    $daoClass = \CRM_Core_DAO_AllCoreTables::getFullName($this->getEntity());
+    $aliasPrefix = $this->getSourceName().'_';
+
+    DataSpecificationUtils::addDAOFieldsToDataSpecification($daoClass, $dataSpecification, $fieldsToSkip, '', $aliasPrefix);
   }
 
   /**
@@ -141,67 +140,14 @@ abstract class AbstractCivicrmEntitySource extends AbstractSource {
    * @param bool $onlySearchAbleFields
    * @param $entity
    * @throws \Civi\DataProcessor\DataSpecification\FieldExistsException
+   * @throws \Exception
    */
   protected function loadCustomGroupsAndFields(DataSpecification $dataSpecification, $onlySearchAbleFields, $entity=null) {
-    $customGroupToReturnParam = array(
-      'custom_field' => array(
-        'id',
-        'name',
-        'label',
-        'column_name',
-        'data_type',
-        'html_type',
-        'default_value',
-        'attributes',
-        'is_required',
-        'is_view',
-        'is_searchable',
-        'help_pre',
-        'help_post',
-        'options_per_line',
-        'start_date_years',
-        'end_date_years',
-        'date_format',
-        'time_format',
-        'option_group_id',
-        'in_selector',
-      ),
-      'custom_group' => array(
-        'id',
-        'name',
-        'table_name',
-        'title',
-        'help_pre',
-        'help_post',
-        'collapse_display',
-        'style',
-        'is_multiple',
-        'extends',
-        'extends_entity_column_id',
-        'extends_entity_column_value',
-        'max_multiple',
-      ),
-    );
     if (!$entity) {
       $entity = $this->getEntity();
     }
-    $customGroups = \CRM_Core_BAO_CustomGroup::getTree($entity, $customGroupToReturnParam,NULL,NULL,NULL,NULL,NULL,NULL,TRUE,FALSE,FALSE);
-    foreach($customGroups as $cgId => $customGroup) {
-      if ($cgId == 'info') {
-        continue;
-      }
-      foreach($customGroup['fields'] as $field) {
-        if (!$onlySearchAbleFields || $field['is_searchable']) {
-          $alias = $this->getSourceName() . '_' . $customGroup['name'] . '_' . $field['name'];
-          $customFieldSpec = new CustomFieldSpecification(
-            $customGroup['name'], $customGroup['table_name'], $customGroup['title'],
-            $field['id'], $field['column_name'], $field['name'], $field['data_type'], $field['label'],
-            $alias
-          );
-          $dataSpecification->addFieldSpecification($customFieldSpec->name, $customFieldSpec);
-        }
-      }
-    }
+    $aliasPrefix = $this->getSourceName() . '_';
+    DataSpecificationUtils::addCustomFieldsToDataSpecification($entity, $dataSpecification, $onlySearchAbleFields, $aliasPrefix);
   }
 
   /**
@@ -294,7 +240,7 @@ abstract class AbstractCivicrmEntitySource extends AbstractSource {
     if ($this->primaryDataFlow && $this->primaryDataFlow->getTable() === $this->getTable()) {
       return $this->primaryDataFlow;
     } elseif (empty($this->primaryDataFlow)) {
-      $this->primaryDataFlow = new SqlTableDataFlow($this->getTable(), $this->getSourceName());
+      $this->primaryDataFlow = $this->getEntityDataFlow();
       return $this->primaryDataFlow;
     }
     foreach($this->additionalDataFlowDescriptions as $additionalDataFlowDescription) {
@@ -302,7 +248,7 @@ abstract class AbstractCivicrmEntitySource extends AbstractSource {
         return $additionalDataFlowDescription->getDataFlow();
       }
     }
-    $entityDataFlow = new SqlTableDataFlow($this->getTable(), $this->getSourceName());
+    $entityDataFlow = $this->getEntityDataFlow();
     $join = new SimpleJoin($this->getSourceName(), 'id', $this->primaryDataFlow->getTableAlias(), 'entity_id', 'LEFT');
     $join->setDataProcessor($this->dataProcessor);
     $additionalDataFlowDescription = new DataFlowDescription($entityDataFlow,$join);
@@ -335,7 +281,7 @@ abstract class AbstractCivicrmEntitySource extends AbstractSource {
   public function getAvailableFields() {
     if (!$this->availableFields) {
       $this->availableFields = new DataSpecification();
-      $this->loadFields($this->availableFields);
+      $this->loadFields($this->availableFields, array());
       $this->loadCustomGroupsAndFields($this->availableFields, false);
     }
     return $this->availableFields;
@@ -348,7 +294,7 @@ abstract class AbstractCivicrmEntitySource extends AbstractSource {
   public function getAvailableFilterFields() {
     if (!$this->availableFilterFields) {
       $this->availableFilterFields = new DataSpecification();
-      $this->loadFields($this->availableFilterFields);
+      $this->loadFields($this->availableFilterFields, array());
       $this->loadCustomGroupsAndFields($this->availableFilterFields, true);
     }
     return $this->availableFilterFields;
