@@ -79,7 +79,7 @@ class CombinedSqlDataFlow extends SqlDataFlow implements MultipleSourceDataFlows
     $sourceDataFlowDescription = reset($this->sourceDataFlowDescriptions);
     $dataFlow = $sourceDataFlowDescription->getDataFlow();
     $fromStatements[] = $dataFlow->getFromStatement();
-    $fromStatements = array_merge($fromStatements, $this->getJoinStatement(0));
+    $fromStatements = array_merge($fromStatements, $this->getJoinStatement(1));
     return implode(" ", $fromStatements);
   }
 
@@ -96,8 +96,7 @@ class CombinedSqlDataFlow extends SqlDataFlow implements MultipleSourceDataFlows
       $i++;
       if ($i > $skip) {
         if ($sourceDataFlowDescription->getJoinSpecification()) {
-          $joinStatement = $sourceDataFlowDescription->getJoinSpecification()
-            ->getJoinClause($sourceDataFlowDescription);
+          $joinStatement = $sourceDataFlowDescription->getJoinSpecification()->getJoinClause($sourceDataFlowDescription);
           if (is_array($joinStatement)) {
             $fromStatements = array_merge($fromStatements, $joinStatement);
           } else {
