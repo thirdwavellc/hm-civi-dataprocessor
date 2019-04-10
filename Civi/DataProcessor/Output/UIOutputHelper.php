@@ -141,7 +141,7 @@ class UIOutputHelper {
    * @param $dataProcessor
    */
   public static function hookExport(&$dataProcessor) {
-    $navigation = CRM_Dataprocessor_Utils_Navigation::singleton();
+    $navigation = \CRM_Dataprocessor_Utils_Navigation::singleton();
     foreach($dataProcessor['outputs'] as $idx => $output) {
       if (isset($output['configuration']['navigation_id'])) {
         $dataProcessor['outputs'][$idx]['configuration']['navigation_parent_path'] = $navigation->getNavigationParentPathById($output['configuration']['navigation_id']);
