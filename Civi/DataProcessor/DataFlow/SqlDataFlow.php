@@ -78,7 +78,7 @@ abstract class SqlDataFlow extends AbstractDataFlow {
       $orderBy = $this->getOrderByStatement();
       $countName = 'count_'.$this->getName();
       $sql = "{$selectAndFrom} {$where} {$groupBy} {$orderBy}";
-      $countSql = "SELECT COUNT(*) FROM ({$sql}) `{$countName}`";
+      $countSql = "SELECT COUNT(*) AS count FROM ({$sql}) `{$countName}`";
 
       //$countSql = "SELECT COUNT(*) AS `count` {$from} {$where} {$groupBy}";
       $this->sqlCountStatements[] = $countSql;
@@ -94,13 +94,13 @@ abstract class SqlDataFlow extends AbstractDataFlow {
 
       // Build Limit and Offset.
       $limitStatement = "";
-      if ($this->offset !== FALSE && $this->limit > 0) {
+      if ($this->offset !== FALSE && $this->limit !== FALSE) {
         $limitStatement = "LIMIT {$this->offset}, {$this->limit}";
       }
-      elseif ($this->offset === FALSE && $this->limit >0) {
+      elseif ($this->offset === FALSE && $this->limit !== FALSE) {
         $limitStatement = "LIMIT 0, {$this->limit}";
       }
-      elseif ($this->offset !== FALSE && $this->limit == FALSE) {
+      elseif ($this->offset !== FALSE && $this->limit === FALSE) {
         $calculatedLimit = $this->count - $this->offset;
         $limitStatement = "LIMIT {$this->offset}, {$calculatedLimit}";
       }
