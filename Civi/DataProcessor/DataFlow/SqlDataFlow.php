@@ -182,7 +182,7 @@ abstract class SqlDataFlow extends AbstractDataFlow {
   public function getSelectQueryStatement() {
     $select = implode(", ", $this->getFieldsForSelectStatement());
     $from = $this->getFromStatement();
-    return "SELECT {$select} {$from}";
+    return "SELECT DISTINCT {$select} {$from}";
   }
 
   public function getGroupByStatement() {
