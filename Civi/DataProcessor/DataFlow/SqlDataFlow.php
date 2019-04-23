@@ -94,13 +94,13 @@ abstract class SqlDataFlow extends AbstractDataFlow {
 
       // Build Limit and Offset.
       $limitStatement = "";
-      if ($this->offset !== FALSE && $this->limit !== FALSE) {
+      if ($this->offset !== FALSE && $this->limit > 0) {
         $limitStatement = "LIMIT {$this->offset}, {$this->limit}";
       }
-      elseif ($this->offset === FALSE && $this->limit !== FALSE) {
+      elseif ($this->offset === FALSE && $this->limit >0) {
         $limitStatement = "LIMIT 0, {$this->limit}";
       }
-      elseif ($this->offset !== FALSE && $this->limit === FALSE) {
+      elseif ($this->offset !== FALSE && $this->limit == FALSE) {
         $calculatedLimit = $this->count - $this->offset;
         $limitStatement = "LIMIT {$this->offset}, {$calculatedLimit}";
       }
