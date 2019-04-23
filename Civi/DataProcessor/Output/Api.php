@@ -68,6 +68,7 @@ class Api implements OutputInterface, API_ProviderInterface, EventSubscriberInte
     $params = $apiRequest['params'];
     $result = $event->getResponse();
     $types = \CRM_Utils_Type::getValidTypes();
+    $types['Memo'] = \CRM_Utils_Type::T_TEXT;
 
     // First check whether the entity is dataprocessorapi and the action is getfields.
     // If not return this function.
