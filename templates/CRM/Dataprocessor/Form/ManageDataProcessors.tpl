@@ -79,7 +79,7 @@
                         {/if}
                         <td>
                             {$data_processor.status_label}
-                            {if ($data_provessor.status eq 3)}
+                            {if ($data_processor.status eq 3)}
                                 <span>
                                     <a href="{crmURL p='civicrm/dataprocessor/form/edit' q="reset=1&action=revert&id=`$data_processor.id`"}"  class="" title="{ts}Revert Data Processor{/ts}">
                                         {ts}Revert{/ts}
