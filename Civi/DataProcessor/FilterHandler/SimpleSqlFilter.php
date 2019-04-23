@@ -8,6 +8,7 @@ namespace Civi\DataProcessor\FilterHandler;
 
 use Civi\DataProcessor\DataFlow\SqlDataFlow;
 use Civi\DataProcessor\DataFlow\SqlTableDataFlow;
+use Civi\DataProcessor\DataSpecification\CustomFieldSpecification;
 use Civi\DataProcessor\DataSpecification\FieldSpecification;
 use Civi\DataProcessor\Source\SourceInterface;
 use CRM_Dataprocessor_ExtensionUtil as E;
@@ -67,7 +68,11 @@ class SimpleSqlFilter extends AbstractFilterHandler {
   public function setFilter($filter) {
     $dataFlow  = $this->dataSource->ensureField($this->fieldSpecification->name);
     if ($dataFlow && $dataFlow instanceof SqlDataFlow) {
-      $whereClause = new SqlDataFlow\SimpleWhereClause($dataFlow->getName(), $this->fieldSpecification->name, $filter['op'], $filter['value'], $this->fieldSpecification->type);
+      if ($this->fieldSpecification instanceof CustomFieldSpecification && $this->fieldSpecification->getOptions() != null) {
+        $whereClause = new SqlDataFlow\MultiValueFieldWhereClause($dataFlow->getName(), $this->fieldSpecification->name, $filter['op'], $filter['value'], $this->fieldSpecification->type);
+      } else {
+        $whereClause = new SqlDataFlow\SimpleWhereClause($dataFlow->getName(), $this->fieldSpecification->name, $filter['op'], $filter['value'], $this->fieldSpecification->type);
+      }
       $dataFlow->addWhereClause($whereClause);
     }
   }
