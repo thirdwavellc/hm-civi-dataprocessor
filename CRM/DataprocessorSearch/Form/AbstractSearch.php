@@ -148,6 +148,13 @@ abstract class CRM_DataprocessorSearch_Form_AbstractSearch extends CRM_Dataproce
     $this->assign('debug', $this->_debug);
 
     if (!$this->hasRequiredFilters() || (!empty($this->_formValues) && count($this->validateFilters()) == 0)) {
+      $sortFields = $this->addColumnHeaders();
+      $this->sort = new CRM_Utils_Sort($sortFields);
+      if (isset($this->_formValues[CRM_Utils_Sort::SORT_ID])) {
+        $this->sort->initSortID($this->_formValues[CRM_Utils_Sort::SORT_ID]);
+      }
+      $this->assign_by_ref('sort', $this->sort);
+
       $export_id = CRM_Utils_Request::retrieve('export_id', 'Positive');
       if ($export_id) {
         $this->runExport($export_id);
@@ -155,8 +162,6 @@ abstract class CRM_DataprocessorSearch_Form_AbstractSearch extends CRM_Dataproce
 
       $limit = CRM_Utils_Request::retrieve('crmRowCount', 'Positive', $this, FALSE, CRM_Utils_Pager::ROWCOUNT);
       $pageId = CRM_Utils_Request::retrieve('crmPID', 'Positive', $this, FALSE, 1);
-
-      $this->addColumnHeaders();
       $this->buildRows($pageId, $limit);
       $this->addExportOutputs();
     }
@@ -166,11 +171,23 @@ abstract class CRM_DataprocessorSearch_Form_AbstractSearch extends CRM_Dataproce
   protected function runExport($export_id) {
     $factory = dataprocessor_get_factory();
     self::applyFilters($this->dataProcessor, $this->_formValues);
+
+    // Set the sort
+    $sortDirection = 'ASC';
+    $sortFieldName = null;
+    if (!empty($this->sort->_vars[$this->sort->getCurrentSortID()])) {
+      $sortField = $this->sort->_vars[$this->sort->getCurrentSortID()];
+      if ($this->sort->getCurrentSortDirection() == CRM_Utils_Sort::DESCENDING) {
+        $sortDirection = 'DESC';
+      }
+      $sortFieldName = $sortField['name'];
+    }
+
     $outputs = CRM_Dataprocessor_BAO_Output::getValues(array('id' => $export_id));
     $output = $outputs[$export_id];
     $outputClass = $factory->getOutputByName($output['type']);
     if ($outputClass instanceof \Civi\DataProcessor\Output\ExportOutputInterface) {
-      $outputClass->downloadExport($this->dataProcessor, $this->dataProcessorBAO, $output, $this->_formValues);
+      $outputClass->downloadExport($this->dataProcessor, $this->dataProcessorBAO, $output, $this->_formValues, $sortFieldName, $sortDirection);
     }
   }
 
@@ -204,7 +221,6 @@ abstract class CRM_DataprocessorSearch_Form_AbstractSearch extends CRM_Dataproce
       }
       $this->dataProcessor->getDataFlow()->addSort($sortField['name'], $sortDirection);
     }
-
 
     $pagerParams = $this->getPagerParams();
     $pagerParams['total'] = $this->dataProcessor->getDataFlow()->recordCount();
@@ -256,6 +272,9 @@ abstract class CRM_DataprocessorSearch_Form_AbstractSearch extends CRM_Dataproce
   /**
    * Add the headers for the columns
    *
+   * @return array
+   *   Array with all possible sort fields.
+   *
    * @throws \Civi\DataProcessor\DataFlow\InvalidFlowException
    */
   protected function addColumnHeaders() {
@@ -283,9 +302,7 @@ abstract class CRM_DataprocessorSearch_Form_AbstractSearch extends CRM_Dataproce
       }
     }
     $this->assign('columnHeaders', $columnHeaders);
-
-    $this->sort = new CRM_Utils_Sort($sortFields);
-    $this->assign_by_ref('sort', $this->sort);
+    return $sortFields;
   }
 
   /**
@@ -351,7 +368,7 @@ abstract class CRM_DataprocessorSearch_Form_AbstractSearch extends CRM_Dataproce
     $defaults = parent::setDefaultValues();
     $defaults['context'] = 'search';
     if ($this->sort && $this->sort->getCurrentSortID()) {
-      $defaults[CRM_Utils_Sort::SORT_ID] = $this->sort->getCurrentSortID();
+      $defaults[CRM_Utils_Sort::SORT_ID] = CRM_Utils_Sort::sortIDValue($this->sort->getCurrentSortID(), $this->sort->getCurrentSortDirection());
     }
     return $defaults;
   }

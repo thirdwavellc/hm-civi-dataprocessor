@@ -22,9 +22,11 @@ interface ExportOutputInterface extends OutputInterface {
    * @param array $dataProcessorBAO
    * @param array $outputBAO
    * @param array $formValues
+   * @param string $sortFieldName
+   * @param string $sortDirection
    * @return string
    */
-  public function downloadExport(\Civi\DataProcessor\ProcessorType\AbstractProcessorType $dataProcessor, $dataProcessorBAO, $outputBAO, $formValues);
+  public function downloadExport(\Civi\DataProcessor\ProcessorType\AbstractProcessorType $dataProcessor, $dataProcessorBAO, $outputBAO, $formValues, $sortFieldName = null, $sortDirection = 'ASC');
 
   /**
    * Returns the mime type of the export file.
