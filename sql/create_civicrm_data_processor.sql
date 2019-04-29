@@ -26,17 +26,6 @@ CREATE TABLE IF NOT EXISTS `civicrm_data_processor_source` (
   PRIMARY KEY (`id`)
 ) ENGINE = InnoDB;
 
-CREATE TABLE IF NOT EXISTS `civicrm_data_processor_filter` (
-  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
-  `data_processor_id` INT UNSIGNED NOT NULL,
-  `name` VARCHAR(128) NOT NULL,
-  `type` VARCHAR(128) NOT NULL,
-  `title` VARCHAR(128) NOT NULL,
-  `is_required` TINYINT NULL DEFAULT 1,
-  `configuration` TEXT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE = InnoDB;
-
 CREATE TABLE IF NOT EXISTS `civicrm_data_processor_output` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
   `data_processor_id` INT UNSIGNED NOT NULL,

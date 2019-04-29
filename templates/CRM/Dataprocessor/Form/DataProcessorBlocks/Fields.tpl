@@ -4,7 +4,7 @@
     <table>
         <tr>
             <th>{ts}Title{/ts}</th>
-            <th>{ts}Name{/ts}</th>
+            <th>{ts}System Name{/ts}</th>
             <th></th>
             <th></th>
             <th></th>
@@ -12,7 +12,7 @@
         {foreach from=$fields item=field}
             <tr>
                 <td>{$field.title}</td>
-                <td>{$field.name}</td>
+                <td><span class="description">{$field.name}</span></td>
                 <td>{if ($field.weight && !is_numeric($field.weight))}{$field.weight}{/if}</td>
                 <td>
                     <a href="{crmURL p="civicrm/dataprocessor/form/field" q="reset=1&action=update&data_processor_id=`$field.data_processor_id`&id=`$field.id`"}">{ts}Edit{/ts}</a>

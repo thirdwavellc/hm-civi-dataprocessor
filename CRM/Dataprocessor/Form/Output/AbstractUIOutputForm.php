@@ -323,6 +323,7 @@ abstract class CRM_Dataprocessor_Form_Output_AbstractUIOutputForm extends CRM_Co
         else {
           switch ($type) {
             case \CRM_Utils_Type::T_DATE:
+            case \CRM_Utils_Type::T_TIMESTAMP:
               CRM_Core_Form_Date::buildDateRange($this, $fieldSpec->alias, $count, '_from', '_to', E::ts('From:'), $filterHandler->isRequired(), $operations);
               $count++;
               break;

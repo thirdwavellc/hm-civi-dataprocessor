@@ -17,7 +17,7 @@
                         {assign var=filterVal   value=$filterName|cat:"_value"}
                         {assign var=filterMin   value=$filterName|cat:"_min"}
                         {assign var=filterMax   value=$filterName|cat:"_max"}
-                        {if $filter.type == 'Date'}
+                        {if $filter.type == 'Date' || $filter.type == 'Timestamp'}
                             <tr>
                                 <td class="label">{$filter.title}</td>
                                 {include file="CRM/Dataprocessor/Form/Output/UIOutput/DateRange.tpl" fieldName=$filterName from='_from' to='_to'}

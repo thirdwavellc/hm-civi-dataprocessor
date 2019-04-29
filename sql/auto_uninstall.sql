@@ -33,6 +33,7 @@
 
 SET FOREIGN_KEY_CHECKS=0;
 
+DROP TABLE IF EXISTS `civicrm_data_processor_filter`;
 DROP TABLE IF EXISTS `civicrm_data_processor_field`;
 
 SET FOREIGN_KEY_CHECKS=1;

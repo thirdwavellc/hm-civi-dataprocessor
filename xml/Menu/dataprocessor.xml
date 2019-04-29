@@ -43,13 +43,6 @@
     <access_arguments>administer CiviCRM</access_arguments>
   </item>
   <item>
-    <path>civicrm/dataprocessor/form/filter/simplefilter</path>
-    <page_callback>CRM_Dataprocessor_Form_Filter_SimpleFilter</page_callback>
-    <title>DataProcessor</title>
-    <access_arguments>access CiviCRM</access_arguments>
-    <access_arguments>administer CiviCRM</access_arguments>
-  </item>
-  <item>
     <path>civicrm/dataprocessor/form/aggregate_field</path>
     <page_callback>CRM_Dataprocessor_Form_AggregateField</page_callback>
     <title>DataProcessor</title>

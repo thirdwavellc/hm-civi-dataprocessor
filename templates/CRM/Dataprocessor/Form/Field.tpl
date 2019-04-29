@@ -58,8 +58,6 @@
               });
             }
           });
-
-          $('#type').change();
         });
         {/literal}
     </script>

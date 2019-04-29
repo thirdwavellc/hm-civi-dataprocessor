@@ -93,11 +93,12 @@ class CRM_Dataprocessor_Form_DataProcessor extends CRM_Core_Form {
   }
 
   protected function addFilters() {
-    $filters = CRM_Dataprocessor_BAO_Filter::getValues(array('data_processor_id' => $this->dataProcessorId));
+    $filters = civicrm_api3('DataProcessorFilter', 'get', array('data_processor_id' => $this->dataProcessorId, 'options' => array('limit' => 0)));
+    $filters = $filters['values'];
     foreach($filters as $idx => $filter) {
-      $filters[$idx]['is_required'] = $filter['is_required'] ? E::ts('Yes') : E::ts('No');
       $filters[$idx]['configuration_link'] = '';
     }
+    CRM_Utils_Weight::addOrder($filters, 'CRM_Dataprocessor_DAO_DataProcessorFilter', 'id', $this->currentUrl, 'data_processor_id='.$this->dataProcessorId);
     $this->assign('filters', $filters);
   }
 

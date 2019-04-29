@@ -115,8 +115,8 @@ class CRM_Dataprocessor_BAO_DataProcessor extends CRM_Dataprocessor_DAO_DataProc
     CRM_Utils_Hook::pre('delete', 'DataProcessor', $id, CRM_Core_DAO::$_nullArray);
 
     CRM_Dataprocessor_BAO_Output::deleteWithDataProcessorId($id);
-    CRM_Dataprocessor_BAO_Filter::deleteWithDataProcessorId($id);
-    CRM_Dataprocessor_BAO_Field::deleteWithDataProcessorId($id);
+    CRM_Dataprocessor_BAO_DataProcessorFilter::deleteWithDataProcessorId($id);
+    CRM_Dataprocessor_BAO_DataProcessorField::deleteWithDataProcessorId($id);
     CRM_Dataprocessor_BAO_Source::deleteWithDataProcessorId($id);
 
     $dataProcessor = new CRM_Dataprocessor_DAO_DataProcessor();
@@ -274,8 +274,8 @@ class CRM_Dataprocessor_BAO_DataProcessor extends CRM_Dataprocessor_DAO_DataProc
       }
     }
 
-    $filters = CRM_Dataprocessor_BAO_Filter::getValues(array('data_processor_id' => $this->id));
-    foreach($filters as $filter) {
+    $filters = civicrm_api3('DataProcessorFilter', 'get', array('data_processor_id' => $this->id, 'options' => array('limit' => 0)));
+    foreach($filters['values'] as $filter) {
       $filterHandler = $factory->getFilterByName($filter['type']);
       if ($filterHandler) {
         $filterHandler->setDataProcessor($dataProcessor);
@@ -284,9 +284,9 @@ class CRM_Dataprocessor_BAO_DataProcessor extends CRM_Dataprocessor_DAO_DataProc
       }
     }
 
-    $fields = CRM_Dataprocessor_BAO_Field::getValues(array('data_processor_id' => $this->id));
+    $fields = civicrm_api3('DataProcessorField', 'get', array('data_processor_id' => $this->id, 'options' => array('limit' => 0)));
     $outputHandlers = $dataProcessor->getAvailableOutputHandlers();
-    foreach($fields as $field) {
+    foreach($fields['values'] as $field) {
       if (isset($outputHandlers[$field['type']])) {
         $outputHandler = $outputHandlers[$field['type']];
         $outputHandler->initialize($field['name'], $field['title'], $field['configuration']);
@@ -451,16 +451,16 @@ class CRM_Dataprocessor_BAO_DataProcessor extends CRM_Dataprocessor_DAO_DataProc
       unset($datasource['data_processor_id']);
       $dataProcessor['data_sources'][] = $datasource;
     }
-    $filters = CRM_Dataprocessor_BAO_Filter::getValues(array('data_processor_id' => $id));
+    $filters = civicrm_api3('DataProcessorFilter', 'get', array('data_processor_id' => $id, 'options' => array('limit' => 0)));
     $dataProcessor['filters']  = array();
-    foreach($filters as $i => $filter) {
+    foreach($filters['values'] as $i => $filter) {
       unset($filter['id']);
       unset($filter['data_processor_id']);
       $dataProcessor['filters'][] = $filter;
     }
-    $fields = CRM_Dataprocessor_BAO_Field::getValues(array('data_processor_id' => $id));
+    $fields = civicrm_api3('DataProcessorField', 'get', array('data_processor_id' => $id, 'options' => array('limit' => 0)));
     $dataProcessor['fields'] = array();
-    foreach($fields as $i => $field) {
+    foreach($fields['values'] as $i => $field) {
       unset($field['id']);
       unset($field['data_processor_id']);
       $dataProcessor['fields'][] = $field;

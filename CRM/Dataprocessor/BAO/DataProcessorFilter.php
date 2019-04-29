@@ -1,7 +1,7 @@
 <?php
 use CRM_Dataprocessor_ExtensionUtil as E;
 
-class CRM_Dataprocessor_BAO_DataProcessorField extends CRM_Dataprocessor_DAO_DataProcessorField {
+class CRM_Dataprocessor_BAO_DataProcessorFilter extends CRM_Dataprocessor_DAO_DataProcessorFilter {
 
   public static function checkName($title, $data_processor_id, $id=null,$name=null) {
     if (!$name) {
@@ -11,7 +11,7 @@ class CRM_Dataprocessor_BAO_DataProcessorField extends CRM_Dataprocessor_DAO_Dat
     $name = preg_replace('@[^a-z0-9_]+@','_',strtolower($name));
     $name_part = $name;
 
-    $sql = "SELECT COUNT(*) FROM `civicrm_data_processor_field` WHERE `name` = %1 AND `data_processor_id` = %2";
+    $sql = "SELECT COUNT(*) FROM `civicrm_data_processor_filter` WHERE `name` = %1 AND `data_processor_id` = %2";
     $sqlParams[1] = array($name, 'String');
     $sqlParams[2] = array($data_processor_id, 'String');
     if (isset($id)) {
@@ -41,11 +41,11 @@ class CRM_Dataprocessor_BAO_DataProcessorField extends CRM_Dataprocessor_DAO_Dat
       throw new Exception('id can not be empty when attempting to delete a data processor filter');
     }
 
-    $field = new CRM_Dataprocessor_DAO_DataProcessorField();
+    $field = new CRM_Dataprocessor_DAO_DataProcessorFilter();
     $field->data_processor_id = $id;
     $field->find(FALSE);
     while ($field->fetch()) {
-      civicrm_api3('DataProcessorField', 'delete', array('id' => $field->id));
+      civicrm_api3('DataProcessorFilter', 'delete', array('id' => $field->id));
     }
   }
 

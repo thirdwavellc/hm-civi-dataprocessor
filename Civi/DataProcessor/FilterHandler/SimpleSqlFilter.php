@@ -73,13 +73,60 @@ class SimpleSqlFilter extends AbstractFilterHandler {
   }
 
   /**
-   * Returns the URL to a configuration screen.
-   * Return false when no configuration screen is present.
+   * Returns true when this filter has additional configuration
+   *
+   * @return bool
+   */
+  public function hasConfiguration() {
+    return true;
+  }
+
+  /**
+   * When this filter type has additional configuration you can add
+   * the fields on the form with this function.
+   *
+   * @param \CRM_Core_Form $form
+   * @param array $filter
+   */
+  public function buildConfigurationForm(\CRM_Core_Form $form, $filter=array()) {
+    $fieldSelect = \CRM_Dataprocessor_Utils_DataSourceFields::getAvailableFieldsInDataSources($filter['data_processor_id']);
+
+    $form->add('select', 'field', E::ts('Field'), $fieldSelect, true, array(
+      'style' => 'min-width:250px',
+      'class' => 'crm-select2 huge',
+      'placeholder' => E::ts('- select -'),
+    ));
+    if (isset($filter['configuration'])) {
+      $configuration = $filter['configuration'];
+      if (isset($configuration['field']) && isset($configuration['datasource'])) {
+        $defaults['field'] = $configuration['datasource'] . '::' . $configuration['field'];
+        $form->setDefaults($defaults);
+      }
+    }
+  }
+
+  /**
+   * When this filter type has configuration specify the template file name
+   * for the configuration form.
    *
    * @return false|string
    */
-  public function getConfigurationUrl() {
-    return 'civicrm/dataprocessor/form/filter/simplefilter';
+  public function getConfigurationTemplateFileName() {
+    return "CRM/Dataprocessor/Form/Filter/SimpleSqlFilter.tpl";
+  }
+
+
+  /**
+   * Process the submitted values and create a configuration array
+   *
+   * @param $submittedValues
+   * @return array
+   */
+  public function processConfiguration($submittedValues) {
+    list($datasource, $field) = explode('::', $submittedValues['field'], 2);
+    $configuration['field'] = $field;
+    $configuration['datasource'] = $datasource;
+    return $configuration;
   }
 
 }

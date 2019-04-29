@@ -62,6 +62,7 @@
 
 SET FOREIGN_KEY_CHECKS=0;
 
+DROP TABLE IF EXISTS `civicrm_data_processor_filter`;
 DROP TABLE IF EXISTS `civicrm_data_processor_field`;
 
 SET FOREIGN_KEY_CHECKS=1;
@@ -91,6 +92,29 @@ CREATE TABLE `civicrm_data_processor_field` (
  
  
 ,          CONSTRAINT FK_civicrm_data_processor_field_data_processor_id FOREIGN KEY (`data_processor_id`) REFERENCES `civicrm_data_processor`(`id`) ON DELETE CASCADE  
+)    ;
+
+-- /*******************************************************
+-- *
+-- * civicrm_data_processor_filter
+-- *
+-- *******************************************************/
+CREATE TABLE `civicrm_data_processor_filter` (
+
+
+     `id` int unsigned NOT NULL AUTO_INCREMENT  COMMENT 'Unique DataProcessorFilter ID',
+     `data_processor_id` int unsigned NOT NULL   COMMENT 'FK to Data Processor',
+     `weight` int NULL   ,
+     `name` varchar(255) NULL   ,
+     `title` varchar(255) NOT NULL   ,
+     `type` varchar(255) NOT NULL   ,
+     `is_required` tinyint NULL   ,
+     `configuration` text NULL    
+,
+        PRIMARY KEY (`id`)
+ 
+ 
+,          CONSTRAINT FK_civicrm_data_processor_filter_data_processor_id FOREIGN KEY (`data_processor_id`) REFERENCES `civicrm_data_processor`(`id`) ON DELETE CASCADE  
 )    ;
 
  
