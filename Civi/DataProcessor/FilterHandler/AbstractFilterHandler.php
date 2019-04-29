@@ -43,6 +43,38 @@ abstract class AbstractFilterHandler {
    */
   abstract public function setFilter($filterParams);
 
+  /**
+   * File name of the template to add this filter to the criteria form.
+   *
+   * @return string
+   */
+  abstract public function getTemplateFileName();
+
+  /**
+   * Validate the submitted filter parameters.
+   *
+   * @param $submittedValues
+   * @return array
+   */
+  abstract public function validateSubmittedFilterParams($submittedValues);
+
+  /**
+   * Apply the submitted filter
+   *
+   * @param $submittedValues
+   * @throws \Exception
+   */
+  abstract public function applyFilterFromSubmittedFilterParams($submittedValues);
+
+  /**
+   * Add the elements to the filter form.
+   *
+   * @param \CRM_Core_Form $form
+   * @return array
+   *   Return variables belonging to this filter.
+   */
+  abstract public function addToFilterForm(\CRM_Core_Form $form);
+
   public function __construct() {
 
   }

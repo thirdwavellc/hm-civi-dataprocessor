@@ -79,6 +79,8 @@ function civicrm_api3_data_processor_field_get($params) {
   foreach($return['values'] as $id => $value) {
     if (isset($value['configuration'])) {
       $return['values'][$id]['configuration'] = json_decode($value['configuration'], TRUE);
+    } else {
+      $return['values'][$id]['configuration'] = array();
     }
   }
   return $return;
