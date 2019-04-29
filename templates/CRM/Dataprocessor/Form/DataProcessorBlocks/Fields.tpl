@@ -8,18 +8,12 @@
             <th></th>
             <th></th>
             <th></th>
-            <th></th>
         </tr>
         {foreach from=$fields item=field}
             <tr>
                 <td>{$field.title}</td>
                 <td>{$field.name}</td>
-                <td>{$field.weight}</td>
-                <td>
-                    {if $field.configuration_link}
-                        <a href="{$source.configuration_link}">{ts}Configure Field{/ts}</a>
-                    {/if}
-                </td>
+                <td>{if ($field.weight && !is_numeric($field.weight))}{$field.weight}{/if}</td>
                 <td>
                     <a href="{crmURL p="civicrm/dataprocessor/form/field" q="reset=1&action=update&data_processor_id=`$field.data_processor_id`&id=`$field.id`"}">{ts}Edit{/ts}</a>
                 </td>

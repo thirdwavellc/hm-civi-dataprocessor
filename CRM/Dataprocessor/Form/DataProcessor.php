@@ -83,11 +83,12 @@ class CRM_Dataprocessor_Form_DataProcessor extends CRM_Core_Form {
   }
 
   protected function addFields() {
-    $fields = CRM_Dataprocessor_BAO_Field::getValues(array('data_processor_id' => $this->dataProcessorId));
+    $fields = civicrm_api3('DataProcessorField', 'get', array('data_processor_id' => $this->dataProcessorId, 'options' => array('limit' => 0)));
+    $fields = $fields['values'];
     foreach($fields as $idx => $field) {
       $fields[$idx]['configuration_link'] = '';
     }
-    CRM_Utils_Weight::addOrder($fields, 'CRM_Dataprocessor_DAO_Field', 'id', $this->currentUrl, 'data_processor_id='.$this->dataProcessorId);
+    CRM_Utils_Weight::addOrder($fields, 'CRM_Dataprocessor_DAO_DataProcessorField', 'id', $this->currentUrl, 'data_processor_id='.$this->dataProcessorId);
     $this->assign('fields', $fields);
   }
 

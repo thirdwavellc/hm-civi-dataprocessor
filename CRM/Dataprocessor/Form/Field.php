@@ -13,6 +13,8 @@ class CRM_Dataprocessor_Form_Field extends CRM_Core_Form {
 
   private $id;
 
+  private $field;
+
   /**
    * Function to perform processing before displaying form (overrides parent function)
    *
@@ -27,8 +29,8 @@ class CRM_Dataprocessor_Form_Field extends CRM_Core_Form {
     $this->assign('id', $this->id);
 
     if ($this->id) {
-      $field = CRM_Dataprocessor_BAO_Field::getValues(array('id' => $this->id));
-      $this->assign('field', $field[$this->id]);
+      $this->field = civicrm_api3('DataProcessorField', 'getsingle', array('id' => $this->id));
+      $this->assign('field', $this->field);
     }
 
     $title = E::ts('Data Processor Field');
@@ -77,15 +79,16 @@ class CRM_Dataprocessor_Form_Field extends CRM_Core_Form {
     $defaults['data_processor_id'] = $this->dataProcessorId;
     $defaults['id'] = $this->id;
 
-    $field = CRM_Dataprocessor_BAO_Field::getValues(array('id' => $this->id));
-    if (isset($field[$this->id]['type'])) {
-      $defaults['type'] = $field[$this->id]['type'];
-    }
-    if (isset($field[$this->id]['title'])) {
-      $defaults['title'] = $field[$this->id]['title'];
-    }
-    if (isset($field[$this->id]['name'])) {
-      $defaults['name'] = $field[$this->id]['name'];
+    if ($this->field) {
+      if (isset($this->field['type'])) {
+        $defaults['type'] = $this->field['type'];
+      }
+      if (isset($this->field['title'])) {
+        $defaults['title'] = $this->field['title'];
+      }
+      if (isset($this->field['name'])) {
+        $defaults['name'] = $this->field['name'];
+      }
     }
     return $defaults;
   }
@@ -94,7 +97,7 @@ class CRM_Dataprocessor_Form_Field extends CRM_Core_Form {
     $session = CRM_Core_Session::singleton();
     $redirectUrl = $session->readUserContext();
     if ($this->_action == CRM_Core_Action::DELETE) {
-      CRM_Dataprocessor_BAO_Field::deleteWithId($this->id);
+      civicrm_api3('DataProcessorField', 'delete', array('id' => $this->id));
       $session->setStatus(E::ts('Field removed'), E::ts('Removed'), 'success');
       CRM_Utils_System::redirect($redirectUrl);
     }
@@ -102,61 +105,18 @@ class CRM_Dataprocessor_Form_Field extends CRM_Core_Form {
     $values = $this->exportValues();
     if (!empty($values['name'])) {
       $params['name'] = $values['name'];
-    } else {
-      $params['name'] = CRM_Dataprocessor_BAO_Field::buildNameFromTitle($values['title']);
     }
     $params['title'] = $values['title'];
     $params['type'] = $values['type'];
-    if ($this->dataProcessorId) {
-      $params['data_processor_id'] = $this->dataProcessorId;
-    }
+    $params['data_processor_id'] = $this->dataProcessorId;
     if ($this->id) {
       $params['id'] = $this->id;
     }
 
-    $result = CRM_Dataprocessor_BAO_Field::add($params);
+    civicrm_api3('DataProcessorField', 'create', $params);
 
     CRM_Utils_System::redirect($redirectUrl);
     parent::postProcess();
-  }
-
-  /**
-   * Function to add validation rules (overrides parent function)
-   *
-   * @access public
-   */
-  function addRules() {
-    if ($this->_action != CRM_Core_Action::DELETE) {
-      $this->addFormRule(array(
-        'CRM_Dataprocessor_Form_Field',
-        'validateName'
-      ));
-    }
-  }
-
-  /**
-   * Function to validate if rule label already exists
-   *
-   * @param array $fields
-   * @return array|bool
-   * @access static
-   */
-  static function validateName($fields) {
-    /*
-     * if id not empty, edit mode. Check if changed before check if exists
-     */
-    $id = false;
-    if (!empty($fields['id'])) {
-      $id = $fields['id'];
-    }
-    if (empty($fields['name'])) {
-      $fields['name'] = CRM_Dataprocessor_BAO_Field::buildNameFromTitle($fields['title']);
-    }
-    if (!CRM_Dataprocessor_BAO_Field::isNameValid($fields['name'], $fields['data_processor_id'], $id)) {
-      $errors['name'] = E::ts('There is already a field with this name');
-      return $errors;
-    }
-    return TRUE;
   }
 
 }
