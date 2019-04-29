@@ -15,13 +15,45 @@ class CRM_DataprocessorOutputExport_CSV implements ExportOutputInterface {
   const RECORDS_PER_JOB = 250;
 
   /**
-   * Return the url to a configuration page.
-   * Or return false when no configuration page exists.
+   * Returns true when this filter has additional configuration
    *
-   * @return string|false
+   * @return bool
    */
-  public function getConfigurationUrl() {
+  public function hasConfiguration() {
     return false;
+  }
+
+  /**
+   * When this filter type has additional configuration you can add
+   * the fields on the form with this function.
+   *
+   * @param \CRM_Core_Form $form
+   * @param array $filter
+   */
+  public function buildConfigurationForm(\CRM_Core_Form $form, $output=array()) {
+
+  }
+
+  /**
+   * When this filter type has configuration specify the template file name
+   * for the configuration form.
+   *
+   * @return false|string
+   */
+  public function getConfigurationTemplateFileName() {
+    return false;
+  }
+
+
+  /**
+   * Process the submitted values and create a configuration array
+   *
+   * @param $submittedValues
+   * @param array $output
+   * @return array
+   */
+  public function processConfiguration($submittedValues, &$output) {
+    return array();
   }
 
   /**
