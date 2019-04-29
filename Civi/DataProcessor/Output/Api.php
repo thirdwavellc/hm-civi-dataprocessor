@@ -13,6 +13,8 @@ use Civi\API\Provider\ProviderInterface as API_ProviderInterface;
 use Civi\DataProcessor\ProcessorType\AbstractProcessorType;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
+use \CRM_Dataprocessor_ExtensionUtil as E;
+
 class Api implements OutputInterface, API_ProviderInterface, EventSubscriberInterface{
 
   public function __construct() {
@@ -20,13 +22,66 @@ class Api implements OutputInterface, API_ProviderInterface, EventSubscriberInte
   }
 
   /**
-   * Return the url to a configuration page.
-   * Or return false when no configuration page exists.
+   * Returns true when this filter has additional configuration
    *
-   * @return string|false
+   * @return bool
    */
-  public function getConfigurationUrl() {
-    return 'civicrm/dataprocessor/form/output/api';
+  public function hasConfiguration() {
+    return true;
+  }
+
+  /**
+   * When this filter type has additional configuration you can add
+   * the fields on the form with this function.
+   *
+   * @param \CRM_Core_Form $form
+   * @param array $filter
+   */
+  public function buildConfigurationForm(\CRM_Core_Form $form, $output=array()) {
+    $form->add('select','permission', E::ts('Permission'), \CRM_Core_Permission::basicPermissions(), true, array(
+      'style' => 'min-width:250px',
+      'class' => 'crm-select2 huge',
+      'placeholder' => E::ts('- select -'),
+    ));
+    $form->add('text', 'api_entity', E::ts('API Entity'), true);
+    $form->add('text', 'api_action', E::ts('API Action Name'), true);
+    $form->add('text', 'api_count_action', E::ts('API GetCount Action Name'), true);
+
+    if ($output) {
+      $defaults['permission'] = $output['permission'];
+      $defaults['api_entity'] = $output['api_entity'];
+      $defaults['api_action'] = $output['api_action'];
+      $defaults['api_count_action'] = $output['api_count_action'];
+    } else {
+      $defaults['permission'] = 'access CiviCRM';
+    }
+    $form->setDefaults($defaults);
+  }
+
+  /**
+   * When this filter type has configuration specify the template file name
+   * for the configuration form.
+   *
+   * @return false|string
+   */
+  public function getConfigurationTemplateFileName() {
+    return "CRM/Dataprocessor/Form/Output/API.tpl";
+  }
+
+
+  /**
+   * Process the submitted values and create a configuration array
+   *
+   * @param $submittedValues
+   * @param array $output
+   * @return array
+   */
+  public function processConfiguration($submittedValues, &$output) {
+    $output['permission'] = $submittedValues['permission'];
+    $output['api_entity'] = $submittedValues['api_entity'];
+    $output['api_action'] = $submittedValues['api_action'];
+    $output['api_count_action'] = $submittedValues['api_count_action'];
+    return array();
   }
 
   /**

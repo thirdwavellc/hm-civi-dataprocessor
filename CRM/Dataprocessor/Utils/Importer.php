@@ -75,7 +75,7 @@ class CRM_Dataprocessor_Utils_Importer {
     CRM_Dataprocessor_BAO_Source::deleteWithDataProcessorId($id);
     CRM_Dataprocessor_BAO_DataProcessorFilter::deleteWithDataProcessorId($id);
     CRM_Dataprocessor_BAO_DataProcessorField::deleteWithDataProcessorId($id);
-    CRM_Dataprocessor_BAO_Output::deleteWithDataProcessorId($id);
+    CRM_Dataprocessor_BAO_DataProcessorOutput::deleteWithDataProcessorId($id);
 
     foreach($data['data_sources'] as $data_source) {
       $params = $data_source;
@@ -95,7 +95,7 @@ class CRM_Dataprocessor_Utils_Importer {
     foreach($data['outputs'] as $output) {
       $params = $output;
       $params['data_processor_id'] = $id;
-      $result = CRM_Dataprocessor_BAO_Output::add($params);
+      civicrm_api3('DataProcessorOutput', 'create', $params);
     }
 
     return $id;

@@ -166,8 +166,7 @@ abstract class CRM_DataprocessorSearch_Form_AbstractSearch extends CRM_Dataproce
   protected function runExport($export_id) {
     $factory = dataprocessor_get_factory();
     self::applyFilters($this->dataProcessor, $this->_formValues);
-    $outputs = CRM_Dataprocessor_BAO_Output::getValues(array('id' => $export_id));
-    $output = $outputs[$export_id];
+    $output = civicrm_api3("DataProcessorOutput", "getsingle", array('id' => $export_id));
     $outputClass = $factory->getOutputByName($output['type']);
     if ($outputClass instanceof \Civi\DataProcessor\Output\ExportOutputInterface) {
       $outputClass->downloadExport($this->dataProcessor, $this->dataProcessorBAO, $output, $this->_formValues);
@@ -307,7 +306,7 @@ abstract class CRM_DataprocessorSearch_Form_AbstractSearch extends CRM_Dataproce
    */
   protected function addExportOutputs() {
     $factory = dataprocessor_get_factory();
-    $outputs = CRM_Dataprocessor_BAO_Output::getValues(array('data_processor_id' => $this->dataProcessorId));
+    $outputs = civicrm_api3('DataProcessorOutput', 'get', array('data_processor_id' => $this->dataProcessorId, 'options' => array('limit' => 0)));
     $otherOutputs = array();
     foreach($outputs as $output) {
       if ($output['id'] == $this->dataProcessorOutput['id']) {

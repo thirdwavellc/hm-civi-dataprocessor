@@ -8,7 +8,6 @@
                 <th></th>
                 <th></th>
                 <th></th>
-                <th></th>
             </tr>
             {foreach from=$filters item=filter}
                 <tr>
@@ -20,11 +19,6 @@
                     </td>
                     <td><span class="description">{$filter.name}</span></td>
                     <td>{if ($filter.weight && !is_numeric($filter.weight))}{$filter.weight}{/if}</td>
-                    <td>
-                        {if $filter.configuration_link}
-                            <a href="{$filter.configuration_link}">{ts}Configure Filter{/ts}</a>
-                        {/if}
-                    </td>
                     <td>
                         <a href="{crmURL p="civicrm/dataprocessor/form/filter" q="reset=1&action=update&data_processor_id=`$filter.data_processor_id`&id=`$filter.id`"}">{ts}Edit{/ts}</a>
                     </td>

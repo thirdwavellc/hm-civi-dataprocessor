@@ -85,9 +85,6 @@ class CRM_Dataprocessor_Form_DataProcessor extends CRM_Core_Form {
   protected function addFields() {
     $fields = civicrm_api3('DataProcessorField', 'get', array('data_processor_id' => $this->dataProcessorId, 'options' => array('limit' => 0)));
     $fields = $fields['values'];
-    foreach($fields as $idx => $field) {
-      $fields[$idx]['configuration_link'] = '';
-    }
     CRM_Utils_Weight::addOrder($fields, 'CRM_Dataprocessor_DAO_DataProcessorField', 'id', $this->currentUrl, 'data_processor_id='.$this->dataProcessorId);
     $this->assign('fields', $fields);
   }
@@ -95,9 +92,6 @@ class CRM_Dataprocessor_Form_DataProcessor extends CRM_Core_Form {
   protected function addFilters() {
     $filters = civicrm_api3('DataProcessorFilter', 'get', array('data_processor_id' => $this->dataProcessorId, 'options' => array('limit' => 0)));
     $filters = $filters['values'];
-    foreach($filters as $idx => $filter) {
-      $filters[$idx]['configuration_link'] = '';
-    }
     CRM_Utils_Weight::addOrder($filters, 'CRM_Dataprocessor_DAO_DataProcessorFilter', 'id', $this->currentUrl, 'data_processor_id='.$this->dataProcessorId);
     $this->assign('filters', $filters);
   }
@@ -119,18 +113,16 @@ class CRM_Dataprocessor_Form_DataProcessor extends CRM_Core_Form {
 
   protected function addOutputs() {
     $factory = dataprocessor_get_factory();
-    $outputs = CRM_Dataprocessor_BAO_Output::getValues(array('data_processor_id' => $this->dataProcessorId));
+    $types = $factory->getOutputs();
+    $outputs = civicrm_api3('DataProcessorOutput', 'get', array('data_processor_id' => $this->dataProcessorId, 'options' => array('limit' => 0)));
+    $outputs = $outputs['values'];
     foreach($outputs as $idx => $output) {
-      $outputs[$idx]['configuration_link'] = '';
-      $outputClass  = $factory->getOutputByName($output['type']);
-      if  ($outputClass->getConfigurationUrl()) {
-        $outputs[$idx]['configuration_link'] = CRM_Utils_System::url($outputClass->getConfigurationUrl(), [
-          'reset' => 1,
-          'action' =>  'update',
-          'id' => $output['id'],
-          'data_processor_id' => $this->dataProcessorId
-        ]);
+      if (isset($types[$output['type']])) {
+        $outputs[$idx]['type_name'] = $types[$output['type']];
+      } else {
+        $outputs[$idx]['type_name'] = '';
       }
+      $outputs[$idx]['configuration_link'] = '';
     }
     $this->assign('outputs', $outputs);
   }

@@ -6,16 +6,11 @@
             <th>{ts}Output{/ts}</th>
             <th></th>
             <th></th>
-            <th></th>
         </tr>
         {foreach from=$outputs item=output}
             <tr>
                 <td>{$output.type_name}</td>
                 <td>
-                    {if ($output.configuration_link)}
-                        <a href="{$output.configuration_link}">{ts}Configure{/ts}</a>
-                    {/if}
-                </td><td>
                     <a href="{crmURL p="civicrm/dataprocessor/form/output" q="reset=1&action=update&data_processor_id=`$output.data_processor_id`&id=`$output.id`"}">{ts}Edit{/ts}</a>
                 </td><td>
                     <a href="{crmURL p="civicrm/dataprocessor/form/output" q="reset=1&action=delete&data_processor_id=`$output.data_processor_id`&id=`$output.id`"}">{ts}Remove{/ts}</a>

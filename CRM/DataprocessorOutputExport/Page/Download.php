@@ -32,8 +32,8 @@ class CRM_DataprocessorOutputExport_Page_Download extends CRM_Core_Page {
     $download_name = $prefix.'_'.$download_name;
 
     $data_processors = CRM_Dataprocessor_BAO_DataProcessor::getValues(array('id' => $dataProcessorId));
-    $outputs = CRM_Dataprocessor_BAO_Output::getValues(array('id' => $outputId));
-    $outputClass = $factory->getOutputByName($outputs[$outputId]['type']);
+    $output = civicrm_api3("DataProcessorOutput", "getsingle", array('id' => $outputId));
+    $outputClass = $factory->getOutputByName($output['type']);
     if (!$outputClass instanceof \Civi\DataProcessor\Output\ExportOutputInterface) {
       CRM_Core_Error::statusBounce("Malformed filename");
     } elseif ($userId != CRM_Core_Session::getLoggedInContactID()) {

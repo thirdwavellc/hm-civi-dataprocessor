@@ -34,8 +34,7 @@ class UIOutputHelper {
     while ($dao->fetch()) {
       $outputClass = $factory->getOutputByName($dao->type);
       if ($outputClass instanceof \Civi\DataProcessor\Output\UIOutputInterface) {
-        $outputs = \CRM_Dataprocessor_BAO_Output::getValues(['id' => $dao->output_id]);
-        $output = $outputs[$dao->output_id];
+        $output = civicrm_api3('DataProcessorOutput', 'getsingle', array('id' => $dao->output_id));
         $dataprocessors = \CRM_Dataprocessor_BAO_DataProcessor::getValues(['id' => $dao->id]);
         $dataprocessor = $dataprocessors[$dao->id];
         $url = $outputClass->getUrlToUi($output, $dataprocessor);
@@ -68,21 +67,20 @@ class UIOutputHelper {
       return;
     }
     if ($op == 'delete') {
-      $outputs = \CRM_Dataprocessor_BAO_Output::getValues(array('id' => $id));
-      if (isset($outputs[$id]['configuration']['navigation_id'])) {
-        $navId = $outputs[$id]['configuration']['navigation_id'];
+      $output = civicrm_api3('DataProcessorOutput', 'getsingle', array('id' => $id));
+      if (isset($output['configuration']['navigation_id'])) {
+        $navId = $output['configuration']['navigation_id'];
         \CRM_Core_BAO_Navigation::processDelete($navId);
         \CRM_Core_BAO_Navigation::resetNavigation();
         self::$rebuildMenu = TRUE;
       }
     } elseif ($op == 'edit') {
-      $outputs = \CRM_Dataprocessor_BAO_Output::getValues(array('id' => $id));
-      $output = $outputs[$id];
+      $output = civicrm_api3('DataProcessorOutput', 'getsingle', array('id' => $id));
       if (!isset($output['configuration']['navigation_id']) && !isset($params['configuration']['navigation_parent_path'])) {
         return;
       } elseif (!isset($params['configuration']['navigation_parent_path'])) {
         // Delete the navigation item
-        $navId = $outputs[$id]['configuration']['navigation_id'];
+        $navId = $output['configuration']['navigation_id'];
         \CRM_Core_BAO_Navigation::processDelete($navId);
         \CRM_Core_BAO_Navigation::resetNavigation();
         self::$rebuildMenu = TRUE;
@@ -92,10 +90,10 @@ class UIOutputHelper {
 
         // Retrieve the current navigation params.
         $navigationParams = [];
-        if (isset($outputs[$id]['configuration']['navigation_id'])) {
+        if (isset($output['configuration']['navigation_id'])) {
           // Get the default navigation parent id.
           $navigationDefaults = [];
-          $navParams = ['id' => $outputs[$id]['configuration']['navigation_id']];
+          $navParams = ['id' => $output['configuration']['navigation_id']];
           \CRM_Core_BAO_Navigation::retrieve($navParams, $navigationDefaults);
           if (!empty($navigationDefaults['id'])) {
             $navigationParams['id'] = $navigationDefaults['id'];

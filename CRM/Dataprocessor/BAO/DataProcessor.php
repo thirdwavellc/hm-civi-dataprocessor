@@ -114,7 +114,7 @@ class CRM_Dataprocessor_BAO_DataProcessor extends CRM_Dataprocessor_DAO_DataProc
 
     CRM_Utils_Hook::pre('delete', 'DataProcessor', $id, CRM_Core_DAO::$_nullArray);
 
-    CRM_Dataprocessor_BAO_Output::deleteWithDataProcessorId($id);
+    CRM_Dataprocessor_BAO_DataProcessorOutput::deleteWithDataProcessorId($id);
     CRM_Dataprocessor_BAO_DataProcessorFilter::deleteWithDataProcessorId($id);
     CRM_Dataprocessor_BAO_DataProcessorField::deleteWithDataProcessorId($id);
     CRM_Dataprocessor_BAO_Source::deleteWithDataProcessorId($id);
@@ -465,9 +465,9 @@ class CRM_Dataprocessor_BAO_DataProcessor extends CRM_Dataprocessor_DAO_DataProc
       unset($field['data_processor_id']);
       $dataProcessor['fields'][] = $field;
     }
-    $outputs = CRM_Dataprocessor_BAO_Output::getValues(array('data_processor_id' => $id));
+    $outputs = $outputs = civicrm_api3('DataProcessorOutput', 'get', array('data_processor_id' => $id, 'options' => array('limit' => 0)));
     $dataProcessor['outputs'] = array();
-    foreach($outputs as $i => $output) {
+    foreach($outputs['values'] as $i => $output) {
       unset($output['id']);
       unset($output['data_processor_id']);
       $dataProcessor['outputs'][] = $output;

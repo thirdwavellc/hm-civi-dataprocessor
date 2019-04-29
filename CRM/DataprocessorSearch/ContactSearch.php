@@ -5,17 +5,117 @@
  */
 
 use Civi\DataProcessor\Output\UIOutputInterface;
+use CRM_Dataprocessor_ExtensionUtil as E;
 
 class CRM_DataprocessorSearch_ContactSearch implements UIOutputInterface {
 
   /**
-   * Return the url to a configuration page.
-   * Or return false when no configuration page exists.
+   * Returns true when this filter has additional configuration
    *
-   * @return string|false
+   * @return bool
    */
-  public function getConfigurationUrl() {
-    return 'civicrm/dataprocessor/form/output/contact_search';
+  public function hasConfiguration() {
+    return true;
+  }
+
+  /**
+   * When this filter type has additional configuration you can add
+   * the fields on the form with this function.
+   *
+   * @param \CRM_Core_Form $form
+   * @param array $filter
+   */
+  public function buildConfigurationForm(\CRM_Core_Form $form, $output=array()) {
+    $navigation = CRM_Dataprocessor_Utils_Navigation::singleton();
+    $dataProcessor = \CRM_Dataprocessor_BAO_DataProcessor::getDataProcessorById($output['data_processor_id']);
+    $fields = array();
+    foreach($dataProcessor->getDataFlow()->getOutputFieldHandlers() as $outputFieldHandler) {
+      $field = $outputFieldHandler->getOutputFieldSpecification();
+      $fields[$field->alias] = $field->title;
+    }
+
+    $form->add('text', 'title', E::ts('Title'), true);
+
+    $form->add('select','permission', E::ts('Permission'), \CRM_Core_Permission::basicPermissions(), true, array(
+      'style' => 'min-width:250px',
+      'class' => 'crm-select2 huge',
+      'placeholder' => E::ts('- select -'),
+    ));
+    $form->add('select', 'contact_id_field', E::ts('Contact ID field'), $fields, true, array(
+      'style' => 'min-width:250px',
+      'class' => 'crm-select2 huge',
+      'placeholder' => E::ts('- select -'),
+    ));
+    $form->add('select', 'hide_id_field', E::ts('Show Contact ID field'), array(0=>'Contact ID is Visible', 1=> 'Contact ID is hidden'));
+
+    $form->add('wysiwyg', 'help_text', E::ts('Help text for this search'), array('rows' => 6, 'cols' => 80));
+
+    // navigation field
+    $navigationOptions = $navigation->getNavigationOptions();
+    if (isset($output['configuration']['navigation_id'])) {
+      $navigationPath = $navigation->getNavigationPathById($output['configuration']['navigation_id']);
+      unset($navigationOptions[$navigationPath]);
+    }
+    $form->add('select', 'navigation_parent_path', ts('Parent Menu'), array('' => ts('- select -')) + $navigationOptions, true);
+
+    $defaults = array();
+    if ($output) {
+      if (isset($output['permission'])) {
+        $defaults['permission'] = $output['permission'];
+      }
+      if (isset($output['configuration']) && is_array($output['configuration'])) {
+        if (isset($output['configuration']['contact_id_field'])) {
+          $defaults['contact_id_field'] = $output['configuration']['contact_id_field'];
+        }
+        if (isset($output['configuration']['navigation_id'])) {
+          $defaults['navigation_parent_path'] = $navigation->getNavigationParentPathById($output['configuration']['navigation_id']);
+        }
+        if (isset($output['configuration']['title'])) {
+          $defaults['title'] = $output['configuration']['title'];
+        }
+        if (isset($output['configuration']['hide_id_field'])) {
+          $defaults['hide_id_field'] = $output['configuration']['hide_id_field'];
+        }
+        if (isset($output['configuration']['help_text'])) {
+          $defaults['help_text'] = $output['configuration']['help_text'];
+        }
+      }
+    }
+    if (!isset($defaults['permission'])) {
+      $defaults['permission'] = 'access CiviCRM';
+    }
+    if (empty($defaults['title'])) {
+      $defaults['title'] = civicrm_api3('DataProcessor', 'getvalue', array('id' => $output['data_processor_id'], 'return' => 'title'));
+    }
+    $form->setDefaults($defaults);
+  }
+
+  /**
+   * When this filter type has configuration specify the template file name
+   * for the configuration form.
+   *
+   * @return false|string
+   */
+  public function getConfigurationTemplateFileName() {
+    return "CRM/DataprocessorSearch/Form/OutputConfiguration/ContactSearch.tpl";
+  }
+
+
+  /**
+   * Process the submitted values and create a configuration array
+   *
+   * @param $submittedValues
+   * @param array $output
+   * @return array
+   */
+  public function processConfiguration($submittedValues, &$output) {
+    $output['permission'] = $submittedValues['permission'];
+    $configuration['title'] = $submittedValues['title'];
+    $configuration['contact_id_field'] = $submittedValues['contact_id_field'];
+    $configuration['navigation_parent_path'] = $submittedValues['navigation_parent_path'];
+    $configuration['hide_id_field'] = $submittedValues['hide_id_field'];
+    $configuration['help_text'] = $submittedValues['help_text'];
+    return $configuration;
   }
 
   /**

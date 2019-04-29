@@ -78,27 +78,6 @@
     <access_arguments>administer CiviCRM</access_arguments>
   </item>
   <item>
-    <path>civicrm/dataprocessor/form/output/api</path>
-    <page_callback>CRM_Dataprocessor_Form_Output_API</page_callback>
-    <title>DataProcessor</title>
-    <access_arguments>access CiviCRM</access_arguments>
-    <access_arguments>administer CiviCRM</access_arguments>
-  </item>
-  <item>
-    <path>civicrm/dataprocessor/form/output/contact_search</path>
-    <page_callback>CRM_DataprocessorSearch_Form_OutputConfiguration_ContactSearch</page_callback>
-    <title>DataProcessor</title>
-    <access_arguments>access CiviCRM</access_arguments>
-    <access_arguments>administer CiviCRM</access_arguments>
-  </item>
-  <item>
-    <path>civicrm/dataprocessor/form/output/activity_search</path>
-    <page_callback>CRM_DataprocessorSearch_Form_OutputConfiguration_ActivitySearch</page_callback>
-    <title>DataProcessor</title>
-    <access_arguments>access CiviCRM</access_arguments>
-    <access_arguments>administer CiviCRM</access_arguments>
-  </item>
-  <item>
     <path>civicrm/dataprocessor/form/output/download</path>
     <title>Browse Uploaded files</title>
     <access_arguments>access uploaded files</access_arguments>
