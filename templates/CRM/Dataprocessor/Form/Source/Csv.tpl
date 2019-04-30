@@ -1,11 +1,8 @@
 {crmScope extensionKey='dataprocessor'}
-    <div class="crm-submit-buttons">
-        {include file="CRM/common/formButtons.tpl" location="top"}
-    </div>
+<div class="crm-accordion-wrapper">
+    <div class="crm-accordion-header">{ts}Configuration{/ts}</div>
+    <div class="crm-accordion-body">
 
-    {* block for rule data *}
-    <h3>{ts}Data Processor Sources configuration{/ts}</h3>
-    <div class="crm-block crm-form-block crm-data-processor_source_configuration-block">
         <div class="help-block" id="help">
             {ts}<p>On this form you can configure the CSV data source.</p>
                 <p>The <strong>URI</strong> is the file location. Which is either a path on the server  or a URL from where the file could be downloaded.</p>
@@ -41,8 +38,5 @@
             <div class="clear"></div>
         </div>
     </div>
-
-    <div class="crm-submit-buttons">
-        {include file="CRM/common/formButtons.tpl" location="bottom"}
-    </div>
+</div>
 {/crmScope}

@@ -3,14 +3,14 @@
 use CRM_Dataprocessor_ExtensionUtil as E;
 
 /**
- * DataProcessorSource.Delete API specification (optional)
+ * DataProcessor.Delete API specification (optional)
  * This is used for documentation and validation.
  *
  * @param array $spec description of fields supported by this API call
  * @return void
  * @see http://wiki.civicrm.org/confluence/display/CRMDOC/API+Architecture+Standards
  */
-function _civicrm_api3_data_processor_source_Delete_spec(&$spec) {
+function _civicrm_api3_data_processor_Delete_spec(&$spec) {
   $spec['id'] = array(
 		'title' => E::ts('ID'),
 		'type' => CRM_Utils_Type::T_INT,
@@ -27,11 +27,11 @@ function _civicrm_api3_data_processor_source_Delete_spec(&$spec) {
  * @see civicrm_api3_create_error
  * @throws API_Exception
  */
-function civicrm_api3_data_processor_source_Delete($params) {
+function civicrm_api3_data_processor_Delete($params) {
   if (!array_key_exists('id', $params) || empty($params['id'])) {
     throw new API_Exception('Parameter id is mandatory and can not be empty in ' . __METHOD__, 0010);
   } else {
-    return civicrm_api3_create_success(CRM_Dataprocessor_BAO_Source::deleteWithId($params['id']), $params, 'DataProcessorSource', 'Delete');
+    return civicrm_api3_create_success(CRM_Dataprocessor_BAO_DataProcessor::deleteWithId($params['id']), $params, 'DataProcessor', 'Delete');
   }
 }
 

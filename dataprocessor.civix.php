@@ -475,5 +475,11 @@ function _dataprocessor_civix_civicrm_entityTypes(&$entityTypes) {
       'class' => 'CRM_Dataprocessor_DAO_DataProcessorOutput',
       'table' => 'civicrm_data_processor_output',
     ),
+    'CRM_Dataprocessor_DAO_DataProcessorSource' => 
+    array (
+      'name' => 'DataProcessorSource',
+      'class' => 'CRM_Dataprocessor_DAO_DataProcessorSource',
+      'table' => 'civicrm_data_processor_source',
+    ),
   ));
 }

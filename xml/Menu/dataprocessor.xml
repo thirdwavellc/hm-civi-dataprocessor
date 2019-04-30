@@ -64,20 +64,6 @@
     <access_arguments>administer CiviCRM</access_arguments>
   </item>
   <item>
-    <path>civicrm/dataprocessor/form/source/configuration</path>
-    <page_callback>CRM_Dataprocessor_Form_Source_Configuration</page_callback>
-    <title>DataProcessor</title>
-    <access_arguments>access CiviCRM</access_arguments>
-    <access_arguments>administer CiviCRM</access_arguments>
-  </item>
-  <item>
-    <path>civicrm/dataprocessor/form/source/csv</path>
-    <page_callback>CRM_Dataprocessor_Form_Source_Csv</page_callback>
-    <title>DataProcessor</title>
-    <access_arguments>access CiviCRM</access_arguments>
-    <access_arguments>administer CiviCRM</access_arguments>
-  </item>
-  <item>
     <path>civicrm/dataprocessor/form/output/download</path>
     <title>Browse Uploaded files</title>
     <access_arguments>access uploaded files</access_arguments>

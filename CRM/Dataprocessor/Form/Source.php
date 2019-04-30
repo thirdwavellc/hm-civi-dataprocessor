@@ -15,12 +15,29 @@ class CRM_Dataprocessor_Form_Source extends CRM_Core_Form {
 
   private $isFirstDataSource = true;
 
+  private $source;
+
+  /**
+   * @var Civi\DataProcessor\Source\SourceInterface
+   */
+  private $sourceClass;
+
+  private $snippet;
+
   /**
    * Function to perform processing before displaying form (overrides parent function)
    *
    * @access public
    */
   function preProcess() {
+    $this->snippet = CRM_Utils_Request::retrieve('snippet', 'String');
+    if ($this->snippet) {
+      $this->assign('suppressForm', TRUE);
+      $this->controller->_generateQFKey = FALSE;
+    }
+
+    $factory = dataprocessor_get_factory();
+
     $session = CRM_Core_Session::singleton();
     $this->dataProcessorId = CRM_Utils_Request::retrieve('data_processor_id', 'Integer');
     $this->assign('data_processor_id', $this->dataProcessorId);
@@ -28,12 +45,17 @@ class CRM_Dataprocessor_Form_Source extends CRM_Core_Form {
     $this->id = CRM_Utils_Request::retrieve('id', 'Integer');
     $this->assign('id', $this->id);
 
-    $sources = CRM_Dataprocessor_BAO_Source::getValues(array('data_processor_id' => $this->dataProcessorId));
+    $this->assign('has_configuration', false);
+
+    $sources = civicrm_api3('DataProcessorSource', 'get', array('data_processor_id' => $this->dataProcessorId, 'options' => array('limit' => 0)));
     if ($this->id) {
-      $source = CRM_Dataprocessor_BAO_Source::getValues(array('id' => $this->id));
-      $this->assign('source', $source[$this->id]);
+      $this->source = civicrm_api3('DataProcessorSource', 'getsingle', array('id' => $this->id));
+      $this->assign('source', $this->source);
+      $this->sourceClass = $factory->getDataSourceByName($this->source['type']);
+      $this->assign('has_configuration', $this->sourceClass->hasConfiguration());
+
       $i = 0;
-      foreach($sources as $s) {
+      foreach($sources['values'] as $s) {
         if ($s['id'] == $this->id) {
           $this->isFirstDataSource = $i > 0 ? false : true;
           break;
@@ -42,8 +64,19 @@ class CRM_Dataprocessor_Form_Source extends CRM_Core_Form {
       }
     } else {
       $this->isFirstDataSource = count($sources) > 0 ? false : true;
+      $this->source['data_processor_id'] = $this->dataProcessorId;
     }
     $this->assign('is_first_data_source', $this->isFirstDataSource);
+
+    $type = CRM_Utils_Request::retrieve('type', 'String');
+
+    if ($type) {
+      $this->sourceClass = $factory->getDataSourceByName($type);
+      $this->assign('has_configuration', $this->sourceClass->hasConfiguration());
+      if ($this->sourceClass) {
+        $this->source['configuration'] = $this->sourceClass->getDefaultConfiguration();
+      }
+    }
 
     $title = E::ts('Data Processor Source');
     CRM_Utils_System::setTitle($title);
@@ -55,7 +88,11 @@ class CRM_Dataprocessor_Form_Source extends CRM_Core_Form {
   public function buildQuickForm() {
     $this->add('hidden', 'data_processor_id');
     $this->add('hidden', 'id');
-    if ($this->_action != CRM_Core_Action::DELETE) {
+    if ($this->_action == CRM_Core_Action::DELETE) {
+      $this->addButtons(array(
+        array('type' => 'next', 'name' => E::ts('Delete'), 'isDefault' => TRUE,),
+        array('type' => 'cancel', 'name' => E::ts('Cancel'))));
+    } else {
       $this->add('text', 'name', E::ts('Name'), array('size' => CRM_Utils_Type::HUGE), FALSE);
       $this->add('text', 'title', E::ts('Title'), array('size' => CRM_Utils_Type::HUGE), TRUE);
 
@@ -71,16 +108,12 @@ class CRM_Dataprocessor_Form_Source extends CRM_Core_Form {
         $joins = [' - select - '] + $factory->getJoins();
         $this->add('select', 'join_type', ts('Select Join Type'), $joins, TRUE, ['class' => 'crm-select2']);
       }
-    }
-    if ($this->_action == CRM_Core_Action::ADD) {
-      $this->addButtons(array(
-        array('type' => 'next', 'name' => E::ts('Next'), 'isDefault' => TRUE,),
-        array('type' => 'cancel', 'name' => E::ts('Cancel'))));
-    } elseif ($this->_action == CRM_Core_Action::DELETE) {
-      $this->addButtons(array(
-        array('type' => 'next', 'name' => E::ts('Delete'), 'isDefault' => TRUE,),
-        array('type' => 'cancel', 'name' => E::ts('Cancel'))));
-    } else {
+
+      if ($this->sourceClass && $this->sourceClass->hasConfiguration()) {
+        $this->sourceClass->buildConfigurationForm($this, $this->source);
+        $this->assign('configuration_template', $this->sourceClass->getConfigurationTemplateFileName());
+      }
+
       $this->addButtons(array(
         array('type' => 'next', 'name' => E::ts('Save'), 'isDefault' => TRUE,),
         array('type' => 'cancel', 'name' => E::ts('Cancel'))));
@@ -93,18 +126,17 @@ class CRM_Dataprocessor_Form_Source extends CRM_Core_Form {
     $defaults['data_processor_id'] = $this->dataProcessorId;
     $defaults['id'] = $this->id;
 
-    $source = CRM_Dataprocessor_BAO_Source::getValues(array('id' => $this->id));
-    if (isset($source[$this->id]['type'])) {
-      $defaults['type'] = $source[$this->id]['type'];
+    if (isset($this->source['type'])) {
+      $defaults['type'] = $this->source['type'];
     }
-    if (isset($source[$this->id]['title'])) {
-      $defaults['title'] = $source[$this->id]['title'];
+    if (isset($this->source['title'])) {
+      $defaults['title'] = $this->source['title'];
     }
-    if (isset($source[$this->id]['name'])) {
-      $defaults['name'] = $source[$this->id]['name'];
+    if (isset($this->source['name'])) {
+      $defaults['name'] = $this->source['name'];
     }
-    if (isset($source[$this->id]['join_type'])) {
-      $defaults['join_type'] = $source[$this->id]['join_type'];
+    if (isset($this->source['join_type'])) {
+      $defaults['join_type'] = $this->source['join_type'];
     }
     return $defaults;
   }
@@ -113,22 +145,17 @@ class CRM_Dataprocessor_Form_Source extends CRM_Core_Form {
     $session = CRM_Core_Session::singleton();
     $backUrl = $redirectUrl = $session->readUserContext();
     if ($this->_action == CRM_Core_Action::DELETE) {
-      CRM_Dataprocessor_BAO_Source::deleteWithId($this->id);
+      civicrm_api3('DataProcessorSource', 'delete', array('id' => $this->id));
       $session->setStatus(E::ts('Data Processor Source removed'), E::ts('Removed'), 'success');
       CRM_Utils_System::redirect($redirectUrl);
     }
 
-    $source = CRM_Dataprocessor_BAO_Source::getValues(array('id' => $this->id));
-
     $values = $this->exportValues();
 
     $factory = dataprocessor_get_factory();
-    $sourceClass = $factory->getDataSourceByName($values['type']);
 
     if (!empty($values['name'])) {
       $params['name'] = $values['name'];
-    } else {
-      $params['name'] = CRM_Dataprocessor_BAO_Source::buildNameFromTitle($values['title']);
     }
     $params['title'] = $values['title'];
     $params['type'] = $values['type'];
@@ -142,27 +169,16 @@ class CRM_Dataprocessor_Form_Source extends CRM_Core_Form {
     }
     if ($this->id) {
       $params['id'] = $this->id;
-    } else {
-      $params['configuration'] = $sourceClass->getDefaultConfiguration();
     }
-    if (isset($source[$this->id])) {
-      $params['join_configuration'] = $source[$this->id]['join_configuration'];
+    if (isset($this->source)) {
+      $params['join_configuration'] = $this->source['join_configuration'];
     }
 
-
-    $result = CRM_Dataprocessor_BAO_Source::add($params);
-
-
-    $configurationUrl = false;
-    if ($sourceClass->getConfigurationUrl()) {
-      $configurationUrl = CRM_Utils_System::url($sourceClass->getConfigurationUrl(), [
-        'reset' => 1,
-        'action' => 'add',
-        'source_id' => $result['id'],
-        'data_processor_id' => $this->dataProcessorId
-      ]);
-      $redirectUrl = $configurationUrl;
+    if ($this->sourceClass && $this->sourceClass->hasConfiguration()) {
+      $params['configuration'] = $this->sourceClass->processConfiguration($values);
     }
+
+    $result = civicrm_api3('DataProcessorSource', 'create', $params);
 
     if (!$this->isFirstDataSource && $this->_action == CRM_Core_Action::ADD) {
       $joinClass = $factory->getJoinByName($values['join_type']);
@@ -174,9 +190,6 @@ class CRM_Dataprocessor_Form_Source extends CRM_Core_Form {
           'data_processor_id' => $this->dataProcessorId
         ]);
         $session->pushUserContext($backUrl);
-        if ($configurationUrl) {
-          $session->pushUserContext($configurationUrl);
-        }
         $redirectUrl = $joinUrl;
       } else {
         $session->pushUserContext($backUrl);
@@ -218,13 +231,14 @@ class CRM_Dataprocessor_Form_Source extends CRM_Core_Form {
       $id = $fields['id'];
     }
     if (empty($fields['name'])) {
-      $fields['name'] = CRM_Dataprocessor_BAO_Source::buildNameFromTitle($fields['title']);
+      $fields['name'] = CRM_Dataprocessor_BAO_DataProcessorSource::checkName($fields['title'], $fields['data_processor_id'], $id);
     }
-    if (!CRM_Dataprocessor_BAO_Source::isNameValid($fields['name'], $fields['data_processor_id'], $id)) {
+    if (!CRM_Dataprocessor_BAO_DataProcessorSource::isNameValid($fields['name'], $fields['data_processor_id'], $id)) {
       $errors['name'] = E::ts('There is already a data source with this name');
       return $errors;
     }
     return TRUE;
   }
+
 
 }

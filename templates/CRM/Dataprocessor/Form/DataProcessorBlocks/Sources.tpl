@@ -9,11 +9,13 @@
             <th></th>
             <th></th>
             <th></th>
+            <th></th>
         </tr>
         {foreach from=$sources item=source}
             <tr>
                 <td>{$source.type_name}</td>
                 <td>{$source.title}</td>
+                <td>{if ($source.weight && !is_numeric($source.weight))}{$source.weight}{/if}</td>
                 <td>
                     {if $source.join_link}
                         <a href="{$source.join_link}">{ts}Join Configuration{/ts}</a>

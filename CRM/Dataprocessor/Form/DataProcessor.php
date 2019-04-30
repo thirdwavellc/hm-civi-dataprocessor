@@ -66,7 +66,10 @@ class CRM_Dataprocessor_Form_DataProcessor extends CRM_Core_Form {
 
   protected function addSources() {
     $factory = dataprocessor_get_factory();
-    $sources = CRM_Dataprocessor_BAO_Source::getValues(array('data_processor_id' => $this->dataProcessorId));
+    $types = $factory->getDataSources();
+    $sources = civicrm_api3('DataProcessorSource', 'get', array('data_processor_id' => $this->dataProcessorId, 'options' => array('limit' => 0)));
+    $sources = $sources['values'];
+    CRM_Utils_Weight::addOrder($sources, 'CRM_Dataprocessor_DAO_DataProcessorSource', 'id', $this->currentUrl, 'data_processor_id='.$this->dataProcessorId);
     foreach($sources as $idx => $source) {
       $sources[$idx]['join_link'] = '';
       if (isset($source['join_type']) && $source['join_type']) {
@@ -77,6 +80,11 @@ class CRM_Dataprocessor_Form_DataProcessor extends CRM_Core_Form {
       $sourceClass = $factory->getDataSourceByName($source['type']);
       if ($sourceClass->getConfigurationUrl()) {
         $sources[$idx]['configuration_link'] = CRM_Utils_System::url($sourceClass->getConfigurationUrl(), array('reset' => 1, 'source_id' => $source['id'], 'data_processor_id' => $this->dataProcessorId));
+      }
+      if (isset($types[$source['type']])) {
+        $sources[$idx]['type_name'] = $types[$source['type']];
+      } else {
+        $sources[$idx]['type_name'] = '';
       }
     }
     $this->assign('sources', $sources);

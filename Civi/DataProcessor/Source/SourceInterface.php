@@ -74,13 +74,6 @@ interface SourceInterface {
   public function getAvailableAggregationFields();
 
   /**
-   * Returns URL to configuration screen
-   *
-   * @return false|string
-   */
-  public function getConfigurationUrl();
-
-  /**
    * Ensure that filter field is accesible in the query
    *
    * @param String $fieldName
@@ -128,5 +121,36 @@ interface SourceInterface {
    * @return \Civi\DataProcessor\Source\SourceInterface
    */
   public function setSourceTitle($title);
+
+  /**
+   * Returns true when this source has additional configuration
+   *
+   * @return bool
+   */
+  public function hasConfiguration();
+
+  /**
+   * When this source has additional configuration you can add
+   * the fields on the form with this function.
+   *
+   * @param \CRM_Core_Form $form
+   * @param array $source
+   */
+  public function buildConfigurationForm(\CRM_Core_Form $form, $source=array());
+
+  /**
+   * When this source has configuration specify the template file name
+   * for the configuration form.
+   *
+   * @return false|string
+   */
+  public function getConfigurationTemplateFileName();
+  /**
+   * Process the submitted values and create a configuration array
+   *
+   * @param $submittedValues
+   * @return array
+   */
+  public function processConfiguration($submittedValues);
 
 }

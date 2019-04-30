@@ -4,6 +4,8 @@
  * @license AGPL-3.0
  */
 
+use Civi\DataProcessor\Source\SourceInterface;
+
 class CRM_Dataprocessor_Utils_DataSourceFields {
 
   /**
@@ -15,10 +17,24 @@ class CRM_Dataprocessor_Utils_DataSourceFields {
    */
   public static function getAvailableFieldsInDataSources($dataProcessorId) {
     $dataProcessor = CRM_Dataprocessor_BAO_DataProcessor::getDataProcessorById($dataProcessorId);
+    $fieldSelect = array();
     foreach($dataProcessor->getDataSources() as $dataSource) {
-      foreach($dataSource->getAvailableFilterFields()->getFields() as $field) {
-        $fieldSelect[$dataSource->getSourceName().'::'.$field->name] = $dataSource->getSourceTitle().' :: '.$field->title;
-      }
+      $fieldSelect = array_merge($fieldSelect, self::getAvailableFieldsInDataSource($dataSource));
+    }
+    return $fieldSelect;
+  }
+
+  /**
+   * Returns an array with the name of the field as the key and the label of the field as the value.
+   *
+   * @oaram SourceInterface $dataSource
+   * @return array
+   * @throws \Exception
+   */
+  public static function getAvailableFieldsInDataSource(SourceInterface $dataSource) {
+    $fieldSelect = array();
+    foreach($dataSource->getAvailableFilterFields()->getFields() as $field) {
+      $fieldSelect[$dataSource->getSourceName().'::'.$field->name] = $dataSource->getSourceTitle().' :: '.$field->title;
     }
     return $fieldSelect;
   }
