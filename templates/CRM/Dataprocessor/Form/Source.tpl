@@ -39,18 +39,13 @@
             <div class="content">{$form.name.html}</div>
             <div class="clear"></div>
         </div>
-        {if !$is_first_data_source}
-            <div class="crm-section">
-                <div class="label">{$form.join_type.label}</div>
-                <div class="content">{$form.join_type.html}</div>
-                <div class="clear"></div>
-            </div>
-        {/if}
 
         <div id="type_configuration">
             {if ($configuration_template)}
                 {include file=$configuration_template}
             {/if}
+
+            {include file="CRM/Dataprocessor/Form/Source/Join.tpl"}
         </div>
     </div>
 
@@ -60,14 +55,15 @@
 
     <script type="text/javascript">
         {literal}
-        CRM.$(function($) {
-          var id = {/literal}{if ($source)}{$source.id}{else}false{/if}{literal};
-          var data_processor_id = {/literal}{$data_processor_id}{literal};
 
+        CRM.$(function($) {
           $('#type').on('change', function() {
             var type = $('#type').val();
+            var join_type = $('#join_type').val();
+            var id = {/literal}{if ($source)}{$source.id}{else}false{/if}{literal};
+            var data_processor_id = {/literal}{$data_processor_id}{literal};
             if (type) {
-              var dataUrl = CRM.url('civicrm/dataprocessor/form/source', {type: type, 'data_processor_id': data_processor_id, 'id': id});
+              var dataUrl = CRM.url('civicrm/dataprocessor/form/source', {type: type, 'data_processor_id': data_processor_id, 'id': id, 'join_type': join_type});
               CRM.loadPage(dataUrl, {'target': '#type_configuration'});
             }
           });
@@ -90,11 +86,15 @@
         {/literal}
     </script>
 
-{else}
+{elseif ($block == 'joinOnly')}
+    {include file="CRM/Dataprocessor/Form/Source/Join.tpl"}
+{elseif ($block == 'configuration')}
     <div id="type_configuration">
         {if ($configuration_template)}
             {include file=$configuration_template}
         {/if}
+
+        {include file="CRM/Dataprocessor/Form/Source/Join.tpl"}
     </div>
 {/if}
 

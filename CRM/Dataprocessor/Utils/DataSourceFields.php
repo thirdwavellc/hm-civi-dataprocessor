@@ -19,7 +19,7 @@ class CRM_Dataprocessor_Utils_DataSourceFields {
     $dataProcessor = CRM_Dataprocessor_BAO_DataProcessor::getDataProcessorById($dataProcessorId);
     $fieldSelect = array();
     foreach($dataProcessor->getDataSources() as $dataSource) {
-      $fieldSelect = array_merge($fieldSelect, self::getAvailableFieldsInDataSource($dataSource));
+      $fieldSelect = array_merge($fieldSelect, self::getAvailableFieldsInDataSource($dataSource, $dataSource->getSourceTitle().' :: ', $dataSource->getSourceName().'::'));
     }
     return $fieldSelect;
   }
@@ -31,10 +31,10 @@ class CRM_Dataprocessor_Utils_DataSourceFields {
    * @return array
    * @throws \Exception
    */
-  public static function getAvailableFieldsInDataSource(SourceInterface $dataSource) {
+  public static function getAvailableFieldsInDataSource(SourceInterface $dataSource, $titlePrefix='', $namePrefix='') {
     $fieldSelect = array();
     foreach($dataSource->getAvailableFilterFields()->getFields() as $field) {
-      $fieldSelect[$dataSource->getSourceName().'::'.$field->name] = $dataSource->getSourceTitle().' :: '.$field->title;
+      $fieldSelect[$namePrefix.$field->name] = $titlePrefix.$field->title;
     }
     return $fieldSelect;
   }

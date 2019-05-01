@@ -71,16 +71,6 @@ class CRM_Dataprocessor_Form_DataProcessor extends CRM_Core_Form {
     $sources = $sources['values'];
     CRM_Utils_Weight::addOrder($sources, 'CRM_Dataprocessor_DAO_DataProcessorSource', 'id', $this->currentUrl, 'data_processor_id='.$this->dataProcessorId);
     foreach($sources as $idx => $source) {
-      $sources[$idx]['join_link'] = '';
-      if (isset($source['join_type']) && $source['join_type']) {
-        $joinClass = $factory->getJoinByName($source['join_type']);
-        $sources[$idx]['join_link'] = CRM_Utils_System::url($joinClass->getConfigurationUrl(), array('reset' => 1, 'source_id' => $source['id'], 'data_processor_id' => $this->dataProcessorId));
-      }
-      $sources[$idx]['configuration_link'] = '';
-      $sourceClass = $factory->getDataSourceByName($source['type']);
-      if ($sourceClass->getConfigurationUrl()) {
-        $sources[$idx]['configuration_link'] = CRM_Utils_System::url($sourceClass->getConfigurationUrl(), array('reset' => 1, 'source_id' => $source['id'], 'data_processor_id' => $this->dataProcessorId));
-      }
       if (isset($types[$source['type']])) {
         $sources[$idx]['type_name'] = $types[$source['type']];
       } else {

@@ -77,13 +77,10 @@ class CRM_Dataprocessor_BAO_DataProcessorSource extends CRM_Dataprocessor_DAO_Da
    */
   public static function getSourceClass($source, \Civi\DataProcessor\ProcessorType\AbstractProcessorType $dataProcessor) {
     $factory = dataprocessor_get_factory();
-    $sourceClass = $factory->getDataSourceByName($source['type']);
-    $sourceClass->setSourceName($source['name']);
-    $sourceClass->setSourceTitle($source['title']);
-    $sourceClass->setConfiguration($source['configuration']);
+    $sourceClass = self::sourceToSourceClass($source);
     $sourceClass->setDataProcessor($dataProcessor);
     $join = null;
-    if ($source['join_type']) {
+    if (isset($source['join_type']) && $source['join_type']) {
       $join = $factory->getJoinByName($source['join_type']);
       $join->setConfiguration($source['join_configuration']);
       $join->setDataProcessor($dataProcessor);
@@ -93,6 +90,21 @@ class CRM_Dataprocessor_BAO_DataProcessorSource extends CRM_Dataprocessor_DAO_Da
       $join->initialize();
       $sourceClass->setJoin($join);
     }
+    return $sourceClass;
+  }
+
+  /**
+   * Converts a Source array to an instanciated source class.
+   *
+   * @param $source
+   * @return \Civi\DataProcessor\Source\SourceInterface
+   */
+  public static function sourceToSourceClass($source) {
+    $factory = dataprocessor_get_factory();
+    $sourceClass = $factory->getDataSourceByName($source['type']);
+    $sourceClass->setSourceName($source['name']);
+    $sourceClass->setSourceTitle($source['title']);
+    $sourceClass->setConfiguration($source['configuration']);
     return $sourceClass;
   }
 }

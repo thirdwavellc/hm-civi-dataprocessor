@@ -11,6 +11,11 @@ class CRM_Dataprocessor_Form_Source extends CRM_Core_Form {
 
   private $dataProcessorId;
 
+  /**
+   * @var Civi\DataProcessor\ProcessorType\AbstractProcessorType
+   */
+  private $dataProcessor;
+
   private $id;
 
   private $isFirstDataSource = true;
@@ -21,6 +26,11 @@ class CRM_Dataprocessor_Form_Source extends CRM_Core_Form {
    * @var Civi\DataProcessor\Source\SourceInterface
    */
   private $sourceClass;
+
+  /**
+   * @var Civi\DataProcessor\DataFlow\MultipleDataFlows\JoinInterface
+   */
+  private $joinClass;
 
   private $snippet;
 
@@ -34,6 +44,8 @@ class CRM_Dataprocessor_Form_Source extends CRM_Core_Form {
     if ($this->snippet) {
       $this->assign('suppressForm', TRUE);
       $this->controller->_generateQFKey = FALSE;
+      $block = CRM_Utils_Request::retrieve('block', 'String', $this, FALSE, 'configuration');
+      $this->assign('block', $block);
     }
 
     $factory = dataprocessor_get_factory();
@@ -41,6 +53,9 @@ class CRM_Dataprocessor_Form_Source extends CRM_Core_Form {
     $session = CRM_Core_Session::singleton();
     $this->dataProcessorId = CRM_Utils_Request::retrieve('data_processor_id', 'Integer');
     $this->assign('data_processor_id', $this->dataProcessorId);
+    if ($this->dataProcessorId) {
+      $this->dataProcessor = CRM_Dataprocessor_BAO_DataProcessor::getDataProcessorById($this->dataProcessorId);
+    }
 
     $this->id = CRM_Utils_Request::retrieve('id', 'Integer');
     $this->assign('id', $this->id);
@@ -51,7 +66,7 @@ class CRM_Dataprocessor_Form_Source extends CRM_Core_Form {
     if ($this->id) {
       $this->source = civicrm_api3('DataProcessorSource', 'getsingle', array('id' => $this->id));
       $this->assign('source', $this->source);
-      $this->sourceClass = $factory->getDataSourceByName($this->source['type']);
+      $this->sourceClass = CRM_Dataprocessor_BAO_DataProcessorSource::sourceToSourceClass($this->source);
       $this->assign('has_configuration', $this->sourceClass->hasConfiguration());
 
       $i = 0;
@@ -69,13 +84,28 @@ class CRM_Dataprocessor_Form_Source extends CRM_Core_Form {
     $this->assign('is_first_data_source', $this->isFirstDataSource);
 
     $type = CRM_Utils_Request::retrieve('type', 'String');
-
     if ($type) {
-      $this->sourceClass = $factory->getDataSourceByName($type);
+      $this->source['type'] = $type;
+      $this->sourceClass = CRM_Dataprocessor_BAO_DataProcessorSource::sourceToSourceClass($this->source);
       $this->assign('has_configuration', $this->sourceClass->hasConfiguration());
       if ($this->sourceClass) {
         $this->source['configuration'] = $this->sourceClass->getDefaultConfiguration();
       }
+    }
+
+    $join_type = CRM_Utils_Request::retrieve('join_type', 'String');
+    if ($join_type) {
+      $this->source['join_type'] = $join_type;
+    }
+
+    $this->assign('has_join_configuration', false);
+    if (!$this->isFirstDataSource && isset($this->source['join_type']) && $this->source['join_type']) {
+      $this->joinClass = $factory->getJoinByName($this->source['join_type']);
+      $this->assign('has_join_configuration', $this->joinClass->hasConfiguration());
+    }
+
+    if (!isset($this->source['join_configuration']) || !is_array($this->source['join_configuration'])) {
+      $this->source['join_configuration'] = array();
     }
 
     $title = E::ts('Data Processor Source');
@@ -106,7 +136,23 @@ class CRM_Dataprocessor_Form_Source extends CRM_Core_Form {
 
       if (!$this->isFirstDataSource) {
         $joins = [' - select - '] + $factory->getJoins();
-        $this->add('select', 'join_type', ts('Select Join Type'), $joins, TRUE, ['class' => 'crm-select2']);
+        $this->add('select', 'join_type', ts('Select Join Type'), $joins, TRUE, array(
+          'style' => 'min-width:250px',
+          'class' => 'crm-select2 huge',
+          'placeholder' => E::ts('- select -'),
+        ));
+        if ($this->joinClass && $this->joinClass->hasConfiguration()) {
+          $joinableToSources = array();
+          $dataProcessor = CRM_Dataprocessor_BAO_DataProcessor::getDataProcessorById($this->dataProcessorId);
+          foreach($dataProcessor->getDataSources() as $source) {
+            if ($this->sourceClass && $this->sourceClass->getSourceName() == $source->getSourceName()) {
+              break;
+            }
+            $joinableToSources[] = $source;
+          }
+          $this->joinClass->buildConfigurationForm($this, $this->sourceClass, $joinableToSources, $this->source['join_configuration']);
+          $this->assign('join_configuration_template', $this->joinClass->getConfigurationTemplateFileName());
+        }
       }
 
       if ($this->sourceClass && $this->sourceClass->hasConfiguration()) {

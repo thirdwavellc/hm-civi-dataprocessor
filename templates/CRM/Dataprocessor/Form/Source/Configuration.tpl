@@ -1,6 +1,6 @@
 {crmScope extensionKey='dataprocessor'}
     {* block for rule data *}
-<div class="crm-accordion-wrapper">
+<div class="crm-accordion-wrapper collapsed">
     <div class="crm-accordion-header">{ts}Filter criteria{/ts}</div>
     <div class="crm-accordion-body">
 

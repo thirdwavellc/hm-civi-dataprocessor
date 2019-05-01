@@ -11,6 +11,9 @@ use Civi\DataProcessor\DataFlow\CombinedDataFlow\CombinedSqlDataFlow;
 use Civi\DataProcessor\DataFlow\SqlDataFlow;
 use Civi\DataProcessor\DataFlow\SqlTableDataFlow;
 use Civi\DataProcessor\ProcessorType\AbstractProcessorType;
+use Civi\DataProcessor\Source\SourceInterface;
+
+use CRM_Dataprocessor_ExtensionUtil as E;
 
 class SimpleJoin implements JoinInterface, SqlJoinInterface {
 
@@ -109,10 +112,92 @@ class SimpleJoin implements JoinInterface, SqlJoinInterface {
   }
 
   /**
-   * @return string
+   * Returns true when this join has additional configuration
+   *
+   * @return bool
    */
-  public function getConfigurationUrl() {
-    return 'civicrm/dataprocessor/form/joins/simple_join';
+  public function hasConfiguration() {
+    return true;
+  }
+
+  /**
+   * When this join has additional configuration you can add
+   * the fields on the form with this function.
+   *
+   * @param \CRM_Core_Form $form
+   * @param SourceInterface $joinFromSource
+   * @param SourceInterface[] $joinableToSources
+   * @param array $joinConfiguration
+   *   The current join configuration
+   */
+  public function buildConfigurationForm(\CRM_Core_Form $form, SourceInterface $joinFromSource, $joinableToSources, $joinConfiguration=array()) {
+    $leftFields = \CRM_Dataprocessor_Utils_DataSourceFields::getAvailableFieldsInDataSource($joinFromSource, '', '');
+    $form->add('select', 'left_field', ts('Select field'), $leftFields, true, array(
+      'style' => 'min-width:250px',
+      'class' => 'crm-select2 huge',
+      'placeholder' => E::ts('- select -'),
+    ));
+
+    $rightFields = array();
+    foreach($joinableToSources as $joinToSource) {
+      $rightFields = array_merge($rightFields, \CRM_Dataprocessor_Utils_DataSourceFields::getAvailableFieldsInDataSource($joinToSource, $joinToSource->getSourceTitle().' :: ', $joinToSource->getSourceName().'::'));
+    }
+
+    $form->add('select', 'right_field', ts('Select field'), $rightFields, true, array(
+      'style' => 'min-width:250px',
+      'class' => 'crm-select2 huge',
+      'placeholder' => E::ts('- select -'),
+    ));
+
+    // Backwords compatability
+    if ($joinConfiguration['right_prefix'] == $joinFromSource->getSourceName()) {
+      $joinConfigurationBackwardsCompatibility = $joinConfiguration;
+      $joinConfiguration['left_prefix'] = '';
+      $joinConfiguration['left_field'] = $joinConfigurationBackwardsCompatibility['right_field'];
+      $joinConfiguration['right_prefix'] = $joinConfigurationBackwardsCompatibility['left_prefix'];
+      $joinConfiguration['right_field'] = $joinConfigurationBackwardsCompatibility['left_field'];
+    }
+
+    $defaults = array();
+    if (isset($joinConfiguration['left_prefix'])) {
+      $defaults['left_field'] = $joinConfiguration['left_field'];
+    }
+    if (isset($joinConfiguration['right_prefix'])) {
+      $defaults['right_field'] = $joinConfiguration['right_prefix']."::".$joinConfiguration['right_field'];
+    }
+
+    $form->setDefaults($defaults);
+  }
+
+  /**
+   * When this join has configuration specify the template file name
+   * for the configuration form.
+   *
+   * @return false|string
+   */
+  public function getConfigurationTemplateFileName() {
+    return "CRM/Dataprocessor/Form/MultipleDataFlows/SimpleJoin.tpl";
+  }
+
+
+  /**
+   * Process the submitted values and create a configuration array
+   *
+   * @param $submittedValues
+   * @return array
+   */
+  public function processConfiguration($submittedValues, SourceInterface $joinFromSource) {
+    $left_prefix = $joinFromSource->getSourceName();
+    $left_field = $submittedValues['left_field'];
+    list($right_prefix, $right_field) = explode("::",$submittedValues['right_field'], 2);
+
+    $configuration = array(
+      'left_prefix' => $left_prefix,
+      'left_field' => $left_field,
+      'right_prefix' => $right_prefix,
+      'right_field' => $right_field
+    );
+    return $configuration;
   }
 
   /**
