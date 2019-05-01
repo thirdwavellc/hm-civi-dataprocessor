@@ -75,7 +75,7 @@ class CRM_Dataprocessor_BAO_DataProcessorSource extends CRM_Dataprocessor_DAO_Da
    * @param \Civi\DataProcessor\ProcessorType\AbstractProcessorType $dataProcessor
    * @return \Civi\DataProcessor\Source\SourceInterface
    */
-  public static function getSourceClass($source, \Civi\DataProcessor\ProcessorType\AbstractProcessorType $dataProcessor) {
+  public static function addSourceToDataProcessor($source, \Civi\DataProcessor\ProcessorType\AbstractProcessorType $dataProcessor) {
     $factory = dataprocessor_get_factory();
     $sourceClass = self::sourceToSourceClass($source);
     $sourceClass->setDataProcessor($dataProcessor);

@@ -257,7 +257,7 @@ class CRM_Dataprocessor_BAO_DataProcessor extends CRM_Dataprocessor_DAO_DataProc
     $dataProcessor = $factory->getDataProcessorTypeByName($this->type);
     $sources = civicrm_api3('DataProcessorSource', 'get', array('data_processor_id' => $this->id, 'options' => array('limit' => 0)));
     foreach($sources['values'] as $sourceDao) {
-      CRM_Dataprocessor_BAO_DataProcessorSource::getSourceClass($sourceDao, $dataProcessor);
+      CRM_Dataprocessor_BAO_DataProcessorSource::addSourceToDataProcessor($sourceDao, $dataProcessor);
     }
 
     $aggregationFields = CRM_Dataprocessor_BAO_DataProcessor::getAvailableAggregationFields($this->id);
@@ -304,7 +304,7 @@ class CRM_Dataprocessor_BAO_DataProcessor extends CRM_Dataprocessor_DAO_DataProc
     $dataProcessor = $factory->getDataProcessorTypeByName($dao->type);
     $sources = civicrm_api3('DataProcessorSource', 'get', array('data_processor_id' => $data_processor_id, 'options' => array('limit' => 0)));
     foreach($sources['values'] as $sourceDao) {
-      CRM_Dataprocessor_BAO_DataProcessorSource::getSourceClass($sourceDao, $dataProcessor);
+      CRM_Dataprocessor_BAO_DataProcessorSource::addSourceToDataProcessor($sourceDao, $dataProcessor);
     }
 
     return $dataProcessor->getAvailableOutputHandlers();
@@ -318,7 +318,7 @@ class CRM_Dataprocessor_BAO_DataProcessor extends CRM_Dataprocessor_DAO_DataProc
     $dataProcessor = $factory->getDataProcessorTypeByName($dao->type);
     $sources = civicrm_api3('DataProcessorSource', 'get', array('data_processor_id' => $dao->id, 'options' => array('limit' => 0)));
     foreach($sources['values'] as $sourceDao) {
-      CRM_Dataprocessor_BAO_DataProcessorSource::getSourceClass($sourceDao, $dataProcessor);
+      CRM_Dataprocessor_BAO_DataProcessorSource::addSourceToDataProcessor($sourceDao, $dataProcessor);
     }
 
     return $dataProcessor->getAvailableFilterHandlers();
@@ -340,7 +340,7 @@ class CRM_Dataprocessor_BAO_DataProcessor extends CRM_Dataprocessor_DAO_DataProc
     $dataProcessor = $factory->getDataProcessorTypeByName($dao->type);
     $sources = civicrm_api3('DataProcessorSource', 'get', array('data_processor_id' => $dao->id, 'options' => array('limit' => 0)));
     foreach($sources['values'] as $sourceDao) {
-      $source = CRM_Dataprocessor_BAO_DataProcessorSource::getSourceClass($sourceDao, $dataProcessor);
+      $source = CRM_Dataprocessor_BAO_DataProcessorSource::sourceToSourceClass($sourceDao);
       $availableAggregationFields = array_merge($availableAggregationFields, $source->getAvailableAggregationFields());
     }
 
