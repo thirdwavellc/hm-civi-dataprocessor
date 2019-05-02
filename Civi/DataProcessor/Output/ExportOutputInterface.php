@@ -18,13 +18,13 @@ interface ExportOutputInterface extends OutputInterface {
   /**
    * Download export
    *
-   * @param \Civi\DataProcessor\ProcessorType\AbstractProcessorType $dataProcessor
-   * @param array $dataProcessorBAO
+   * @param \Civi\DataProcessor\ProcessorType\AbstractProcessorType $dataProcessorClass
+   * @param array $dataProcessor
    * @param array $outputBAO
    * @param array $formValues
    * @return string
    */
-  public function downloadExport(\Civi\DataProcessor\ProcessorType\AbstractProcessorType $dataProcessor, $dataProcessorBAO, $outputBAO, $formValues);
+  public function downloadExport(\Civi\DataProcessor\ProcessorType\AbstractProcessorType $dataProcessorClass, $dataProcessor, $outputBAO, $formValues);
 
   /**
    * Returns the mime type of the export file.

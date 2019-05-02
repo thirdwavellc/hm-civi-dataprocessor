@@ -15,38 +15,24 @@ class CRM_Dataprocessor_Form_ManageDataProcessors extends CRM_Core_Form {
 
     $this->setTitle(E::ts('Manage Data Processors'));
 
-    $whereClauses = array("1");
+    $apiParams = array();
     if (isset($formValues['title']) && !empty($formValues['title'])) {
-      $whereClauses[] = "`title` LIKE '%". CRM_Utils_Type::escape($formValues['title'], 'String')."%'";
+      $apiParams['title']['LIKE'] = $formValues['title'];
     }
     if (isset($formValues['description']) && !empty($formValues['description'])) {
-      $whereClauses[]  = "`description` LIKE '%". CRM_Utils_Type::escape($formValues['description'], 'String')."%'";
+      $apiParams['description']['LIKE'] = $formValues['description'];
     }
     if (isset($formValues['is_active']) && $formValues['is_active'] == '0') {
-      $whereClauses[] = "`is_active` = 0";
+      $apiParams['is_active'] = 0;
     } elseif (isset($formValues['is_active']) && $formValues['is_active'] == '1') {
-      $whereClauses[] = "`is_active` = 1";
+      $apiParams['is_active'] = 1;
     }
+    $apiParams['options']['limit'] = 0;
+    $dataProcessors = civicrm_api3('DataProcessor', 'get', $apiParams);
+    $dataProcessors = $dataProcessors['values'];
 
-    $whereStatement = implode(" AND ", $whereClauses);
-    $sql = "SELECT * FROM civicrm_data_processor WHERE {$whereStatement} ORDER BY is_active, title";
-    $dataProcessors = array();
-    $dao = CRM_Core_DAO::executeQuery($sql, array(), false, 'CRM_Dataprocessor_DAO_DataProcessor');
-    while($dao->fetch()) {
-      $row = array();
-      CRM_Dataprocessor_DAO_DataProcessor::storeValues($dao, $row);
-      switch ($row['status']) {
-        case CRM_Dataprocessor_DAO_DataProcessor::STATUS_IN_CODE:
-          $row['status_label'] = E::ts('In code');
-          break;
-        case CRM_Dataprocessor_DAO_DataProcessor::STATUS_OVERRIDDEN:
-          $row['status_label'] = E::ts('Overridden');
-          break;
-        case CRM_Dataprocessor_DAO_DataProcessor::STATUS_IN_DATABASE:
-          $row['status_label'] = E::ts('In database');
-          break;
-      }
-      $dataProcessors[] = $row;
+    foreach($dataProcessors as $idx => $dataProcessor) {
+      $dataProcessors[$idx]['status_label'] = CRM_Dataprocessor_Status::statusToLabel($dataProcessor['status']);
     }
     $this->assign('data_processors', $dataProcessors);
 

@@ -27,9 +27,10 @@ class CRM_DataprocessorSearch_ContactSearch implements UIOutputInterface {
    */
   public function buildConfigurationForm(\CRM_Core_Form $form, $output=array()) {
     $navigation = CRM_Dataprocessor_Utils_Navigation::singleton();
-    $dataProcessor = \CRM_Dataprocessor_BAO_DataProcessor::getDataProcessorById($output['data_processor_id']);
+    $dataProcessor = civicrm_api3('DataProcessor', 'getsingle', array('id' => $output['data_processor_id']));
+    $dataProcessorClass = \CRM_Dataprocessor_BAO_DataProcessor::dataProcessorToClass($dataProcessor);
     $fields = array();
-    foreach($dataProcessor->getDataFlow()->getOutputFieldHandlers() as $outputFieldHandler) {
+    foreach($dataProcessorClass->getDataFlow()->getOutputFieldHandlers() as $outputFieldHandler) {
       $field = $outputFieldHandler->getOutputFieldSpecification();
       $fields[$field->alias] = $field->title;
     }

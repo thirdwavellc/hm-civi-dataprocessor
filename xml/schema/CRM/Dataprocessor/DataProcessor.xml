@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="iso-8859-1" ?>
+
+<table>
+  <base>CRM/Dataprocessor</base>
+  <class>DataProcessor</class>
+  <name>civicrm_data_processor</name>
+  <log>false</log>
+
+  <field>
+    <name>id</name>
+    <type>int unsigned</type>
+    <required>true</required>
+    <comment>Unique DataProcessor ID</comment>
+  </field>
+  <primaryKey>
+    <name>id</name>
+    <autoincrement>true</autoincrement>
+  </primaryKey>
+  <field>
+    <name>name</name>
+    <title>Name</title>
+    <type>varchar</type>
+    <required>false</required>
+    <length>255</length>
+  </field>
+  <field>
+    <name>title</name>
+    <title>Title</title>
+    <type>varchar</type>
+    <required>true</required>
+    <length>255</length>
+  </field>
+  <field>
+    <name>type</name>
+    <title>Type</title>
+    <type>varchar</type>
+    <required>true</required>
+    <length>255</length>
+  </field>
+  <field>
+    <name>configuration</name>
+    <title>Configuration</title>
+    <type>text</type>
+    <required>false</required>
+    <length>255</length>
+    <serialize>JSON</serialize>
+  </field>
+  <field>
+    <name>aggregation</name>
+    <title>Aggregation Fields</title>
+    <type>text</type>
+    <required>false</required>
+    <length>255</length>
+    <serialize>JSON</serialize>
+  </field>
+  <field>
+    <name>is_active</name>
+    <title>Is active</title>
+    <type>boolean</type>
+    <required>true</required>
+  </field>
+  <field>
+    <name>description</name>
+    <title>Description</title>
+    <type>text</type>
+    <required>false</required>
+    <length>255</length>
+  </field>
+  <field>
+    <name>storage_type</name>
+    <title>Storage Type</title>
+    <type>varchar</type>
+    <required>false</required>
+    <length>255</length>
+  </field>
+  <field>
+    <name>storage_configuration</name>
+    <title>Storage Configuration</title>
+    <type>text</type>
+    <required>false</required>
+    <length>255</length>
+    <serialize>JSON</serialize>
+  </field>
+  <field>
+    <name>status</name>
+    <title>Status</title>
+    <type>int unsigned</type>
+    <required>false</required>
+    <default>0</default>
+  </field>
+  <field>
+    <name>source_file</name>
+    <title>Source File</title>
+    <type>varchar</type>
+    <required>false</required>
+    <length>255</length>
+  </field>
+
+</table>

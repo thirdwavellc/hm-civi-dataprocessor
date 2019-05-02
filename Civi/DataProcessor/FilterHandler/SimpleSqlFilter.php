@@ -47,9 +47,11 @@ class SimpleSqlFilter extends AbstractFilterHandler {
     $this->is_required = $is_required;
 
     $this->dataSource = $this->data_processor->getDataSourceByName($configuration['datasource']);
-    $this->fieldSpecification  =  clone $this->dataSource->getAvailableFilterFields()->getFieldSpecificationByName($configuration['field']);
-    $this->fieldSpecification->alias = $alias;
-    $this->fieldSpecification->title = $title;
+    if ($this->dataSource) {
+      $this->fieldSpecification  =  clone $this->dataSource->getAvailableFilterFields()->getFieldSpecificationByName($configuration['field']);
+      $this->fieldSpecification->alias = $alias;
+      $this->fieldSpecification->title = $title;
+    }
   }
 
   /**

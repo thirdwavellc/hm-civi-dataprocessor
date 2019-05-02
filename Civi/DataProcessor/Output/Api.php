@@ -147,10 +147,11 @@ class Api implements OutputInterface, API_ProviderInterface, EventSubscriberInte
         if (!$dao->fetch()) {
           throw new \API_Exception("Could not find a data processor");
         }
-        $dataProcessor = \CRM_Dataprocessor_BAO_DataProcessor::getDataProcessorById($dao->data_processor_id);
+        $dataProcessor = civicrm_api3('DataProcessor', 'getsingle', array('id' => $dao->data_processor_id));
+        $dataProcessorClass = \CRM_Dataprocessor_BAO_DataProcessor::dataProcessorToClass($dataProcessor);
 
 
-        foreach ($dataProcessor->getDataFlow()->getOutputFieldHandlers() as $outputFieldHandler) {
+        foreach ($dataProcessorClass->getDataFlow()->getOutputFieldHandlers() as $outputFieldHandler) {
           $fieldSpec = $outputFieldHandler->getOutputFieldSpecification();
           $type = \CRM_Utils_Type::T_STRING;
           if (isset($types[$fieldSpec->type])) {
@@ -171,7 +172,7 @@ class Api implements OutputInterface, API_ProviderInterface, EventSubscriberInte
           }
           $result['values'][$fieldSpec->alias] = $field;
         }
-        foreach($dataProcessor->getFilterHandlers() as $filterHandler) {
+        foreach($dataProcessorClass->getFilterHandlers() as $filterHandler) {
           $fieldSpec = $filterHandler->getFieldSpecification();
           $type = \CRM_Utils_Type::T_STRING;
           if (isset($types[$fieldSpec->type])) {
@@ -236,10 +237,11 @@ class Api implements OutputInterface, API_ProviderInterface, EventSubscriberInte
     if (strtolower($dao->api_count_action) == $apiRequest['action']) {
       $isCountAction = TRUE;
     }
-    $dataProcessor = \CRM_Dataprocessor_BAO_DataProcessor::getDataProcessorById($dao->data_processor_id);
+    $dataProcessor = civicrm_api3('DataProcessor', 'getsingle', array('id' => $dao->data_processor_id));
+    $dataProcessorClass = \CRM_Dataprocessor_BAO_DataProcessor::dataProcessorToClass($dataProcessor);
 
     $params = $apiRequest['params'];
-    foreach($dataProcessor->getFilterHandlers() as $filter) {
+    foreach($dataProcessorClass->getFilterHandlers() as $filter) {
       $filterSpec = $filter->getFieldSpecification();
       if ($filter->isRequired() && !isset($params[$filterSpec->alias])) {
         throw new \API_Exception('Field '.$filterSpec->alias.' is required');
@@ -262,27 +264,27 @@ class Api implements OutputInterface, API_ProviderInterface, EventSubscriberInte
     }
 
     if ($isCountAction) {
-      $count = $dataProcessor->getDataFlow()->recordCount();
+      $count = $dataProcessorClass->getDataFlow()->recordCount();
       return array('result' => $count, 'is_error' => 0);
     } else {
       $options = _civicrm_api3_get_options_from_params($apiRequest['params']);
 
       if (isset($options['limit']) && $options['limit'] > 0) {
-        $dataProcessor->getDataFlow()->setLimit($options['limit']);
+        $dataProcessorClass->getDataFlow()->setLimit($options['limit']);
       }
       if (isset($options['offset'])) {
-        $dataProcessor->getDataFlow()->setOffset($options['offset']);
+        $dataProcessorClass->getDataFlow()->setOffset($options['offset']);
       }
       if (isset($options['sort'])) {
         $sort = explode(', ', $options['sort']);
         foreach ($sort as $index => &$sortString) {
           // Get sort field and direction
           list($sortField, $dir) = array_pad(explode(' ', $sortString), 2, 'ASC');
-          $dataProcessor->getDataFlow()->addSort($sortField, $dir);
+          $dataProcessorClass->getDataFlow()->addSort($sortField, $dir);
         }
       }
 
-      $records = $dataProcessor->getDataFlow()->allRecords();
+      $records = $dataProcessorClass->getDataFlow()->allRecords();
       $values = array();
       foreach($records as $idx => $record) {
         foreach($record as $fieldname => $field) {
@@ -295,7 +297,7 @@ class Api implements OutputInterface, API_ProviderInterface, EventSubscriberInte
         'is_error' => 0,
       );
       if (isset($apiRequest['params']['debug']) && $apiRequest['params']['debug']) {
-        $return['debug_info'] = $dataProcessor->getDataFlow()->getDebugInformation();
+        $return['debug_info'] = $dataProcessorClass->getDataFlow()->getDebugInformation();
       }
       return $return;
     }

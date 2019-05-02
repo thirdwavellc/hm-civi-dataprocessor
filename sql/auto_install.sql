@@ -66,6 +66,7 @@ DROP TABLE IF EXISTS `civicrm_data_processor_source`;
 DROP TABLE IF EXISTS `civicrm_data_processor_output`;
 DROP TABLE IF EXISTS `civicrm_data_processor_filter`;
 DROP TABLE IF EXISTS `civicrm_data_processor_field`;
+DROP TABLE IF EXISTS `civicrm_data_processor`;
 
 SET FOREIGN_KEY_CHECKS=1;
 -- /*******************************************************
@@ -73,6 +74,33 @@ SET FOREIGN_KEY_CHECKS=1;
 -- * Create new tables
 -- *
 -- *******************************************************/
+
+-- /*******************************************************
+-- *
+-- * civicrm_data_processor
+-- *
+-- *******************************************************/
+CREATE TABLE `civicrm_data_processor` (
+
+
+     `id` int unsigned NOT NULL AUTO_INCREMENT  COMMENT 'Unique DataProcessor ID',
+     `name` varchar(255) NULL   ,
+     `title` varchar(255) NOT NULL   ,
+     `type` varchar(255) NOT NULL   ,
+     `configuration` text NULL   ,
+     `aggregation` text NULL   ,
+     `is_active` tinyint NOT NULL   ,
+     `description` text NULL   ,
+     `storage_type` varchar(255) NULL   ,
+     `storage_configuration` text NULL   ,
+     `status` int unsigned NULL  DEFAULT 0 ,
+     `source_file` varchar(255) NULL    
+,
+        PRIMARY KEY (`id`)
+ 
+ 
+ 
+)    ;
 
 -- /*******************************************************
 -- *

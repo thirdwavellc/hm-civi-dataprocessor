@@ -16,9 +16,10 @@ class CRM_Dataprocessor_Utils_DataSourceFields {
    * @throws \Exception
    */
   public static function getAvailableFieldsInDataSources($dataProcessorId) {
-    $dataProcessor = CRM_Dataprocessor_BAO_DataProcessor::getDataProcessorById($dataProcessorId);
+    $dataProcessor = civicrm_api3('DataProcessor', 'getsingle', array('id' => $dataProcessorId));
+    $dataProcessorClass = \CRM_Dataprocessor_BAO_DataProcessor::dataProcessorToClass($dataProcessor);
     $fieldSelect = array();
-    foreach($dataProcessor->getDataSources() as $dataSource) {
+    foreach($dataProcessorClass->getDataSources() as $dataSource) {
       $fieldSelect = array_merge($fieldSelect, self::getAvailableFieldsInDataSource($dataSource, $dataSource->getSourceTitle().' :: ', $dataSource->getSourceName().'::'));
     }
     return $fieldSelect;

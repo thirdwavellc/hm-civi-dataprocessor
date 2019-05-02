@@ -457,6 +457,12 @@ function _dataprocessor_civix_civicrm_alterSettingsFolders(&$metaDataFolders = N
 
 function _dataprocessor_civix_civicrm_entityTypes(&$entityTypes) {
   $entityTypes = array_merge($entityTypes, array (
+    'CRM_Dataprocessor_DAO_DataProcessor' => 
+    array (
+      'name' => 'DataProcessor',
+      'class' => 'CRM_Dataprocessor_DAO_DataProcessor',
+      'table' => 'civicrm_data_processor',
+    ),
     'CRM_Dataprocessor_DAO_DataProcessorField' => 
     array (
       'name' => 'DataProcessorField',

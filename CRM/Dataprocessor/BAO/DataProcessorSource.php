@@ -14,7 +14,7 @@ class CRM_Dataprocessor_BAO_DataProcessorSource extends CRM_Dataprocessor_DAO_Da
     $sql = "SELECT COUNT(*) FROM `civicrm_data_processor_source` WHERE `name` = %1 AND `data_processor_id` = %2";
     $sqlParams[1] = array($name, 'String');
     $sqlParams[2] = array($data_processor_id, 'String');
-    if (isset($id)) {
+    if ($id) {
       $sql .= " AND `id` != %3";
       $sqlParams[3] = array($id, 'Integer');
     }

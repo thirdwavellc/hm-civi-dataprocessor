@@ -11,6 +11,13 @@ class CRM_Dataprocessor_Form_DataProcessor extends CRM_Core_Form {
 
   private $dataProcessorId;
 
+  private $dataProcessor;
+
+  /**
+   * @var \Civi\DataProcessor\ProcessorType\AbstractProcessorType
+   */
+  private $dataProcessorClass;
+
   private $currentUrl;
 
   /**
@@ -26,12 +33,12 @@ class CRM_Dataprocessor_Form_DataProcessor extends CRM_Core_Form {
     $session = CRM_Core_Session::singleton();
     switch($this->_action) {
       case CRM_Core_Action::DISABLE:
-        CRM_Dataprocessor_BAO_DataProcessor::disable($this->dataProcessorId);
+        civicrm_api3('DataProcessor', 'create', array('id' => $this->dataProcessorId, 'is_active' => 0));
         $session->setStatus('Data Processor disabled', 'Disable', 'success');
         CRM_Utils_System::redirect($session->readUserContext());
         break;
       case CRM_Core_Action::ENABLE:
-        CRM_Dataprocessor_BAO_DataProcessor::enable($this->dataProcessorId);
+        civicrm_api3('DataProcessor', 'create', array('id' => $this->dataProcessorId, 'is_active' => 1));
         $session->setStatus('Data Processor enabled', 'Enable', 'success');
         CRM_Utils_System::redirect($session->readUserContext());
         break;
@@ -41,11 +48,14 @@ class CRM_Dataprocessor_Form_DataProcessor extends CRM_Core_Form {
         CRM_Utils_System::redirect($session->readUserContext());
         break;
       case CRM_Core_Action::EXPORT:
-        $this->assign('export', json_encode(CRM_Dataprocessor_BAO_DataProcessor::export($this->dataProcessorId), JSON_PRETTY_PRINT));
+        $this->assign('export', json_encode(CRM_Dataprocessor_Utils_Importer::export($this->dataProcessorId), JSON_PRETTY_PRINT));
         break;
     }
 
     if ($this->dataProcessorId) {
+      $this->dataProcessor = civicrm_api3('DataProcessor', 'getsingle', array('id' => $this->dataProcessorId));
+      $this->dataProcessorClass = CRM_Dataprocessor_BAO_DataProcessor::dataProcessorToClass($this->dataProcessor);
+      $this->assign('dataProcessor', $this->dataProcessor);
       $this->addSources();
       $this->addFields();
       $this->addFilters();
@@ -95,14 +105,14 @@ class CRM_Dataprocessor_Form_DataProcessor extends CRM_Core_Form {
   }
 
   protected function addAggregateFields() {
-    $fields = array();
-    $aggregationFields = CRM_Dataprocessor_BAO_DataProcessor::getAvailableAggregationFields($this->dataProcessorId);
     $aggregationFieldsFormatted = array();
-    foreach($aggregationFields as $field) {
-      $aggregationFieldsFormatted[$field->fieldSpecification->alias] = $field->dataSource->getSourceTitle()." :: ".$field->fieldSpecification->title;
+    foreach($this->dataProcessorClass->getDataSources() as $dataSource) {
+      foreach($dataSource->getAvailableAggregationFields() as $field) {
+        $aggregationFieldsFormatted[$field->fieldSpecification->alias] = $field->dataSource->getSourceTitle()." :: ".$field->fieldSpecification->title;
+      }
     }
-    $dataProcessor = CRM_Dataprocessor_BAO_DataProcessor::getValues(array('id' => $this->dataProcessorId));
-    $aggregation = $dataProcessor[$this->dataProcessorId]['aggregation'];
+    $aggregation = $this->dataProcessor['aggregation'];
+    $fields = array();
     foreach($aggregation as $alias) {
       $fields[$alias] = $aggregationFieldsFormatted[$alias];
     }
@@ -176,7 +186,7 @@ class CRM_Dataprocessor_Form_DataProcessor extends CRM_Core_Form {
   public function postProcess() {
     $session = CRM_Core_Session::singleton();
     if ($this->_action == CRM_Core_Action::DELETE) {
-      CRM_Dataprocessor_BAO_DataProcessor::deleteWithId($this->dataProcessorId);
+      civicrm_api3('DataProcessor', 'delete', array('id' => $this->dataProcessorId));
       $session->setStatus(E::ts('Data Processor removed'), E::ts('Removed'), 'success');
       $redirectUrl = $session->popUserContext();
       CRM_Utils_System::redirect($redirectUrl);
@@ -191,7 +201,7 @@ class CRM_Dataprocessor_Form_DataProcessor extends CRM_Core_Form {
       $params['id'] = $this->dataProcessorId;
     }
 
-    $result = CRM_Dataprocessor_BAO_DataProcessor::add($params);
+    $result = civicrm_api3('DataProcessor', 'create', $params);
     $redirectUrl = CRM_Utils_System::url('civicrm/dataprocessor/form/edit', array('reset' => 1, 'action' => 'update', 'id' => $result['id']));
     CRM_Utils_System::redirect($redirectUrl);
   }
@@ -227,18 +237,17 @@ class CRM_Dataprocessor_Form_DataProcessor extends CRM_Core_Form {
    * @access protected
    */
   protected function setUpdateDefaults(&$defaults) {
-    $dataProcessor = CRM_Dataprocessor_BAO_DataProcessor::getValues(array('id' => $this->dataProcessorId));
-    if (!empty($dataProcessor) && !empty($this->dataProcessorId)) {
-      $defaults['title'] = $dataProcessor[$this->dataProcessorId]['title'];
-      if (isset($dataProcessor[$this->dataProcessorId]['name'])) {
-        $defaults['name'] = $dataProcessor[$this->dataProcessorId]['name'];
+    if (!empty($this->dataProcessor) && !empty($this->dataProcessorId)) {
+      $defaults['title'] = $this->dataProcessor['title'];
+      if (isset($this->dataProcessor['name'])) {
+        $defaults['name'] = $this->dataProcessor['name'];
       }
-      if (isset($dataProcessor[$this->dataProcessorId]['description'])) {
-        $defaults['description'] = $dataProcessor[$this->dataProcessorId]['description'];
+      if (isset($this->dataProcessor['description'])) {
+        $defaults['description'] = $this->dataProcessor['description'];
       } else {
         $defaults['description'] = '';
       }
-      $defaults['is_active'] = $dataProcessor[$this->dataProcessorId]['is_active'];
+      $defaults['is_active'] = $this->dataProcessor['is_active'];
     }
   }
 
@@ -258,9 +267,9 @@ class CRM_Dataprocessor_Form_DataProcessor extends CRM_Core_Form {
       $id = $fields['id'];
     }
     if (empty($fields['name'])) {
-      $fields['name'] = CRM_Dataprocessor_BAO_DataProcessor::buildNameFromTitle($fields['title']);
+      $fields['name'] = CRM_Dataprocessor_BAO_DataProcessor::checkName($fields['title'], $id);
     }
-    if (!CRM_Dataprocessor_BAO_DataProcessor::isNameValid($fields['name'], $id)) {
+    if (!CRM_Dataprocessor_BAO_DataProcessorSource::isNameValid($fields['name'], $id)) {
       $errors['name'] = E::ts('There is already a data processor with this name');
       return $errors;
     }

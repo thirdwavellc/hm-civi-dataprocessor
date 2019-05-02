@@ -165,11 +165,11 @@ abstract class CRM_DataprocessorSearch_Form_AbstractSearch extends CRM_Dataproce
 
   protected function runExport($export_id) {
     $factory = dataprocessor_get_factory();
-    self::applyFilters($this->dataProcessor, $this->_formValues);
+    self::applyFilters($this->dataProcessorClass, $this->_formValues);
     $output = civicrm_api3("DataProcessorOutput", "getsingle", array('id' => $export_id));
     $outputClass = $factory->getOutputByName($output['type']);
     if ($outputClass instanceof \Civi\DataProcessor\Output\ExportOutputInterface) {
-      $outputClass->downloadExport($this->dataProcessor, $this->dataProcessorBAO, $output, $this->_formValues);
+      $outputClass->downloadExport($this->dataProcessorClass, $this->dataProcessor, $output, $this->_formValues);
     }
   }
 
@@ -190,9 +190,9 @@ abstract class CRM_DataprocessorSearch_Form_AbstractSearch extends CRM_Dataproce
     $this->assign('id_field', $id_field);
 
     $offset = ($pageId - 1) * $limit;
-    $this->dataProcessor->getDataFlow()->setLimit($limit);
-    $this->dataProcessor->getDataFlow()->setOffset($offset);
-    self::applyFilters($this->dataProcessor, $this->_formValues);
+    $this->dataProcessorClass->getDataFlow()->setLimit($limit);
+    $this->dataProcessorClass->getDataFlow()->setOffset($offset);
+    self::applyFilters($this->dataProcessorClass, $this->_formValues);
 
     // Set the sort
     $sortDirection = 'ASC';
@@ -201,19 +201,19 @@ abstract class CRM_DataprocessorSearch_Form_AbstractSearch extends CRM_Dataproce
       if ($this->sort->getCurrentSortDirection() == CRM_Utils_Sort::DESCENDING) {
         $sortDirection = 'DESC';
       }
-      $this->dataProcessor->getDataFlow()->addSort($sortField['name'], $sortDirection);
+      $this->dataProcessorClass->getDataFlow()->addSort($sortField['name'], $sortDirection);
     }
 
 
     $pagerParams = $this->getPagerParams();
-    $pagerParams['total'] = $this->dataProcessor->getDataFlow()->recordCount();
+    $pagerParams['total'] = $this->dataProcessorClass->getDataFlow()->recordCount();
     $pagerParams['pageID'] = $pageId;
     $this->pager = new CRM_Utils_Pager($pagerParams);
     $this->assign('pager', $this->pager);
 
     $i=0;
     try {
-      while($record = $this->dataProcessor->getDataFlow()->nextRecord()) {
+      while($record = $this->dataProcessorClass->getDataFlow()->nextRecord()) {
         $i ++;
         $row = array();
         $row['id'] = $record[$id_field]->formattedValue;
@@ -245,7 +245,7 @@ abstract class CRM_DataprocessorSearch_Form_AbstractSearch extends CRM_Dataproce
 
     $this->addElement('checkbox', 'toggleSelect', NULL, NULL, ['class' => 'select-rows']);
     $this->assign('rows', $rows);
-    $this->assign('debug_info', $this->dataProcessor->getDataFlow()->getDebugInformation());
+    $this->assign('debug_info', $this->dataProcessorClass->getDataFlow()->getDebugInformation());
     if ($this->usePrevNextCache()) {
       $cacheKey = "civicrm search {$this->controller->_key}";
       CRM_DataprocessorSearch_Utils_PrevNextCache::fillWithArray($cacheKey, $prevnextData);
@@ -263,7 +263,7 @@ abstract class CRM_DataprocessorSearch_Form_AbstractSearch extends CRM_Dataproce
     $idFieldVisible = $this->isIdFieldVisible();
     $columnHeaders = array();
     $sortColumnNr = 1;
-    foreach($this->dataProcessor->getDataFlow()->getOutputFieldHandlers() as $outputFieldHandler) {
+    foreach($this->dataProcessorClass->getDataFlow()->getOutputFieldHandlers() as $outputFieldHandler) {
       $field = $outputFieldHandler->getOutputFieldSpecification();
       $hiddenField = true;
       if ($field->alias != $id_field) {
@@ -315,9 +315,9 @@ abstract class CRM_DataprocessorSearch_Form_AbstractSearch extends CRM_Dataproce
       $outputClass = $factory->getOutputByName(($output['type']));
       if ($outputClass instanceof \Civi\DataProcessor\Output\ExportOutputInterface) {
         $otherOutput = array();
-        $otherOutput['title'] = $outputClass->getTitleForExport($output, $this->dataProcessorBAO);
+        $otherOutput['title'] = $outputClass->getTitleForExport($output, $this->dataProcessor);
         $otherOutput['url'] = $this->currentUrl.'&export_id='.$output['id'];
-        $otherOutput['icon'] = $outputClass->getExportFileIcon($output, $this->dataProcessorBAO);
+        $otherOutput['icon'] = $outputClass->getExportFileIcon($output, $this->dataProcessor);
         $otherOutputs[] = $otherOutput;
       }
     }

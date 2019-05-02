@@ -9,19 +9,19 @@ use CRM_Dataprocessor_ExtensionUtil as E;
 abstract class CRM_Dataprocessor_Form_Output_AbstractUIOutputForm extends CRM_Core_Form_Search {
 
   /**
-   * @var \Civi\DataProcessor\ProcessorType\AbstractProcessorType;
+   * @var array
    */
   protected $dataProcessor;
+
+  /**
+   * @var \Civi\DataProcessor\ProcessorType\AbstractProcessorType;
+   */
+  protected $dataProcessorClass;
 
   /**
    * @var int
    */
   protected $dataProcessorId;
-
-  /**
-   * @var array
-   */
-  protected $dataProcessorBAO;
 
   /**
    * @var \CRM_Dataprocessor_BAO_Output
@@ -74,11 +74,10 @@ abstract class CRM_Dataprocessor_Form_Output_AbstractUIOutputForm extends CRM_Co
       if (!$dao->fetch()) {
         throw new \Exception('Could not find Data Processor "' . $dataProcessorName.'"');
       }
-      $this->dataProcessor = CRM_Dataprocessor_BAO_DataProcessor::getDataProcessorById($dao->data_processor_id);
-      $this->dataProcessorId = $dao->data_processor_id;
 
-      $dataProcessorBAO = CRM_Dataprocessor_BAO_DataProcessor::getValues(array('id' => $this->dataProcessorId));
-      $this->dataProcessorBAO = $dataProcessorBAO[$this->dataProcessorId];
+      $this->dataProcessor = civicrm_api3('DataProcessor', 'getsingle', array('id' => $dao->data_processor_id));
+      $this->dataProcessorClass = \CRM_Dataprocessor_BAO_DataProcessor::dataProcessorToClass($this->dataProcessor);
+      $this->dataProcessorId = $dao->data_processor_id;
 
       $output = CRM_Dataprocessor_BAO_Output::getValues(['id' => $dao->output_id]);
       $this->dataProcessorOutput = $output[$dao->output_id];
@@ -96,8 +95,8 @@ abstract class CRM_Dataprocessor_Form_Output_AbstractUIOutputForm extends CRM_Co
    * @return bool
    */
   protected function hasRequiredFilters() {
-    if ($this->dataProcessor->getFilterHandlers()) {
-      foreach ($this->dataProcessor->getFilterHandlers() as $filter) {
+    if ($this->dataProcessorClass->getFilterHandlers()) {
+      foreach ($this->dataProcessorClass->getFilterHandlers() as $filter) {
         if ($filter->isRequired()) {
           return true;
         }
@@ -113,8 +112,8 @@ abstract class CRM_Dataprocessor_Form_Output_AbstractUIOutputForm extends CRM_Co
    */
   protected function validateFilters() {
     $errors = array();
-    if ($this->dataProcessor->getFilterHandlers()) {
-      foreach ($this->dataProcessor->getFilterHandlers() as $filter) {
+    if ($this->dataProcessorClass->getFilterHandlers()) {
+      foreach ($this->dataProcessorClass->getFilterHandlers() as $filter) {
         $errors = array_merge($errors, $filter->validateSubmittedFilterParams($this->_formValues));
       }
     }
@@ -139,8 +138,8 @@ abstract class CRM_Dataprocessor_Form_Output_AbstractUIOutputForm extends CRM_Co
    */
   protected function buildCriteriaForm() {
     $filterElements = array();
-    if ($this->dataProcessor->getFilterHandlers()) {
-      foreach ($this->dataProcessor->getFilterHandlers() as $filterHandler) {
+    if ($this->dataProcessorClass->getFilterHandlers()) {
+      foreach ($this->dataProcessorClass->getFilterHandlers() as $filterHandler) {
         $fieldSpec = $filterHandler->getFieldSpecification();
         if (!$fieldSpec) {
           continue;

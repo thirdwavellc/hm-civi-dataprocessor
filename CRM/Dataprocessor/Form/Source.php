@@ -11,10 +11,12 @@ class CRM_Dataprocessor_Form_Source extends CRM_Core_Form {
 
   private $dataProcessorId;
 
+  private $dataProcessor;
+
   /**
    * @var Civi\DataProcessor\ProcessorType\AbstractProcessorType
    */
-  private $dataProcessor;
+  private $dataProcessorClass;
 
   private $id;
 
@@ -54,7 +56,8 @@ class CRM_Dataprocessor_Form_Source extends CRM_Core_Form {
     $this->dataProcessorId = CRM_Utils_Request::retrieve('data_processor_id', 'Integer');
     $this->assign('data_processor_id', $this->dataProcessorId);
     if ($this->dataProcessorId) {
-      $this->dataProcessor = CRM_Dataprocessor_BAO_DataProcessor::getDataProcessorById($this->dataProcessorId);
+      $this->dataProcessor = civicrm_api3('DataProcessor', 'getsingle', array('id' => $this->dataProcessorId));
+      $this->dataProcessorClass = CRM_Dataprocessor_BAO_DataProcessor::dataProcessorToClass($this->dataProcessor);
     }
 
     $this->id = CRM_Utils_Request::retrieve('id', 'Integer');
@@ -143,8 +146,7 @@ class CRM_Dataprocessor_Form_Source extends CRM_Core_Form {
         ));
         if ($this->joinClass && $this->joinClass->hasConfiguration()) {
           $joinableToSources = array();
-          $dataProcessor = CRM_Dataprocessor_BAO_DataProcessor::getDataProcessorById($this->dataProcessorId);
-          foreach($dataProcessor->getDataSources() as $source) {
+          foreach($this->dataProcessorClass->getDataSources() as $source) {
             if ($this->sourceClass && $this->sourceClass->getSourceName() == $source->getSourceName()) {
               break;
             }
@@ -225,24 +227,6 @@ class CRM_Dataprocessor_Form_Source extends CRM_Core_Form {
     }
 
     $result = civicrm_api3('DataProcessorSource', 'create', $params);
-
-    if (!$this->isFirstDataSource && $this->_action == CRM_Core_Action::ADD) {
-      $joinClass = $factory->getJoinByName($values['join_type']);
-      if ($joinClass->getConfigurationUrl()) {
-        $joinUrl = CRM_Utils_System::url($joinClass->getConfigurationUrl(), [
-          'reset' => 1,
-          'action' => 'add',
-          'source_id' => $result['id'],
-          'data_processor_id' => $this->dataProcessorId
-        ]);
-        $session->pushUserContext($backUrl);
-        $redirectUrl = $joinUrl;
-      } else {
-        $session->pushUserContext($backUrl);
-      }
-    } elseif ($this->_action == CRM_Core_Action::ADD) {
-      $session->pushUserContext($backUrl);
-    }
     CRM_Utils_System::redirect($redirectUrl);
     parent::postProcess();
   }
