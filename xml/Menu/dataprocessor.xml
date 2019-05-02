@@ -43,13 +43,6 @@
     <access_arguments>administer CiviCRM</access_arguments>
   </item>
   <item>
-    <path>civicrm/dataprocessor/form/filter/simplefilter</path>
-    <page_callback>CRM_Dataprocessor_Form_Filter_SimpleFilter</page_callback>
-    <title>DataProcessor</title>
-    <access_arguments>access CiviCRM</access_arguments>
-    <access_arguments>administer CiviCRM</access_arguments>
-  </item>
-  <item>
     <path>civicrm/dataprocessor/form/aggregate_field</path>
     <page_callback>CRM_Dataprocessor_Form_AggregateField</page_callback>
     <title>DataProcessor</title>
@@ -59,48 +52,6 @@
   <item>
     <path>civicrm/dataprocessor/form/output</path>
     <page_callback>CRM_Dataprocessor_Form_Output</page_callback>
-    <title>DataProcessor</title>
-    <access_arguments>access CiviCRM</access_arguments>
-    <access_arguments>administer CiviCRM</access_arguments>
-  </item>
-  <item>
-    <path>civicrm/dataprocessor/form/joins/simple_join</path>
-    <page_callback>CRM_Dataprocessor_Form_Join_Simple</page_callback>
-    <title>DataProcessor</title>
-    <access_arguments>access CiviCRM</access_arguments>
-    <access_arguments>administer CiviCRM</access_arguments>
-  </item>
-  <item>
-    <path>civicrm/dataprocessor/form/source/configuration</path>
-    <page_callback>CRM_Dataprocessor_Form_Source_Configuration</page_callback>
-    <title>DataProcessor</title>
-    <access_arguments>access CiviCRM</access_arguments>
-    <access_arguments>administer CiviCRM</access_arguments>
-  </item>
-  <item>
-    <path>civicrm/dataprocessor/form/source/csv</path>
-    <page_callback>CRM_Dataprocessor_Form_Source_Csv</page_callback>
-    <title>DataProcessor</title>
-    <access_arguments>access CiviCRM</access_arguments>
-    <access_arguments>administer CiviCRM</access_arguments>
-  </item>
-  <item>
-    <path>civicrm/dataprocessor/form/output/api</path>
-    <page_callback>CRM_Dataprocessor_Form_Output_API</page_callback>
-    <title>DataProcessor</title>
-    <access_arguments>access CiviCRM</access_arguments>
-    <access_arguments>administer CiviCRM</access_arguments>
-  </item>
-  <item>
-    <path>civicrm/dataprocessor/form/output/contact_search</path>
-    <page_callback>CRM_DataprocessorSearch_Form_OutputConfiguration_ContactSearch</page_callback>
-    <title>DataProcessor</title>
-    <access_arguments>access CiviCRM</access_arguments>
-    <access_arguments>administer CiviCRM</access_arguments>
-  </item>
-  <item>
-    <path>civicrm/dataprocessor/form/output/activity_search</path>
-    <page_callback>CRM_DataprocessorSearch_Form_OutputConfiguration_ActivitySearch</page_callback>
     <title>DataProcessor</title>
     <access_arguments>access CiviCRM</access_arguments>
     <access_arguments>administer CiviCRM</access_arguments>

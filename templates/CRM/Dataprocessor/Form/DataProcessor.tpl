@@ -24,10 +24,19 @@
 <div class="crm-block crm-form-block crm-data-processor_title-block">
   <div class="crm-section">
     <div class="label">{$form.title.label}</div>
-    <div class="content">{$form.title.html}</div>
+    <div class="content">
+      {$form.title.html}
+      <span class="">
+        {ts}System name:{/ts}&nbsp;
+        <span id="systemName" style="font-style: italic;">{if ($dataProcessor)}{$dataProcessor.name}{/if}</span>
+        <a href="javascript:void(0);" onclick="jQuery('#nameSection').removeClass('hiddenElement'); jQuery(this).parent().addClass('hiddenElement'); return false;">
+          {ts}Change{/ts}
+        </a>
+      </span>
+    </div>
     <div class="clear"></div>
   </div>
-  <div class="crm-section">
+  <div id="nameSection" class="crm-section hiddenElement">
     <div class="label">{$form.name.label}</div>
     <div class="content">
       {$form.name.html}
@@ -54,6 +63,26 @@
     {include file="CRM/Dataprocessor/Form/DataProcessorBlocks/Fields.tpl"}
     {include file="CRM/Dataprocessor/Form/DataProcessorBlocks/Outputs.tpl"}
   {/if}
+
+  <script type="text/javascript">
+    {literal}
+    CRM.$(function($) {
+      var id = {/literal}{if ($dataProcessor)}{$dataProcessor.id}{else}false{/if}{literal};
+
+      $('#title').on('blur', function() {
+        var title = $('#title').val();
+        if ($('#nameSection').hasClass('hiddenElement') && !id) {
+          CRM.api3('DataProcessor', 'check_name', {
+            'title': title
+          }).done(function (result) {
+            $('#systemName').html(result.name);
+            $('#name').val(result.name);
+          });
+        }
+      });
+    });
+    {/literal}
+  </script>
 
 {/if}
 

@@ -355,15 +355,6 @@ abstract class AbstractCivicrmEntitySource extends AbstractSource {
   }
 
   /**
-   * Returns URL to configuration screen
-   *
-   * @return false|string
-   */
-  public function getConfigurationUrl() {
-    return 'civicrm/dataprocessor/form/source/configuration';
-  }
-
-  /**
    * @return \Civi\DataProcessor\DataFlow\SqlDataFlow
    */
   public function getPrimaryDataFlow() {

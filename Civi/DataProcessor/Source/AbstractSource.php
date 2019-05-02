@@ -6,10 +6,11 @@
 
 namespace Civi\DataProcessor\Source;
 
-
 use Civi\DataProcessor\DataFlow\MultipleDataFlows\JoinInterface;
 use Civi\DataProcessor\DataSpecification\FieldSpecification;
 use Civi\DataProcessor\ProcessorType\AbstractProcessorType;
+
+use CRM_Dataprocessor_ExtensionUtil as E;
 
 abstract class AbstractSource implements SourceInterface {
 
@@ -179,6 +180,145 @@ abstract class AbstractSource implements SourceInterface {
    */
   public function getAvailableAggregationFields() {
     return array();
+  }
+
+  /**
+   * Returns true when this source has additional configuration
+   *
+   * @return bool
+   */
+  public function hasConfiguration() {
+    return count($this->getAvailableFilterFields()->getFields()) > 0 ? true : false;
+  }
+
+  /**
+   * Returns an array with the names of required configuration filters.
+   * Those filters are displayed as required to the user
+   *
+   * @return array
+   */
+  protected function requiredConfigurationFilters() {
+    return array();
+  }
+
+  /**
+   * When this source has additional configuration you can add
+   * the fields on the form with this function.
+   *
+   * @param \CRM_Core_Form $form
+   * @param array $source
+   */
+  public function buildConfigurationForm(\CRM_Core_Form $form, $source=array()) {
+    $fields = array();
+    $required_fields = array();
+    $requiredFilters = $this->requiredConfigurationFilters();
+    foreach($this->getAvailableFilterFields()->getFields() as $fieldSpec) {
+      $alias = $fieldSpec->name;
+      $isRequired = false;
+      if (in_array($alias, $requiredFilters)) {
+        $isRequired = true;
+      }
+      switch ($fieldSpec->type) {
+        case 'Boolean':
+          if ($isRequired) {
+            $required_fields[$alias] = $fieldSpec->title;
+          } else {
+            $fields[$alias] = $fieldSpec->title;
+          }
+          $form->addElement('select', "{$alias}_op", ts('Operator:'), [
+            '=' => E::ts('Is equal to'),
+            '!=' => E::ts('Is not equal to'),
+          ]);
+          if (!empty($fieldSpec->getOptions())) {
+            $form->addElement('select', "{$alias}_value", $fieldSpec->title, array('' => E::ts(' - Select - ')) + $fieldSpec->getOptions());
+          }
+          break;
+        default:
+          if ($fieldSpec->getOptions()) {
+            if ($isRequired) {
+              $required_fields[$alias] = $fieldSpec->title;
+            } else {
+              $fields[$alias] = $fieldSpec->title;
+            }
+            $form->addElement('select', "{$alias}_op", ts('Operator:'), [
+              'IN' => E::ts('Is one of'),
+              'NOT IN' => E::ts('Is not one of'),
+            ]);
+            $form->addElement('select', "{$alias}_value", $fieldSpec->title, $fieldSpec->getOptions(), array(
+              'style' => 'min-width:250px',
+              'class' => 'crm-select2 huge',
+              'multiple' => 'multiple',
+              'placeholder' => E::ts('- select -'),
+            ));
+          }
+      }
+    }
+    $form->assign('filter_fields', $fields);
+    $form->assign('filter_required_fields', $required_fields);
+
+    $defaults = array();
+    if (isset($source['configuration']['filter'])) {
+      foreach($source['configuration']['filter'] as $alias => $filter) {
+        $defaults[$alias.'_op'] = $filter['op'];
+        $defaults[$alias.'_value'] = $filter['value'];
+      }
+    }
+    $form->setDefaults($defaults);
+  }
+
+  /**
+   * When this source has configuration specify the template file name
+   * for the configuration form.
+   *
+   * @return false|string
+   */
+  public function getConfigurationTemplateFileName() {
+    return "CRM/Dataprocessor/Form/Source/Configuration.tpl";
+  }
+
+
+  /**
+   * Process the submitted values and create a configuration array
+   *
+   * @param $submittedValues
+   * @return array
+   */
+  public function processConfiguration($submittedValues) {
+    $configuration = array();
+    $filter_config = array();
+    foreach($this->getAvailableFilterFields()->getFields() as $fieldSpec) {
+      $alias = $fieldSpec->name;
+      if ($this->valueSubmittedAndNotEmpty($alias.'_value', $submittedValues)) {
+        $filter_config[$alias] = array(
+          'op' => $submittedValues[$alias.'_op'],
+          'value' => $submittedValues[$alias.'_value']
+        );
+      }
+    }
+    $configuration['filter'] = $filter_config;
+
+    return $configuration;
+  }
+
+  /**
+   * Checks whether a value is submitted and not empty.
+   *
+   * @param $field
+   * @param $values
+   *
+   * @return bool
+   */
+  protected function valueSubmittedAndNotEmpty($field, $values) {
+    if (!isset($values[$field])) {
+      return false;
+    }
+    if (is_array($values[$field]) && count($values[$field]) === 0) {
+      return false;
+    }
+    if (is_string($values[$field]) && strlen($values[$field]) === 0) {
+      return false;
+    }
+    return true;
   }
 
 }

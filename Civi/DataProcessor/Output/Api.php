@@ -13,6 +13,8 @@ use Civi\API\Provider\ProviderInterface as API_ProviderInterface;
 use Civi\DataProcessor\ProcessorType\AbstractProcessorType;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
+use \CRM_Dataprocessor_ExtensionUtil as E;
+
 class Api implements OutputInterface, API_ProviderInterface, EventSubscriberInterface{
 
   public function __construct() {
@@ -20,13 +22,66 @@ class Api implements OutputInterface, API_ProviderInterface, EventSubscriberInte
   }
 
   /**
-   * Return the url to a configuration page.
-   * Or return false when no configuration page exists.
+   * Returns true when this filter has additional configuration
    *
-   * @return string|false
+   * @return bool
    */
-  public function getConfigurationUrl() {
-    return 'civicrm/dataprocessor/form/output/api';
+  public function hasConfiguration() {
+    return true;
+  }
+
+  /**
+   * When this filter type has additional configuration you can add
+   * the fields on the form with this function.
+   *
+   * @param \CRM_Core_Form $form
+   * @param array $filter
+   */
+  public function buildConfigurationForm(\CRM_Core_Form $form, $output=array()) {
+    $form->add('select','permission', E::ts('Permission'), \CRM_Core_Permission::basicPermissions(), true, array(
+      'style' => 'min-width:250px',
+      'class' => 'crm-select2 huge',
+      'placeholder' => E::ts('- select -'),
+    ));
+    $form->add('text', 'api_entity', E::ts('API Entity'), true);
+    $form->add('text', 'api_action', E::ts('API Action Name'), true);
+    $form->add('text', 'api_count_action', E::ts('API GetCount Action Name'), true);
+
+    if ($output) {
+      $defaults['permission'] = $output['permission'];
+      $defaults['api_entity'] = $output['api_entity'];
+      $defaults['api_action'] = $output['api_action'];
+      $defaults['api_count_action'] = $output['api_count_action'];
+    } else {
+      $defaults['permission'] = 'access CiviCRM';
+    }
+    $form->setDefaults($defaults);
+  }
+
+  /**
+   * When this filter type has configuration specify the template file name
+   * for the configuration form.
+   *
+   * @return false|string
+   */
+  public function getConfigurationTemplateFileName() {
+    return "CRM/Dataprocessor/Form/Output/API.tpl";
+  }
+
+
+  /**
+   * Process the submitted values and create a configuration array
+   *
+   * @param $submittedValues
+   * @param array $output
+   * @return array
+   */
+  public function processConfiguration($submittedValues, &$output) {
+    $output['permission'] = $submittedValues['permission'];
+    $output['api_entity'] = $submittedValues['api_entity'];
+    $output['api_action'] = $submittedValues['api_action'];
+    $output['api_count_action'] = $submittedValues['api_count_action'];
+    return array();
   }
 
   /**
@@ -93,10 +148,11 @@ class Api implements OutputInterface, API_ProviderInterface, EventSubscriberInte
         if (!$dao->fetch()) {
           throw new \API_Exception("Could not find a data processor");
         }
-        $dataProcessor = \CRM_Dataprocessor_BAO_DataProcessor::getDataProcessorById($dao->data_processor_id);
+        $dataProcessor = civicrm_api3('DataProcessor', 'getsingle', array('id' => $dao->data_processor_id));
+        $dataProcessorClass = \CRM_Dataprocessor_BAO_DataProcessor::dataProcessorToClass($dataProcessor);
 
 
-        foreach ($dataProcessor->getDataFlow()->getOutputFieldHandlers() as $outputFieldHandler) {
+        foreach ($dataProcessorClass->getDataFlow()->getOutputFieldHandlers() as $outputFieldHandler) {
           $fieldSpec = $outputFieldHandler->getOutputFieldSpecification();
           $type = \CRM_Utils_Type::T_STRING;
           if (isset($types[$fieldSpec->type])) {
@@ -117,7 +173,7 @@ class Api implements OutputInterface, API_ProviderInterface, EventSubscriberInte
           }
           $result['values'][$fieldSpec->alias] = $field;
         }
-        foreach($dataProcessor->getFilterHandlers() as $filterHandler) {
+        foreach($dataProcessorClass->getFilterHandlers() as $filterHandler) {
           $fieldSpec = $filterHandler->getFieldSpecification();
           $type = \CRM_Utils_Type::T_STRING;
           if (isset($types[$fieldSpec->type])) {
@@ -182,10 +238,11 @@ class Api implements OutputInterface, API_ProviderInterface, EventSubscriberInte
     if (strtolower($dao->api_count_action) == $apiRequest['action']) {
       $isCountAction = TRUE;
     }
-    $dataProcessor = \CRM_Dataprocessor_BAO_DataProcessor::getDataProcessorById($dao->data_processor_id);
+    $dataProcessor = civicrm_api3('DataProcessor', 'getsingle', array('id' => $dao->data_processor_id));
+    $dataProcessorClass = \CRM_Dataprocessor_BAO_DataProcessor::dataProcessorToClass($dataProcessor);
 
     $params = $apiRequest['params'];
-    foreach($dataProcessor->getFilterHandlers() as $filter) {
+    foreach($dataProcessorClass->getFilterHandlers() as $filter) {
       $filterSpec = $filter->getFieldSpecification();
       if ($filter->isRequired() && !isset($params[$filterSpec->alias])) {
         throw new \API_Exception('Field '.$filterSpec->alias.' is required');
@@ -208,27 +265,27 @@ class Api implements OutputInterface, API_ProviderInterface, EventSubscriberInte
     }
 
     if ($isCountAction) {
-      $count = $dataProcessor->getDataFlow()->recordCount();
+      $count = $dataProcessorClass->getDataFlow()->recordCount();
       return array('result' => $count, 'is_error' => 0);
     } else {
       $options = _civicrm_api3_get_options_from_params($apiRequest['params']);
 
       if (isset($options['limit']) && $options['limit'] > 0) {
-        $dataProcessor->getDataFlow()->setLimit($options['limit']);
+        $dataProcessorClass->getDataFlow()->setLimit($options['limit']);
       }
       if (isset($options['offset'])) {
-        $dataProcessor->getDataFlow()->setOffset($options['offset']);
+        $dataProcessorClass->getDataFlow()->setOffset($options['offset']);
       }
       if (isset($options['sort'])) {
         $sort = explode(', ', $options['sort']);
         foreach ($sort as $index => &$sortString) {
           // Get sort field and direction
           list($sortField, $dir) = array_pad(explode(' ', $sortString), 2, 'ASC');
-          $dataProcessor->getDataFlow()->addSort($sortField, $dir);
+          $dataProcessorClass->getDataFlow()->addSort($sortField, $dir);
         }
       }
 
-      $records = $dataProcessor->getDataFlow()->allRecords();
+      $records = $dataProcessorClass->getDataFlow()->allRecords();
       $values = array();
       foreach($records as $idx => $record) {
         foreach($record as $fieldname => $field) {
@@ -241,7 +298,7 @@ class Api implements OutputInterface, API_ProviderInterface, EventSubscriberInte
         'is_error' => 0,
       );
       if (isset($apiRequest['params']['debug']) && $apiRequest['params']['debug']) {
-        $return['debug_info'] = $dataProcessor->getDataFlow()->getDebugInformation();
+        $return['debug_info'] = $dataProcessorClass->getDataFlow()->getDebugInformation();
       }
       return $return;
     }

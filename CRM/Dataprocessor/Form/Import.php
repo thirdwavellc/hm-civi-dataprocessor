@@ -29,7 +29,7 @@ class CRM_Dataprocessor_Form_Import extends CRM_Core_Form {
   public function postProcess() {
     $values = $this->exportValues();
     $importCode = json_decode($values['code'], true);
-    $importResult = CRM_Dataprocessor_Utils_Importer::import($importCode, '');
+    $importResult = CRM_Dataprocessor_Utils_Importer::import($importCode, '', true);
 
     CRM_Core_Session::setStatus(E::ts('Imported data processor'), '', 'success');
 

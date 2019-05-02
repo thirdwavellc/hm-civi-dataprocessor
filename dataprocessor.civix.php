@@ -263,16 +263,17 @@ function _dataprocessor_civix_find_files($dir, $pattern) {
  */
 function _dataprocessor_civix_civicrm_managed(&$entities) {
   $mgdFiles = _dataprocessor_civix_find_files(__DIR__, '*.mgd.php');
+  sort($mgdFiles);
   foreach ($mgdFiles as $file) {
     $es = include $file;
     foreach ($es as $e) {
       if (empty($e['module'])) {
         $e['module'] = E::LONG_NAME;
       }
-      $entities[] = $e;
       if (empty($e['params']['version'])) {
         $e['params']['version'] = '3';
       }
+      $entities[] = $e;
     }
   }
 }
@@ -456,5 +457,35 @@ function _dataprocessor_civix_civicrm_alterSettingsFolders(&$metaDataFolders = N
 
 function _dataprocessor_civix_civicrm_entityTypes(&$entityTypes) {
   $entityTypes = array_merge($entityTypes, array (
+    'CRM_Dataprocessor_DAO_DataProcessor' => 
+    array (
+      'name' => 'DataProcessor',
+      'class' => 'CRM_Dataprocessor_DAO_DataProcessor',
+      'table' => 'civicrm_data_processor',
+    ),
+    'CRM_Dataprocessor_DAO_DataProcessorField' => 
+    array (
+      'name' => 'DataProcessorField',
+      'class' => 'CRM_Dataprocessor_DAO_DataProcessorField',
+      'table' => 'civicrm_data_processor_field',
+    ),
+    'CRM_Dataprocessor_DAO_DataProcessorFilter' => 
+    array (
+      'name' => 'DataProcessorFilter',
+      'class' => 'CRM_Dataprocessor_DAO_DataProcessorFilter',
+      'table' => 'civicrm_data_processor_filter',
+    ),
+    'CRM_Dataprocessor_DAO_DataProcessorOutput' => 
+    array (
+      'name' => 'DataProcessorOutput',
+      'class' => 'CRM_Dataprocessor_DAO_DataProcessorOutput',
+      'table' => 'civicrm_data_processor_output',
+    ),
+    'CRM_Dataprocessor_DAO_DataProcessorSource' => 
+    array (
+      'name' => 'DataProcessorSource',
+      'class' => 'CRM_Dataprocessor_DAO_DataProcessorSource',
+      'table' => 'civicrm_data_processor_source',
+    ),
   ));
 }

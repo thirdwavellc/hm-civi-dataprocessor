@@ -13,52 +13,78 @@ class CRM_Dataprocessor_Form_Filter extends CRM_Core_Form {
 
   private $id;
 
+  private $filter;
+
+  /**
+   * @var Civi\DataProcessor\FilterHandler\AbstractFilterHandler
+   */
+  private $filterTypeClass;
+
+  private $snippet;
+
   /**
    * Function to perform processing before displaying form (overrides parent function)
    *
    * @access public
    */
   function preProcess() {
-    $session = CRM_Core_Session::singleton();
+    $this->snippet = CRM_Utils_Request::retrieve('snippet', 'String');
+    if ($this->snippet) {
+      $this->assign('suppressForm', TRUE);
+      $this->controller->_generateQFKey = FALSE;
+    }
+
+    $factory = dataprocessor_get_factory();
     $this->dataProcessorId = CRM_Utils_Request::retrieve('data_processor_id', 'Integer');
     $this->assign('data_processor_id', $this->dataProcessorId);
 
     $this->id = CRM_Utils_Request::retrieve('id', 'Integer');
     $this->assign('id', $this->id);
 
+    $this->assign('has_configuration', false);
     if ($this->id) {
-      $filter = CRM_Dataprocessor_BAO_Filter::getValues(array('id' => $this->id));
-      $this->assign('filter', $filter[$this->id]);
+      $this->filter = civicrm_api3('DataProcessorFilter', 'getsingle', array('id' => $this->id));
+      $this->assign('filter', $this->filter);
+      $this->filterTypeClass = $factory->getFilterByName($this->filter['type']);
+      $this->assign('has_configuration', $this->filterTypeClass->hasConfiguration());
+    }
+
+    $type = CRM_Utils_Request::retrieve('type', 'String');
+    if ($type) {
+      $this->filterTypeClass = $factory->getFilterByName($type);
+      $this->assign('has_configuration', $this->filterTypeClass->hasConfiguration());
+    }
+
+    if (!$this->filter) {
+      $this->filter['data_processor_id'] = $this->dataProcessorId;
     }
 
     $title = E::ts('Data Processor Filter');
     CRM_Utils_System::setTitle($title);
-
-    $url = CRM_Utils_System::url('civicrm/dataprocessor/form/edit', array('id' => $this->dataProcessorId, 'action' => 'update', 'reset' => 1));
-    $session->pushUserContext($url);
   }
 
   public function buildQuickForm() {
     $this->add('hidden', 'data_processor_id');
     $this->add('hidden', 'id');
-    if ($this->_action != CRM_Core_Action::DELETE) {
-      $this->add('text', 'name', E::ts('Name'), array('size' => CRM_Utils_Type::HUGE), FALSE);
-      $this->add('text', 'title', E::ts('Title'), array('size' => CRM_Utils_Type::HUGE), TRUE);
-
-      $factory = dataprocessor_get_factory();
-      $filters = array(E::ts(' - select - '))  + $factory->getFilters();
-      $this->add('select', 'type', E::ts('Select Filter'), $filters, true, array('class' => 'crm-select2 crm-huge40'));
-      $this->add('checkbox', 'is_required', E::ts('Is required'));
-    }
-    if ($this->_action == CRM_Core_Action::ADD) {
-      $this->addButtons(array(
-        array('type' => 'next', 'name' => E::ts('Next'), 'isDefault' => TRUE,),
-        array('type' => 'cancel', 'name' => E::ts('Cancel'))));
-    } elseif ($this->_action == CRM_Core_Action::DELETE) {
+    if ($this->_action == CRM_Core_Action::DELETE) {
       $this->addButtons(array(
         array('type' => 'next', 'name' => E::ts('Delete'), 'isDefault' => TRUE,),
         array('type' => 'cancel', 'name' => E::ts('Cancel'))));
     } else {
+      $this->add('text', 'name', E::ts('Name'), array('size' => CRM_Utils_Type::HUGE), FALSE);
+      $this->add('text', 'title', E::ts('Title'), array('size' => CRM_Utils_Type::HUGE), TRUE);
+
+      $factory = dataprocessor_get_factory();
+      $this->add('select', 'type', E::ts('Select Filter'), $factory->getFilters(), true, array('style' => 'min-width:250px',
+        'class' => 'crm-select2 huge',
+        'placeholder' => E::ts('- select -'),));
+      $this->add('checkbox', 'is_required', E::ts('Is required'));
+
+      if ($this->filterTypeClass && $this->filterTypeClass->hasConfiguration()) {
+        $this->filterTypeClass->buildConfigurationForm($this, $this->filter);
+        $this->assign('configuration_template', $this->filterTypeClass->getConfigurationTemplateFileName());
+      }
+
       $this->addButtons(array(
         array('type' => 'next', 'name' => E::ts('Save'), 'isDefault' => TRUE,),
         array('type' => 'cancel', 'name' => E::ts('Cancel'))));
@@ -71,27 +97,30 @@ class CRM_Dataprocessor_Form_Filter extends CRM_Core_Form {
     $defaults['data_processor_id'] = $this->dataProcessorId;
     $defaults['id'] = $this->id;
 
-    $filter = CRM_Dataprocessor_BAO_Filter::getValues(array('id' => $this->id));
-    if (isset($filter[$this->id]['type'])) {
-      $defaults['type'] = $filter[$this->id]['type'];
+    if (isset($this->filter['type'])) {
+      $defaults['type'] = $this->filter['type'];
+    } else {
+      $factory = dataprocessor_get_factory();
+      $filter_types = array_keys($factory->getFilters());
+      $defaults['type'] = reset($filter_types);
     }
-    if (isset($filter[$this->id]['is_required'])) {
-      $defaults['is_required'] = $filter[$this->id]['is_required'];
+    if (isset($this->filter['is_required'])) {
+      $defaults['is_required'] = $this->filter['is_required'];
     }
-    if (isset($filter[$this->id]['title'])) {
-      $defaults['title'] = $filter[$this->id]['title'];
+    if (isset($this->filter['title'])) {
+      $defaults['title'] = $this->filter['title'];
     }
-    if (isset($filter[$this->id]['name'])) {
-      $defaults['name'] = $filter[$this->id]['name'];
+    if (isset($this->filter['name'])) {
+      $defaults['name'] = $this->filter['name'];
     }
     return $defaults;
   }
 
   public function postProcess() {
     $session = CRM_Core_Session::singleton();
-    $redirectUrl = $session->readUserContext();
+    $redirectUrl = CRM_Utils_System::url('civicrm/dataprocessor/form/edit', array('reset' => 1, 'action' => 'update', 'id' => $this->dataProcessorId));
     if ($this->_action == CRM_Core_Action::DELETE) {
-      CRM_Dataprocessor_BAO_Filter::deleteWithId($this->id);
+      civicrm_api3('DataProcessorFilter', 'delete', array('id' => $this->id));
       $session->setStatus(E::ts('Filter removed'), E::ts('Removed'), 'success');
       CRM_Utils_System::redirect($redirectUrl);
     }
@@ -99,8 +128,6 @@ class CRM_Dataprocessor_Form_Filter extends CRM_Core_Form {
     $values = $this->exportValues();
     if (!empty($values['name'])) {
       $params['name'] = $values['name'];
-    } else {
-      $params['name'] = CRM_Dataprocessor_BAO_Filter::buildNameFromTitle($values['title']);
     }
     $params['title'] = $values['title'];
     $params['type'] = $values['type'];
@@ -112,59 +139,14 @@ class CRM_Dataprocessor_Form_Filter extends CRM_Core_Form {
       $params['id'] = $this->id;
     }
 
-    $result = CRM_Dataprocessor_BAO_Filter::add($params);
-    $factory = dataprocessor_get_factory();
-    $filter  = $factory->getFilterByName($values['type']);
-    if  ($filter->getConfigurationUrl($result['id'], $this->dataProcessorId)) {
-      $redirectUrl = CRM_Utils_System::url($filter->getConfigurationUrl(), [
-        'reset' => 1,
-        'action' =>  'update',
-        'id' => $result['id'],
-        'data_processor_id' => $this->dataProcessorId
-      ]);
+    if ($this->filterTypeClass && $this->filterTypeClass->hasConfiguration()) {
+      $params['configuration'] = $this->filterTypeClass->processConfiguration($values);
     }
+
+    civicrm_api3('DataProcessorFilter', 'create', $params);
 
     CRM_Utils_System::redirect($redirectUrl);
     parent::postProcess();
-  }
-
-  /**
-   * Function to add validation rules (overrides parent function)
-   *
-   * @access public
-   */
-  function addRules() {
-    if ($this->_action != CRM_Core_Action::DELETE) {
-      $this->addFormRule(array(
-        'CRM_Dataprocessor_Form_Filter',
-        'validateName'
-      ));
-    }
-  }
-
-  /**
-   * Function to validate if rule label already exists
-   *
-   * @param array $fields
-   * @return array|bool
-   * @access static
-   */
-  static function validateName($fields) {
-    /*
-     * if id not empty, edit mode. Check if changed before check if exists
-     */
-    $id = false;
-    if (!empty($fields['id'])) {
-      $id = $fields['id'];
-    }
-    if (empty($fields['name'])) {
-      $fields['name'] = CRM_Dataprocessor_BAO_Filter::buildNameFromTitle($fields['title']);
-    }
-    if (!CRM_Dataprocessor_BAO_Filter::isNameValid($fields['name'], $fields['data_processor_id'], $id)) {
-      $errors['name'] = E::ts('There is already a filter with this name');
-      return $errors;
-    }
-    return TRUE;
   }
 
 }

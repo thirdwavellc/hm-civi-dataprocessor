@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="iso-8859-1" ?>
+
+<table>
+  <base>CRM/Dataprocessor</base>
+  <class>DataProcessorSource</class>
+  <name>civicrm_data_processor_source</name>
+  <log>false</log>
+
+  <field>
+    <name>id</name>
+    <type>int unsigned</type>
+    <required>true</required>
+    <comment>Unique DataProcessorSource ID</comment>
+  </field>
+  <primaryKey>
+    <name>id</name>
+    <autoincrement>true</autoincrement>
+  </primaryKey>
+
+  <field>
+    <name>data_processor_id</name>
+    <title>Data Processor ID</title>
+    <type>int unsigned</type>
+    <required>true</required>
+    <comment>FK to Data Processor</comment>
+  </field>
+  <field>
+    <name>weight</name>
+    <title>Weight</title>
+    <type>int</type>
+    <required>false</required>
+    <length>255</length>
+  </field>
+  <field>
+    <name>name</name>
+    <title>Name</title>
+    <type>varchar</type>
+    <required>false</required>
+    <length>255</length>
+  </field>
+  <field>
+    <name>title</name>
+    <title>Title</title>
+    <type>varchar</type>
+    <required>true</required>
+    <length>255</length>
+  </field>
+  <field>
+    <name>type</name>
+    <title>Type</title>
+    <type>varchar</type>
+    <required>true</required>
+    <length>255</length>
+  </field>
+  <field>
+    <name>configuration</name>
+    <title>Configuration</title>
+    <type>text</type>
+    <required>false</required>
+    <length>255</length>
+    <serialize>JSON</serialize>
+  </field>
+  <field>
+    <name>join_type</name>
+    <title>Join Type</title>
+    <type>varchar</type>
+    <required>false</required>
+    <length>255</length>
+  </field>
+  <field>
+    <name>join_configuration</name>
+    <title>Join Configuration</title>
+    <type>text</type>
+    <required>false</required>
+    <length>255</length>
+    <serialize>JSON</serialize>
+  </field>
+  <foreignKey>
+    <name>data_processor_id</name>
+    <table>civicrm_data_processor</table>
+    <key>id</key>
+    <onDelete>CASCADE</onDelete>
+  </foreignKey>
+
+</table>

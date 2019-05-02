@@ -8,22 +8,12 @@
             <th></th>
             <th></th>
             <th></th>
-            <th></th>
         </tr>
         {foreach from=$sources item=source}
             <tr>
                 <td>{$source.type_name}</td>
                 <td>{$source.title}</td>
-                <td>
-                    {if $source.join_link}
-                        <a href="{$source.join_link}">{ts}Join Configuration{/ts}</a>
-                    {/if}
-                </td>
-                <td>
-                    {if $source.configuration_link}
-                        <a href="{$source.configuration_link}">{ts}Configure source{/ts}</a>
-                    {/if}
-                </td>
+                <td>{if ($source.weight && !is_numeric($source.weight))}{$source.weight}{/if}</td>
                 <td>
                     <a href="{crmURL p="civicrm/dataprocessor/form/source" q="reset=1&action=update&data_processor_id=`$source.data_processor_id`&id=`$source.id`"}">{ts}Edit{/ts}</a>
                 </td>

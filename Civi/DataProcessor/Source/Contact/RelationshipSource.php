@@ -58,6 +58,19 @@ class RelationshipSource extends AbstractCivicrmEntitySource {
   }
 
   /**
+   * Returns an array with the names of required configuration filters.
+   * Those filters are displayed as required to the user
+   *
+   * @return array
+   */
+  protected function requiredConfigurationFilters() {
+    return array(
+      'relationship_type_id',
+      'is_active',
+    );
+  }
+
+  /**
    * Adds an inidvidual filter to the data source
    *
    * @param $filter_field_alias

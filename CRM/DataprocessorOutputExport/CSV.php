@@ -10,18 +10,50 @@ use CRM_Dataprocessor_ExtensionUtil as E;
 
 class CRM_DataprocessorOutputExport_CSV implements ExportOutputInterface {
 
-  const MAX_DIRECT_SIZE = 500;
+  const MAX_DIRECT_SIZE = 1;
 
-  const RECORDS_PER_JOB = 250;
+  const RECORDS_PER_JOB = 1;
 
   /**
-   * Return the url to a configuration page.
-   * Or return false when no configuration page exists.
+   * Returns true when this filter has additional configuration
    *
-   * @return string|false
+   * @return bool
    */
-  public function getConfigurationUrl() {
+  public function hasConfiguration() {
     return false;
+  }
+
+  /**
+   * When this filter type has additional configuration you can add
+   * the fields on the form with this function.
+   *
+   * @param \CRM_Core_Form $form
+   * @param array $filter
+   */
+  public function buildConfigurationForm(\CRM_Core_Form $form, $output=array()) {
+
+  }
+
+  /**
+   * When this filter type has configuration specify the template file name
+   * for the configuration form.
+   *
+   * @return false|string
+   */
+  public function getConfigurationTemplateFileName() {
+    return false;
+  }
+
+
+  /**
+   * Process the submitted values and create a configuration array
+   *
+   * @param $submittedValues
+   * @param array $output
+   * @return array
+   */
+  public function processConfiguration($submittedValues, &$output) {
+    return array();
   }
 
   /**
@@ -58,25 +90,26 @@ class CRM_DataprocessorOutputExport_CSV implements ExportOutputInterface {
   /**
    * Download export
    *
-   * @param \Civi\DataProcessor\ProcessorType\AbstractProcessorType $dataProcessor
-   * @param array $dataProcessorBAO
+   * @param \Civi\DataProcessor\ProcessorType\AbstractProcessorType $dataProcessorClass
+   * @param array $dataProcessor
    * @param array $outputBAO
    * @param array $formValues
    * @param string $sortFieldName
    * @param string $sortDirection
    * @return string
    */
-  public function downloadExport(\Civi\DataProcessor\ProcessorType\AbstractProcessorType $dataProcessor, $dataProcessorBAO, $outputBAO, $formValues, $sortFieldName = null, $sortDirection = 'ASC') {
+  public function downloadExport(\Civi\DataProcessor\ProcessorType\AbstractProcessorType $dataProcessorClass, $dataProcessor, $outputBAO, $formValues, $sortFieldName = null, $sortDirection = 'ASC') {
     if ($dataProcessor->getDataFlow()->recordCount() > self::MAX_DIRECT_SIZE) {
-      $this->startBatchJob($dataProcessor, $dataProcessorBAO, $outputBAO, $formValues, $sortFieldName, $sortDirection);
+      $this->startBatchJob($dataProcessorClass, $dataProcessor, $outputBAO, $formValues, $sortFieldName, $sortDirection);
     } else {
-      $this->doDirectDownload($dataProcessor, $dataProcessorBAO, $outputBAO, $sortFieldName, $sortDirection);
+      $this->doDirectDownload($dataProcessorClass, $dataProcessor, $outputBAO, $sortFieldName, $sortDirection);
     }
   }
 
-  protected function doDirectDownload(\Civi\DataProcessor\ProcessorType\AbstractProcessorType $dataProcessor, $dataProcessorBAO, $outputBAO, $sortFieldName = null, $sortDirection = 'ASC') {
-    $filename = date('Ymdhis').'_'.$dataProcessorBAO['id'].'_'.$outputBAO['id'].'_'.CRM_Core_Session::getLoggedInContactID().'_'.$dataProcessorBAO['name'].'.csv';
-    $download_name = date('Ymdhis').'_'.$dataProcessorBAO['name'].'.csv';
+  protected function doDirectDownload(\Civi\DataProcessor\ProcessorType\AbstractProcessorType $dataProcessorClass, $dataProcessor, $outputBAO, $sortFieldName = null, $sortDirection = 'ASC') {
+    $filename = date('Ymdhis').'_'.$dataProcessor['id'].'_'.$outputBAO['id'].'_'.CRM_Core_Session::getLoggedInContactID().'_'.$dataProcessor['name'].'.csv';
+    $download_name = date('Ymdhis').'_'.$dataProcessor['name'].'.csv';
+
     $basePath = CRM_Core_Config::singleton()->templateCompileDir . 'dataprocessor_export_csv';
     CRM_Utils_File::createDir($basePath);
     CRM_Utils_File::restrictAccess($basePath.'/');
@@ -86,8 +119,8 @@ class CRM_DataprocessorOutputExport_CSV implements ExportOutputInterface {
       $dataProcessor->getDataFlow()->addSort($sortFieldName, $sortDirection);
     }
 
-    self::createHeaderLine($path, $dataProcessor);
-    self::exportDataProcessor($path, $dataProcessor);
+    self::createHeaderLine($path, $dataProcessorClass);
+    self::exportDataProcessor($path, $dataProcessorClass);
 
     $mimeType = CRM_Utils_Request::retrieveValue('mime-type', 'String', '', FALSE);
 
@@ -110,10 +143,11 @@ class CRM_DataprocessorOutputExport_CSV implements ExportOutputInterface {
     );
   }
 
-  protected function startBatchJob(\Civi\DataProcessor\ProcessorType\AbstractProcessorType $dataProcessor, $dataProcessorBAO, $outputBAO, $formValues, $sortFieldName = null, $sortDirection = 'ASC') {
+
+  protected function startBatchJob(\Civi\DataProcessor\ProcessorType\AbstractProcessorType $dataProcessorClass, $dataProcessor, $outputBAO, $formValues, $sortFieldName = null, $sortDirection = 'ASC') {
     $session = CRM_Core_Session::singleton();
 
-    $name = date('Ymdhis').'_'.$dataProcessorBAO['id'].'_'.$outputBAO['id'].'_'.CRM_Core_Session::getLoggedInContactID().'_'.$dataProcessorBAO['name'];
+    $name = date('Ymdhis').'_'.$dataProcessor['id'].'_'.$outputBAO['id'].'_'.CRM_Core_Session::getLoggedInContactID().'_'.$dataProcessor['name'];
 
     $queue = CRM_Queue_Service::singleton()->create(array(
       'type' => 'Sql',
@@ -126,9 +160,9 @@ class CRM_DataprocessorOutputExport_CSV implements ExportOutputInterface {
     CRM_Utils_File::restrictAccess($basePath.'/');
     $filename = $basePath.'/'. $name.'.csv';
 
-    self::createHeaderLine($filename, $dataProcessor);
+    self::createHeaderLine($filename, $dataProcessorClass);
 
-    $count = $dataProcessor->getDataFlow()->recordCount();
+    $count = $dataProcessorClass->getDataFlow()->recordCount();
     $recordsPerJob = self::RECORDS_PER_JOB;
     for($i=0; $i < $count; $i = $i + $recordsPerJob) {
       $title = E::ts('Exporting records %1/%2', array(
@@ -142,7 +176,7 @@ class CRM_DataprocessorOutputExport_CSV implements ExportOutputInterface {
           'CRM_DataprocessorOutputExport_CSV',
           'exportBatch'
         ), //call back method
-        array($filename,$formValues, $dataProcessorBAO['id'], $i, $recordsPerJob, $sortFieldName, $sortDirection), //parameters,
+        array($filename,$formValues, $dataProcessor['id'], $i, $recordsPerJob, $sortFieldName, $sortDirection), //parameters,
         $title
       );
       //now add this task to the queue
@@ -190,14 +224,15 @@ class CRM_DataprocessorOutputExport_CSV implements ExportOutputInterface {
   }
 
   public static function exportBatch(CRM_Queue_TaskContext $ctx, $filename, $params, $dataProcessorId, $offset, $limit, $sortFieldName = null, $sortDirection = 'ASC') {
-    $dataProcessor = CRM_Dataprocessor_BAO_DataProcessor::getDataProcessorById($dataProcessorId);
+    $dataProcessor = civicrm_api3('DataProcessor', 'getsingle', array('id' => $dataProcessorId));
+    $dataProcessorClass = \CRM_Dataprocessor_BAO_DataProcessor::dataProcessorToClass($dataProcessor);
     CRM_Dataprocessor_Form_Output_AbstractUIOutputForm::applyFilters($dataProcessor, $params);
     if ($sortFieldName) {
-      $dataProcessor->getDataFlow()->addSort($sortFieldName, $sortDirection);
+      $dataProcessorClass->getDataFlow()->addSort($sortFieldName, $sortDirection);
     }
-    $dataProcessor->getDataFlow()->setOffset($offset);
-    $dataProcessor->getDataFlow()->setLimit($limit);
-    self::exportDataProcessor($filename, $dataProcessor);
+    $dataProcessorClass->getDataFlow()->setOffset($offset);
+    $dataProcessorClass->getDataFlow()->setLimit($limit);
+    self::exportDataProcessor($filename, $dataProcessorClass);
     return TRUE;
   }
 

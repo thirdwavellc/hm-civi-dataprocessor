@@ -26,13 +26,6 @@ class SimpleNonRequiredJoin  extends  SimpleJoin {
   }
 
   /**
-   * @return string
-   */
-  public function getConfigurationUrl() {
-    return 'civicrm/dataprocessor/form/joins/simple_join';
-  }
-
-  /**
    * @param array $configuration
    *
    * @return \Civi\DataProcessor\DataFlow\MultipleDataFlows\JoinInterface
