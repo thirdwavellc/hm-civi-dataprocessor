@@ -47,12 +47,14 @@ class Api implements OutputInterface, API_ProviderInterface, EventSubscriberInte
     $form->add('text', 'api_action', E::ts('API Action Name'), true);
     $form->add('text', 'api_count_action', E::ts('API GetCount Action Name'), true);
 
-    if ($output) {
+    if ($output && isset($output['id']) && $output['id']) {
       $defaults['permission'] = $output['permission'];
       $defaults['api_entity'] = $output['api_entity'];
       $defaults['api_action'] = $output['api_action'];
       $defaults['api_count_action'] = $output['api_count_action'];
     } else {
+      $defaults['api_action'] = 'get';
+      $defaults['api_count_action'] = 'getcount';
       $defaults['permission'] = 'access CiviCRM';
     }
     $form->setDefaults($defaults);
@@ -99,8 +101,13 @@ class Api implements OutputInterface, API_ProviderInterface, EventSubscriberInte
     // So instead we use the Respond event and check in the respond event whether the action is getFields and
     // if so do our getfields stuff there.
     return array(
-      Events::RESOLVE => array('onApiResolve'),
-      Events::RESPOND => array('onGetFieldsRepsonse'), // we use this method to add our field definition to the getFields action.
+      Events::RESOLVE => array(
+        array('onApiResolve', Events::W_EARLY),
+      ),
+      /*Events::RESPOND => array(
+        'onGetFieldsRepsonse', // we use this method to add our field definition to the getFields action.
+        'onGetOptionsRepsonse', // we use this method to add our field definition to the getFields action.
+      ),*/
     );
   }
 
@@ -110,104 +117,166 @@ class Api implements OutputInterface, API_ProviderInterface, EventSubscriberInte
     foreach($entities as $entity) {
       if (strtolower($apiRequest['entity']) == strtolower($entity)) {
         $event->setApiProvider($this);
+        if (strtolower($apiRequest['action']) == 'getfields' || strtolower($apiRequest['action']) == 'getoptions') {
+          $event->stopPropagation();
+        }
       }
     }
   }
 
   /**
-   * Event listener on the ResponddEvent to handle the getfields actions.
-   * So the fields defined by the user are availble in the api explorer for example.
+   * Invoke the GetFields action
+   *
+   * @param $apiRequest
+   *
+   * @return array
    */
-  public function onGetFieldsRepsonse(RespondEvent $event) {
-    $apiRequest = $event->getApiRequest();
+  protected function invokeGetFields($apiRequest) {
     $params = $apiRequest['params'];
-    $result = $event->getResponse();
-    $types = \CRM_Utils_Type::getValidTypes();
-    $types['Memo'] = \CRM_Utils_Type::T_TEXT;
+    $result = array();
 
-    // First check whether the entity is dataprocessorapi and the action is getfields.
-    // If not return this function.
-    if (strtolower($apiRequest['action']) != 'getfields') {
-      return;
-    }
-    // Now check whether the action param is set. With the action param we can find the data processor.
     if (isset($params['action'])) {
       try {
-        // Find the data processor
-        $dataProcessorIdSql = "
-          SELECT *
-          FROM civicrm_data_processor_output o 
-          INNER JOIN civicrm_data_processor p ON o.data_processor_id = p.id 
-          WHERE p.is_active = 1 AND LOWER(o.api_entity) = LOWER(%1)
-          AND (LOWER(o.api_action) = LOWER(%2) OR LOWER(o.api_count_action) = LOWER(%2))
-        ";
+        $fields = $this->getFields($apiRequest['entity'], $params);
+        if (strtolower($params['action']) != 'getoptions') {
+          $result['values'] = $fields;
+        } else {
+          $fieldNames = array();
+          foreach($fields as $field) {
+            $fieldNames[$field['name']] = $field['title'];
+          }
+          $result['values']['field']['title'] = E::ts('Field');
+          $result['values']['field']['name'] = 'field';
+          $result['values']['field']['api.required'] = TRUE;
+          $result['values']['field']['options'] = $fieldNames;
+          $result['values']['field']['type'] = \CRM_Utils_Type::T_STRING;
 
-        $dataProcessorIdParams[1] = array($apiRequest['entity'], 'String');
-        $dataProcessorIdParams[2] = array($params['action'], 'String');
-        $dao = \CRM_Core_DAO::executeQuery($dataProcessorIdSql, $dataProcessorIdParams);
-        if (!$dao->fetch()) {
-          throw new \API_Exception("Could not find a data processor");
-        }
-        $dataProcessor = civicrm_api3('DataProcessor', 'getsingle', array('id' => $dao->data_processor_id));
-        $dataProcessorClass = \CRM_Dataprocessor_BAO_DataProcessor::dataProcessorToClass($dataProcessor);
+          $result['values']['context']['title'] = E::ts('Context');
+          $result['values']['context']['name'] = 'context';
+          $result['values']['context']['api.required'] = FALSE;
+          $result['values']['context']['options'] = \CRM_Core_DAO::buildOptionsContext();
+          $result['values']['context']['type'] = \CRM_Utils_Type::T_STRING;
 
+          $result['values']['api_action']['title'] = E::ts('Action');
+          $result['values']['api_action']['name'] = 'api_action';
+          $result['values']['api_action']['api.required'] = FALSE;
+          $result['values']['api_action']['options'] = $this->getActionNames(3, $apiRequest['entity']);
+          $result['values']['api_action']['type'] = \CRM_Utils_Type::T_STRING;
 
-        foreach ($dataProcessorClass->getDataFlow()->getOutputFieldHandlers() as $outputFieldHandler) {
-          $fieldSpec = $outputFieldHandler->getOutputFieldSpecification();
-          $type = \CRM_Utils_Type::T_STRING;
-          if (isset($types[$fieldSpec->type])) {
-            $type = $types[$fieldSpec->type];
-          }
-          $field = [
-            'name' => $fieldSpec->alias,
-            'title' => $fieldSpec->title,
-            'description' => '',
-            'type' => $type,
-            'api.required' => FALSE,
-            'api.aliases' => [],
-            'api.filter' => FALSE,
-            'api.return' => TRUE,
-          ];
-          if ($fieldSpec->getOptions()) {
-            $field['options'] = $fieldSpec->getOptions();
-          }
-          $result['values'][$fieldSpec->alias] = $field;
-        }
-        foreach($dataProcessorClass->getFilterHandlers() as $filterHandler) {
-          $fieldSpec = $filterHandler->getFieldSpecification();
-          $type = \CRM_Utils_Type::T_STRING;
-          if (isset($types[$fieldSpec->type])) {
-            $type = $types[$fieldSpec->type];
-          }
-          if (!$fieldSpec) {
-            continue;
-          }
-          $field = [
-            'name' => $fieldSpec->alias,
-            'title' => $fieldSpec->title,
-            'description' => '',
-            'type' => $type,
-            'api.required' => $filterHandler->isRequired(),
-            'api.aliases' => [],
-            'api.filter' => TRUE,
-            'api.return' => isset($result['values'][$fieldSpec->alias]) ? $result['values'][$fieldSpec->alias]['api.return'] : FALSE,
-          ];
-          if ($fieldSpec->getOptions()) {
-            $field['options'] = $fieldSpec->getOptions();
-          }
-          if (!isset($result['values'][$fieldSpec->alias])) {
-            $result['values'][$fieldSpec->alias] = $field;
-          } else {
-            $result['values'][$fieldSpec->alias] = array_merge($result['values'][$fieldSpec->alias], $field);
-          }
         }
       } catch(\Exception $e) {
         // Do nothing.
       }
 
       $result['count'] = count($result['values']);
-      $event->setResponse($result);
     }
+    return $result;
+  }
+
+  protected function getFields($entity, $params) {
+    $types = \CRM_Utils_Type::getValidTypes();
+    $types['Memo'] = \CRM_Utils_Type::T_TEXT;
+    $fields = array();
+
+    // Find the data processor
+    $dataProcessorIdSql = "
+          SELECT *
+          FROM civicrm_data_processor_output o 
+          INNER JOIN civicrm_data_processor p ON o.data_processor_id = p.id 
+          WHERE p.is_active = 1 AND LOWER(o.api_entity) = LOWER(%1)
+        ";
+
+    $dataProcessorIdParams[1] = array($entity, 'String');
+    if (isset($params['action']) && strtolower($params['action']) != 'getoptions') {
+      $dataProcessorIdSql .= " AND (LOWER(o.api_action) = LOWER(%2) OR LOWER(o.api_count_action) = LOWER(%2))";
+      $dataProcessorIdParams[2] = array($params['action'], 'String');
+    }
+    $dao = \CRM_Core_DAO::executeQuery($dataProcessorIdSql, $dataProcessorIdParams);
+    if (!$dao->fetch()) {
+      throw new \API_Exception("Could not find a data processor");
+    }
+    $dataProcessor = civicrm_api3('DataProcessor', 'getsingle', array('id' => $dao->data_processor_id));
+    $dataProcessorClass = \CRM_Dataprocessor_BAO_DataProcessor::dataProcessorToClass($dataProcessor);
+
+
+    foreach ($dataProcessorClass->getDataFlow()->getOutputFieldHandlers() as $outputFieldHandler) {
+      $fieldSpec = $outputFieldHandler->getOutputFieldSpecification();
+      $type = \CRM_Utils_Type::T_STRING;
+      if (isset($types[$fieldSpec->type])) {
+        $type = $types[$fieldSpec->type];
+      }
+      $field = [
+        'name' => $fieldSpec->alias,
+        'title' => $fieldSpec->title,
+        'description' => '',
+        'type' => $type,
+        'api.required' => FALSE,
+        'api.aliases' => [],
+        'api.filter' => FALSE,
+        'api.return' => TRUE,
+      ];
+      if ($fieldSpec->getOptions()) {
+        $field['options'] = $fieldSpec->getOptions();
+      }
+      $fields[$fieldSpec->alias] = $field;
+    }
+    foreach($dataProcessorClass->getFilterHandlers() as $filterHandler) {
+      $fieldSpec = $filterHandler->getFieldSpecification();
+      $type = \CRM_Utils_Type::T_STRING;
+      if (isset($types[$fieldSpec->type])) {
+        $type = $types[$fieldSpec->type];
+      }
+      if (!$fieldSpec) {
+        continue;
+      }
+      $field = [
+        'name' => $fieldSpec->alias,
+        'title' => $fieldSpec->title,
+        'description' => '',
+        'type' => $type,
+        'api.required' => $filterHandler->isRequired(),
+        'api.aliases' => [],
+        'api.filter' => TRUE,
+        'api.return' => isset($fields[$fieldSpec->alias]) ? $fields[$fieldSpec->alias]['api.return'] : FALSE,
+      ];
+      if ($fieldSpec->getOptions()) {
+        $field['options'] = $fieldSpec->getOptions();
+      }
+
+      if (!isset($fields[$fieldSpec->alias])) {
+        $fields[$fieldSpec->alias] = $field;
+      } else {
+        $fields[$fieldSpec->alias] = array_merge($fields[$fieldSpec->alias], $field);
+      }
+    }
+    return $fields;
+  }
+
+  /**
+   * Invoke the GetOptions api call
+   *
+   * @param $apiRequest
+   * @return array
+   */
+  protected function invokeGetOptions($apiRequest) {
+    $params = $apiRequest['params'];
+    $result = array();
+    $result['values'] = array();
+    // Now check whether the action param is set. With the action param we can find the data processor.
+    if (isset($params['field'])) {
+      try {
+        $fieldName = $params['field'];
+        $fields = $this->getFields($apiRequest['entity'], $params);
+        if (isset($fields[$fieldName]) && isset($fields[$fieldName]['options'])) {
+          $result['values'] = $fields[$fieldName]['options'];
+        }
+      } catch(\Exception $e) {
+        // Do nothing.
+      }
+
+      $result['count'] = count($result['values']);
+    }
+    return $result;
   }
 
 
@@ -222,6 +291,22 @@ class Api implements OutputInterface, API_ProviderInterface, EventSubscriberInte
   public function invoke($apiRequest) {
     $isCountAction = FALSE;
 
+    switch (strtolower($apiRequest['action'])) {
+      case 'getfields':
+        // Do get fields
+        return $this->invokeGetFields($apiRequest);
+        break;
+      case 'getoptions':
+        // Do get options
+        return $this->invokeGetOptions($apiRequest);
+        break;
+      default:
+        return $this->invokeDataProcessor($apiRequest);
+        break;
+    }
+  }
+
+  protected function invokeDataProcessor($apiRequest) {
     $dataProcessorIdSql = "
       SELECT *
       FROM civicrm_data_processor_output o 
@@ -242,6 +327,10 @@ class Api implements OutputInterface, API_ProviderInterface, EventSubscriberInte
     $dataProcessorClass = \CRM_Dataprocessor_BAO_DataProcessor::dataProcessorToClass($dataProcessor);
 
     $params = $apiRequest['params'];
+    return $this->runDataProcessor($dataProcessorClass, $params, $isCountAction);
+  }
+
+  protected function runDataProcessor(AbstractProcessorType $dataProcessorClass, $params, $isCount) {
     foreach($dataProcessorClass->getFilterHandlers() as $filter) {
       $filterSpec = $filter->getFieldSpecification();
       if ($filter->isRequired() && !isset($params[$filterSpec->alias])) {
@@ -264,11 +353,11 @@ class Api implements OutputInterface, API_ProviderInterface, EventSubscriberInte
       }
     }
 
-    if ($isCountAction) {
+    if ($isCount) {
       $count = $dataProcessorClass->getDataFlow()->recordCount();
       return array('result' => $count, 'is_error' => 0);
     } else {
-      $options = _civicrm_api3_get_options_from_params($apiRequest['params']);
+      $options = _civicrm_api3_get_options_from_params($params);
 
       if (isset($options['limit']) && $options['limit'] > 0) {
         $dataProcessorClass->getDataFlow()->setLimit($options['limit']);
@@ -297,7 +386,7 @@ class Api implements OutputInterface, API_ProviderInterface, EventSubscriberInte
         'count' => count($values),
         'is_error' => 0,
       );
-      if (isset($apiRequest['params']['debug']) && $apiRequest['params']['debug']) {
+      if (isset($params['debug']) && $params['debug']) {
         $return['debug_info'] = $dataProcessorClass->getDataFlow()->getDebugInformation();
       }
       return $return;
@@ -347,6 +436,7 @@ class Api implements OutputInterface, API_ProviderInterface, EventSubscriberInte
       $actions[] = $dao->api_count_action;
     }
     $actions[] = 'getfields';
+    $actions[] = 'getoptions';
 
     return $actions;
   }
