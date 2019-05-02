@@ -19,7 +19,6 @@
   </div>
 {else}
 
-{* block for rule data *}
 <h3>Data Processor</h3>
 <div class="crm-block crm-form-block crm-data-processor_title-block">
   <div class="crm-section">
@@ -57,11 +56,21 @@
 </div>
 
   {if $data_processor_id}
-    {include file="CRM/Dataprocessor/Form/DataProcessorBlocks/Sources.tpl"}
-    {include file="CRM/Dataprocessor/Form/DataProcessorBlocks/AggregateFields.tpl"}
-    {include file="CRM/Dataprocessor/Form/DataProcessorBlocks/Filters.tpl"}
-    {include file="CRM/Dataprocessor/Form/DataProcessorBlocks/Fields.tpl"}
-    {include file="CRM/Dataprocessor/Form/DataProcessorBlocks/Outputs.tpl"}
+    <table>
+      <tr>
+        <td>
+          {include file="CRM/Dataprocessor/Form/DataProcessorBlocks/Sources.tpl"}
+          {include file="CRM/Dataprocessor/Form/DataProcessorBlocks/AggregateFields.tpl"}
+        </td>
+        <td>
+          {include file="CRM/Dataprocessor/Form/DataProcessorBlocks/Fields.tpl"}
+          {include file="CRM/Dataprocessor/Form/DataProcessorBlocks/Filters.tpl"}
+        </td>
+        <td>
+          {include file="CRM/Dataprocessor/Form/DataProcessorBlocks/Outputs.tpl"}
+        </td>
+      </tr>
+    </table>
   {/if}
 
   <script type="text/javascript">

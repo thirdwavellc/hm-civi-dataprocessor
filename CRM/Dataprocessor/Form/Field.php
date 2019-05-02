@@ -100,6 +100,16 @@ class CRM_Dataprocessor_Form_Field extends CRM_Core_Form {
     return $defaults;
   }
 
+  /**
+   * Function that can be defined in Form to override or.
+   * perform specific action on cancel action
+   */
+  public function cancelAction() {
+    $this->dataProcessorId = CRM_Utils_Request::retrieve('data_processor_id', 'Integer');
+    $redirectUrl = CRM_Utils_System::url('civicrm/dataprocessor/form/edit', array('reset' => 1, 'action' => 'update', 'id' => $this->dataProcessorId));
+    CRM_Utils_System::redirect($redirectUrl);
+  }
+
   public function postProcess() {
     $session = CRM_Core_Session::singleton();
     $redirectUrl = CRM_Utils_System::url('civicrm/dataprocessor/form/edit', array('reset' => 1, 'action' => 'update', 'id' => $this->dataProcessorId));
