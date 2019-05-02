@@ -61,13 +61,13 @@
         <td>
           {include file="CRM/Dataprocessor/Form/DataProcessorBlocks/Sources.tpl"}
           {include file="CRM/Dataprocessor/Form/DataProcessorBlocks/AggregateFields.tpl"}
+          {include file="CRM/Dataprocessor/Form/DataProcessorBlocks/Outputs.tpl"}
         </td>
         <td>
           {include file="CRM/Dataprocessor/Form/DataProcessorBlocks/Fields.tpl"}
-          {include file="CRM/Dataprocessor/Form/DataProcessorBlocks/Filters.tpl"}
         </td>
         <td>
-          {include file="CRM/Dataprocessor/Form/DataProcessorBlocks/Outputs.tpl"}
+          {include file="CRM/Dataprocessor/Form/DataProcessorBlocks/Filters.tpl"}
         </td>
       </tr>
     </table>
