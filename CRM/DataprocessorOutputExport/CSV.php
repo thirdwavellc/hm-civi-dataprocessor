@@ -10,9 +10,9 @@ use CRM_Dataprocessor_ExtensionUtil as E;
 
 class CRM_DataprocessorOutputExport_CSV implements ExportOutputInterface {
 
-  const MAX_DIRECT_SIZE = 1;
+  const MAX_DIRECT_SIZE = 500;
 
-  const RECORDS_PER_JOB = 1;
+  const RECORDS_PER_JOB = 250;
 
   /**
    * Returns true when this filter has additional configuration
@@ -99,7 +99,7 @@ class CRM_DataprocessorOutputExport_CSV implements ExportOutputInterface {
    * @return string
    */
   public function downloadExport(\Civi\DataProcessor\ProcessorType\AbstractProcessorType $dataProcessorClass, $dataProcessor, $outputBAO, $formValues, $sortFieldName = null, $sortDirection = 'ASC') {
-    if ($dataProcessor->getDataFlow()->recordCount() > self::MAX_DIRECT_SIZE) {
+    if ($dataProcessorClass->getDataFlow()->recordCount() > self::MAX_DIRECT_SIZE) {
       $this->startBatchJob($dataProcessorClass, $dataProcessor, $outputBAO, $formValues, $sortFieldName, $sortDirection);
     } else {
       $this->doDirectDownload($dataProcessorClass, $dataProcessor, $outputBAO, $sortFieldName, $sortDirection);
@@ -226,7 +226,7 @@ class CRM_DataprocessorOutputExport_CSV implements ExportOutputInterface {
   public static function exportBatch(CRM_Queue_TaskContext $ctx, $filename, $params, $dataProcessorId, $offset, $limit, $sortFieldName = null, $sortDirection = 'ASC') {
     $dataProcessor = civicrm_api3('DataProcessor', 'getsingle', array('id' => $dataProcessorId));
     $dataProcessorClass = \CRM_Dataprocessor_BAO_DataProcessor::dataProcessorToClass($dataProcessor);
-    CRM_Dataprocessor_Form_Output_AbstractUIOutputForm::applyFilters($dataProcessor, $params);
+    CRM_Dataprocessor_Form_Output_AbstractUIOutputForm::applyFilters($dataProcessorClass, $params);
     if ($sortFieldName) {
       $dataProcessorClass->getDataFlow()->addSort($sortFieldName, $sortDirection);
     }
