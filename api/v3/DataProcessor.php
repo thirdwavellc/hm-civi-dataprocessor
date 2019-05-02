@@ -31,6 +31,9 @@ function civicrm_api3_data_processor_create($params) {
   if (isset($params['title'])) {
     $params['name'] = CRM_Dataprocessor_BAO_DataProcessor::checkName($params['title'], $id, $params['name']);
   }
+  if (!isset($params['id']) && !isset($params['type'])) {
+    $params['type'] = 'default';
+  }
   return _civicrm_api3_basic_create(_civicrm_api3_get_BAO(__FUNCTION__), $params);
 }
 

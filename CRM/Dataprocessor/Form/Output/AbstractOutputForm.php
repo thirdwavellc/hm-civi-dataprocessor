@@ -31,8 +31,7 @@ abstract class CRM_Dataprocessor_Form_Output_AbstractOutputForm extends CRM_Core
     $this->assign('id', $this->id);
 
     if ($this->id) {
-      $output = CRM_Dataprocessor_BAO_Output::getValues(array('id' => $this->id));
-      $this->output = $output[$this->id];
+      $this->output = civicrm_api3('DataProcessorOutput', 'getsingle', array('id' => $this->id));
       $this->assign('output', $output[$this->id]);
     }
 

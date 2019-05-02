@@ -202,6 +202,7 @@ class CRM_Dataprocessor_Form_DataProcessor extends CRM_Core_Form {
     }
 
     $result = civicrm_api3('DataProcessor', 'create', $params);
+
     $redirectUrl = CRM_Utils_System::url('civicrm/dataprocessor/form/edit', array('reset' => 1, 'action' => 'update', 'id' => $result['id']));
     CRM_Utils_System::redirect($redirectUrl);
   }
@@ -269,7 +270,7 @@ class CRM_Dataprocessor_Form_DataProcessor extends CRM_Core_Form {
     if (empty($fields['name'])) {
       $fields['name'] = CRM_Dataprocessor_BAO_DataProcessor::checkName($fields['title'], $id);
     }
-    if (!CRM_Dataprocessor_BAO_DataProcessorSource::isNameValid($fields['name'], $id)) {
+    if (!CRM_Dataprocessor_BAO_DataProcessor::isNameValid($fields['name'], $id)) {
       $errors['name'] = E::ts('There is already a data processor with this name');
       return $errors;
     }

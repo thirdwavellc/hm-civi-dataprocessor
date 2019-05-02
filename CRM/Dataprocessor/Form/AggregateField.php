@@ -11,6 +11,8 @@ class CRM_Dataprocessor_Form_AggregateField extends CRM_Core_Form {
 
   private $dataProcessorId;
 
+  private $dataProcessor;
+
   private $id;
 
   /**
@@ -19,28 +21,31 @@ class CRM_Dataprocessor_Form_AggregateField extends CRM_Core_Form {
    * @access public
    */
   function preProcess() {
-    $session = CRM_Core_Session::singleton();
     $this->dataProcessorId = CRM_Utils_Request::retrieve('id', 'Integer');
+    $this->dataProcessor = civicrm_api3('DataProcessor', 'getsingle', array('id' => $this->dataProcessorId));
+    $this->dataProcessorClass = CRM_Dataprocessor_BAO_DataProcessor::dataProcessorToClass($this->dataProcessor);
     $this->assign('data_processor_id', $this->dataProcessorId);
 
     $title = E::ts('Data Processor Field');
     CRM_Utils_System::setTitle($title);
-
-    $url = CRM_Utils_System::url('civicrm/dataprocessor/form/edit', array('id' => $this->dataProcessorId, 'action' => 'update', 'reset' => 1));
-    $session->pushUserContext($url);
   }
 
   public function buildQuickForm() {
     $this->add('hidden', 'id');
     $this->add('hidden', 'alias');
     if ($this->_action != CRM_Core_Action::DELETE) {
-      $fields = CRM_Dataprocessor_BAO_DataProcessor::getAvailableAggregationFields($this->dataProcessorId);
-      $fieldSelect = array(E::ts('- Select -'));
-      foreach($fields as $field) {
-        $fieldSelect[$field->fieldSpecification->alias] = $field->dataSource->getSourceTitle()." :: ".$field->fieldSpecification->title;
+      $aggregationFieldsFormatted = array();
+      foreach($this->dataProcessorClass->getDataSources() as $dataSource) {
+        foreach($dataSource->getAvailableAggregationFields() as $field) {
+          $aggregationFieldsFormatted[$field->fieldSpecification->alias] = $field->dataSource->getSourceTitle()." :: ".$field->fieldSpecification->title;
+        }
       }
 
-      $this->add('select', 'field', E::ts('Select Field'), $fieldSelect, true, array('class' => 'crm-select2 crm-huge40'));
+      $this->add('select', 'field', E::ts('Select Field'), $aggregationFieldsFormatted, true, array(
+        'style' => 'min-width:250px',
+        'class' => 'crm-select2 huge',
+        'placeholder' => E::ts('- select -'),
+      ));
     }
     if ($this->_action == CRM_Core_Action::ADD) {
       $this->addButtons(array(
@@ -63,31 +68,29 @@ class CRM_Dataprocessor_Form_AggregateField extends CRM_Core_Form {
 
   public function postProcess() {
     $session = CRM_Core_Session::singleton();
-    $redirectUrl = $session->readUserContext();
+    $redirectUrl = CRM_Utils_System::url('civicrm/dataprocessor/form/edit', array('reset' => 1, 'action' => 'update', 'id' => $this->dataProcessorId));
     if ($this->_action == CRM_Core_Action::DELETE) {
       $values = $this->exportValues();
-      $dataProcessor = CRM_Dataprocessor_BAO_DataProcessor::getValues(array('id' => $this->dataProcessorId));
-      $aggregation = $dataProcessor[$this->dataProcessorId]['aggregation'];
-      $dataProcessor[$this->dataProcessorId]['aggregation'] = array();
+      $aggregation = $this->dataProcessor['aggregation'];
+      $this->dataProcessor['aggregation'] = array();
       foreach($aggregation as $alias) {
         if ($alias != $values['alias']) {
-          $dataProcessor[$this->dataProcessorId]['aggregation'][] = $alias;
+          $this->dataProcessor['aggregation'][] = $alias;
         }
       }
-      $result = CRM_Dataprocessor_BAO_DataProcessor::add($dataProcessor[$this->dataProcessorId]);
+      $result = civicrm_api3('DataProcessor', 'create', $this->dataProcessor);
 
       $session->setStatus(E::ts('Field removed'), E::ts('Removed'), 'success');
       CRM_Utils_System::redirect($redirectUrl);
     }
 
     $values = $this->exportValues();
-    $dataProcessor = CRM_Dataprocessor_BAO_DataProcessor::getValues(array('id' => $this->dataProcessorId));
-    $aggregation = $dataProcessor[$this->dataProcessorId]['aggregation'];
+    $aggregation = $this->dataProcessor['aggregation'];
     if (!in_array($values['field'], $aggregation)) {
       $aggregation[] = $values['field'];
     }
-    $dataProcessor[$this->dataProcessorId]['aggregation'] = $aggregation;
-    $result = CRM_Dataprocessor_BAO_DataProcessor::add($dataProcessor[$this->dataProcessorId]);
+    $this->dataProcessor['aggregation'] = $aggregation;
+    $result = civicrm_api3('DataProcessor', 'create', $this->dataProcessor);
 
     CRM_Utils_System::redirect($redirectUrl);
     parent::postProcess();

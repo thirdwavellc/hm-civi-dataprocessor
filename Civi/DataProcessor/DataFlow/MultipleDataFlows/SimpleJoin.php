@@ -150,7 +150,7 @@ class SimpleJoin implements JoinInterface, SqlJoinInterface {
     ));
 
     // Backwords compatability
-    if ($joinConfiguration['right_prefix'] == $joinFromSource->getSourceName()) {
+    if (isset($joinConfiguration['right_prefix']) && $joinConfiguration['right_prefix'] == $joinFromSource->getSourceName()) {
       $joinConfigurationBackwardsCompatibility = $joinConfiguration;
       $joinConfiguration['left_prefix'] = '';
       $joinConfiguration['left_field'] = $joinConfigurationBackwardsCompatibility['right_field'];

@@ -102,9 +102,15 @@ class CRM_Dataprocessor_BAO_DataProcessorSource extends CRM_Dataprocessor_DAO_Da
   public static function sourceToSourceClass($source) {
     $factory = dataprocessor_get_factory();
     $sourceClass = $factory->getDataSourceByName($source['type']);
-    $sourceClass->setSourceName($source['name']);
-    $sourceClass->setSourceTitle($source['title']);
-    $sourceClass->setConfiguration($source['configuration']);
+    if (isset($source['name'])) {
+      $sourceClass->setSourceName($source['name']);
+    }
+    if (isset($source['title'])) {
+      $sourceClass->setSourceTitle($source['title']);
+    }
+    if (isset($source['configuration'])) {
+      $sourceClass->setConfiguration($source['configuration']);
+    }
     return $sourceClass;
   }
 }

@@ -35,8 +35,7 @@ class UIOutputHelper {
       $outputClass = $factory->getOutputByName($dao->type);
       if ($outputClass instanceof \Civi\DataProcessor\Output\UIOutputInterface) {
         $output = civicrm_api3('DataProcessorOutput', 'getsingle', array('id' => $dao->output_id));
-        $dataprocessors = \CRM_Dataprocessor_BAO_DataProcessor::getValues(['id' => $dao->id]);
-        $dataprocessor = $dataprocessors[$dao->id];
+        $dataprocessor = civicrm_api3('DataProcessor', 'getsingle', array('id' => $dao->id));
         $url = $outputClass->getUrlToUi($output, $dataprocessor);
 
         $configuration = json_decode($dao->configuration, TRUE);
@@ -85,8 +84,7 @@ class UIOutputHelper {
         \CRM_Core_BAO_Navigation::resetNavigation();
         self::$rebuildMenu = TRUE;
       } else {
-        $dataProcessors = \CRM_Dataprocessor_BAO_DataProcessor::getValues(['id' => $output['data_processor_id']]);
-        $dataProcessor = $dataProcessors[$output['data_processor_id']];
+        $dataProcessor = civicrm_api3('DataProcessor', 'getsingle', array('id' => $output['data_processor_id']));
 
         // Retrieve the current navigation params.
         $navigationParams = [];
@@ -105,8 +103,7 @@ class UIOutputHelper {
       }
     }
     elseif ($op == 'create' && isset($params['configuration']['navigation_parent_path'])) {
-      $dataProcessors = \CRM_Dataprocessor_BAO_DataProcessor::getValues(array('id' => $params['data_processor_id']));
-      $dataProcessor = $dataProcessors[$params['data_processor_id']];
+      $dataProcessor = civicrm_api3('DataProcessor', 'getsingle', array('id' => $params['data_processor_id']));
       self::$rebuildMenu = self::newNavigationItem($params, $dataProcessor);
     }
   }

@@ -70,6 +70,8 @@
 
           $('#title').on('blur', function() {
             var title = $('#title').val();
+            var id = {/literal}{if ($source)}{$source.id}{else}false{/if}{literal};
+            var data_processor_id = {/literal}{$data_processor_id}{literal};
             if ($('#nameSection').hasClass('hiddenElement') && !id) {
               CRM.api3('DataProcessorSource', 'check_name', {
                 'title': title,

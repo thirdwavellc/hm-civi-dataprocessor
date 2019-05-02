@@ -52,7 +52,6 @@ class CRM_Dataprocessor_Form_Source extends CRM_Core_Form {
 
     $factory = dataprocessor_get_factory();
 
-    $session = CRM_Core_Session::singleton();
     $this->dataProcessorId = CRM_Utils_Request::retrieve('data_processor_id', 'Integer');
     $this->assign('data_processor_id', $this->dataProcessorId);
     if ($this->dataProcessorId) {
@@ -81,7 +80,7 @@ class CRM_Dataprocessor_Form_Source extends CRM_Core_Form {
         $i++;
       }
     } else {
-      $this->isFirstDataSource = count($sources) > 0 ? false : true;
+      $this->isFirstDataSource = count($sources['values']) > 0 ? false : true;
       $this->source['data_processor_id'] = $this->dataProcessorId;
     }
     $this->assign('is_first_data_source', $this->isFirstDataSource);
@@ -91,7 +90,7 @@ class CRM_Dataprocessor_Form_Source extends CRM_Core_Form {
       $this->source['type'] = $type;
       $this->sourceClass = CRM_Dataprocessor_BAO_DataProcessorSource::sourceToSourceClass($this->source);
       $this->assign('has_configuration', $this->sourceClass->hasConfiguration());
-      if ($this->sourceClass) {
+      if ($this->sourceClass && !$this->id) {
         $this->source['configuration'] = $this->sourceClass->getDefaultConfiguration();
       }
     }
@@ -113,9 +112,6 @@ class CRM_Dataprocessor_Form_Source extends CRM_Core_Form {
 
     $title = E::ts('Data Processor Source');
     CRM_Utils_System::setTitle($title);
-
-    $url = CRM_Utils_System::url('civicrm/dataprocessor/form/edit', array('id' => $this->dataProcessorId, 'action' => 'update', 'reset' => 1));
-    $session->pushUserContext($url);
   }
 
   public function buildQuickForm() {
@@ -191,7 +187,7 @@ class CRM_Dataprocessor_Form_Source extends CRM_Core_Form {
 
   public function postProcess() {
     $session = CRM_Core_Session::singleton();
-    $backUrl = $redirectUrl = $session->readUserContext();
+    $redirectUrl = CRM_Utils_System::url('civicrm/dataprocessor/form/edit', array('reset' => 1, 'action' => 'update', 'id' => $this->dataProcessorId));
     if ($this->_action == CRM_Core_Action::DELETE) {
       civicrm_api3('DataProcessorSource', 'delete', array('id' => $this->id));
       $session->setStatus(E::ts('Data Processor Source removed'), E::ts('Removed'), 'success');
@@ -207,26 +203,28 @@ class CRM_Dataprocessor_Form_Source extends CRM_Core_Form {
     }
     $params['title'] = $values['title'];
     $params['type'] = $values['type'];
-    if (!$this->isFirstDataSource) {
-      $params['join_type'] = $values['join_type'];
-    } else {
-      $params['join_type'] = '';
-    }
     if ($this->dataProcessorId) {
       $params['data_processor_id'] = $this->dataProcessorId;
     }
     if ($this->id) {
       $params['id'] = $this->id;
     }
-    if (isset($this->source)) {
-      $params['join_configuration'] = $this->source['join_configuration'];
-    }
+    $this->sourceClass = CRM_Dataprocessor_BAO_DataProcessorSource::sourceToSourceClass($params);
 
     if ($this->sourceClass && $this->sourceClass->hasConfiguration()) {
       $params['configuration'] = $this->sourceClass->processConfiguration($values);
     }
 
+    if (!$this->isFirstDataSource) {
+      $params['join_type'] = $values['join_type'];
+      if ($this->joinClass && $this->joinClass->hasConfiguration()) {
+        $params['join_configuration'] = $this->joinClass->processConfiguration($values, $this->sourceClass);
+      }
+    } else {
+      $params['join_type'] = '';
+    }
     $result = civicrm_api3('DataProcessorSource', 'create', $params);
+
     CRM_Utils_System::redirect($redirectUrl);
     parent::postProcess();
   }

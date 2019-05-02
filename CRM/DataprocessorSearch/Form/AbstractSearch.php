@@ -308,11 +308,11 @@ abstract class CRM_DataprocessorSearch_Form_AbstractSearch extends CRM_Dataproce
     $factory = dataprocessor_get_factory();
     $outputs = civicrm_api3('DataProcessorOutput', 'get', array('data_processor_id' => $this->dataProcessorId, 'options' => array('limit' => 0)));
     $otherOutputs = array();
-    foreach($outputs as $output) {
+    foreach($outputs['values'] as $output) {
       if ($output['id'] == $this->dataProcessorOutput['id']) {
         continue;
       }
-      $outputClass = $factory->getOutputByName(($output['type']));
+      $outputClass = $factory->getOutputByName($output['type']);
       if ($outputClass instanceof \Civi\DataProcessor\Output\ExportOutputInterface) {
         $otherOutput = array();
         $otherOutput['title'] = $outputClass->getTitleForExport($output, $this->dataProcessor);

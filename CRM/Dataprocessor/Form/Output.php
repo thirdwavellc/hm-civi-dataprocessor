@@ -35,7 +35,6 @@ class CRM_Dataprocessor_Form_Output extends CRM_Core_Form {
     }
 
     $factory = dataprocessor_get_factory();
-    $session = CRM_Core_Session::singleton();
     $this->dataProcessorId = CRM_Utils_Request::retrieve('data_processor_id', 'Integer');
     $this->assign('data_processor_id', $this->dataProcessorId);
 
@@ -61,9 +60,6 @@ class CRM_Dataprocessor_Form_Output extends CRM_Core_Form {
 
     $title = E::ts('Data Processor Output');
     CRM_Utils_System::setTitle($title);
-
-    $url = CRM_Utils_System::url('civicrm/dataprocessor/form/edit', array('id' => $this->dataProcessorId, 'action' => 'update', 'reset' => 1));
-    $session->pushUserContext($url);
   }
 
   public function buildQuickForm() {
@@ -103,7 +99,7 @@ class CRM_Dataprocessor_Form_Output extends CRM_Core_Form {
 
   public function postProcess() {
     $session = CRM_Core_Session::singleton();
-    $redirectUrl = $session->readUserContext();
+    $redirectUrl = CRM_Utils_System::url('civicrm/dataprocessor/form/edit', array('reset' => 1, 'action' => 'update', 'id' => $this->dataProcessorId));
     if ($this->_action == CRM_Core_Action::DELETE) {
       civicrm_api3('DataProcessorOutput', 'delete', array('id' => $this->id));
       $session->setStatus(E::ts('Data Processor Output removed'), E::ts('Removed'), 'success');

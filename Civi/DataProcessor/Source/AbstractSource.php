@@ -192,6 +192,16 @@ abstract class AbstractSource implements SourceInterface {
   }
 
   /**
+   * Returns an array with the names of required configuration filters.
+   * Those filters are displayed as required to the user
+   *
+   * @return array
+   */
+  protected function requiredConfigurationFilters() {
+    return array();
+  }
+
+  /**
    * When this source has additional configuration you can add
    * the fields on the form with this function.
    *
@@ -200,11 +210,21 @@ abstract class AbstractSource implements SourceInterface {
    */
   public function buildConfigurationForm(\CRM_Core_Form $form, $source=array()) {
     $fields = array();
+    $required_fields = array();
+    $requiredFilters = $this->requiredConfigurationFilters();
     foreach($this->getAvailableFilterFields()->getFields() as $fieldSpec) {
       $alias = $fieldSpec->name;
+      $isRequired = false;
+      if (in_array($alias, $requiredFilters)) {
+        $isRequired = true;
+      }
       switch ($fieldSpec->type) {
         case 'Boolean':
-          $fields[$alias] = $fieldSpec->title;
+          if ($isRequired) {
+            $required_fields[$alias] = $fieldSpec->title;
+          } else {
+            $fields[$alias] = $fieldSpec->title;
+          }
           $form->addElement('select', "{$alias}_op", ts('Operator:'), [
             '=' => E::ts('Is equal to'),
             '!=' => E::ts('Is not equal to'),
@@ -215,7 +235,11 @@ abstract class AbstractSource implements SourceInterface {
           break;
         default:
           if ($fieldSpec->getOptions()) {
-            $fields[$alias] = $fieldSpec->title;
+            if ($isRequired) {
+              $required_fields[$alias] = $fieldSpec->title;
+            } else {
+              $fields[$alias] = $fieldSpec->title;
+            }
             $form->addElement('select', "{$alias}_op", ts('Operator:'), [
               'IN' => E::ts('Is one of'),
               'NOT IN' => E::ts('Is not one of'),
@@ -230,6 +254,7 @@ abstract class AbstractSource implements SourceInterface {
       }
     }
     $form->assign('filter_fields', $fields);
+    $form->assign('filter_required_fields', $required_fields);
 
     $defaults = array();
     if (isset($source['configuration']['filter'])) {

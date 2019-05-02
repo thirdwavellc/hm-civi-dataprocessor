@@ -79,8 +79,7 @@ abstract class CRM_Dataprocessor_Form_Output_AbstractUIOutputForm extends CRM_Co
       $this->dataProcessorClass = \CRM_Dataprocessor_BAO_DataProcessor::dataProcessorToClass($this->dataProcessor);
       $this->dataProcessorId = $dao->data_processor_id;
 
-      $output = CRM_Dataprocessor_BAO_Output::getValues(['id' => $dao->output_id]);
-      $this->dataProcessorOutput = $output[$dao->output_id];
+      $this->dataProcessorOutput = civicrm_api3('DataProcessorOutput', 'getsingle', array('id' => $dao->output_id));
       $this->assign('output', $this->dataProcessorOutput);
 
       if (!$this->isConfigurationValid()) {

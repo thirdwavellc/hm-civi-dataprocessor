@@ -11,6 +11,13 @@ class CRM_Dataprocessor_Form_Field extends CRM_Core_Form {
 
   private $dataProcessorId;
 
+  private $dataProcessor;
+
+  /**
+   * @var Civi\DataProcessor\ProcessorType\AbstractProcessorType
+   */
+  private $dataProcessorClass;
+
   private $id;
 
   private $field;
@@ -21,9 +28,12 @@ class CRM_Dataprocessor_Form_Field extends CRM_Core_Form {
    * @access public
    */
   function preProcess() {
-    $session = CRM_Core_Session::singleton();
     $this->dataProcessorId = CRM_Utils_Request::retrieve('data_processor_id', 'Integer');
     $this->assign('data_processor_id', $this->dataProcessorId);
+    if ($this->dataProcessorId) {
+      $this->dataProcessor = civicrm_api3('DataProcessor', 'getsingle', array('id' => $this->dataProcessorId));
+      $this->dataProcessorClass = CRM_Dataprocessor_BAO_DataProcessor::dataProcessorToClass($this->dataProcessor);
+    }
 
     $this->id = CRM_Utils_Request::retrieve('id', 'Integer');
     $this->assign('id', $this->id);
@@ -35,9 +45,6 @@ class CRM_Dataprocessor_Form_Field extends CRM_Core_Form {
 
     $title = E::ts('Data Processor Field');
     CRM_Utils_System::setTitle($title);
-
-    $url = CRM_Utils_System::url('civicrm/dataprocessor/form/edit', array('id' => $this->dataProcessorId, 'action' => 'update', 'reset' => 1));
-    $session->pushUserContext($url);
   }
 
   public function buildQuickForm() {
@@ -47,7 +54,7 @@ class CRM_Dataprocessor_Form_Field extends CRM_Core_Form {
       $this->add('text', 'name', E::ts('Name'), array('size' => CRM_Utils_Type::HUGE), FALSE);
       $this->add('text', 'title', E::ts('Title'), array('size' => CRM_Utils_Type::HUGE), TRUE);
 
-      $outputHandlers = CRM_Dataprocessor_BAO_DataProcessor::getAvailableOutputHandlers($this->dataProcessorId);
+      $outputHandlers = $this->dataProcessorClass->getAvailableOutputHandlers();
       foreach($outputHandlers as $outputHandler) {
         $outputHandlersSelect[$outputHandler->getName()] = $outputHandler->getTitle();
       }
@@ -95,7 +102,7 @@ class CRM_Dataprocessor_Form_Field extends CRM_Core_Form {
 
   public function postProcess() {
     $session = CRM_Core_Session::singleton();
-    $redirectUrl = $session->readUserContext();
+    $redirectUrl = CRM_Utils_System::url('civicrm/dataprocessor/form/edit', array('reset' => 1, 'action' => 'update', 'id' => $this->dataProcessorId));
     if ($this->_action == CRM_Core_Action::DELETE) {
       civicrm_api3('DataProcessorField', 'delete', array('id' => $this->id));
       $session->setStatus(E::ts('Field removed'), E::ts('Removed'), 'success');

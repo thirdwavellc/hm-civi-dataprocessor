@@ -31,7 +31,7 @@ class CRM_DataprocessorOutputExport_Page_Download extends CRM_Core_Page {
     list($prefix, $dataProcessorId, $outputId, $userId, $download_name) = explode("_", $fileName, 5);
     $download_name = $prefix.'_'.$download_name;
 
-    $data_processors = CRM_Dataprocessor_BAO_DataProcessor::getValues(array('id' => $dataProcessorId));
+    $data_processor = civicrm_api3('DataProcessor', 'getsingle', array('id' => $dataProcessorId));
     $output = civicrm_api3("DataProcessorOutput", "getsingle", array('id' => $outputId));
     $outputClass = $factory->getOutputByName($output['type']);
     if (!$outputClass instanceof \Civi\DataProcessor\Output\ExportOutputInterface) {

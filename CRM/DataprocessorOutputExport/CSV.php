@@ -10,9 +10,9 @@ use CRM_Dataprocessor_ExtensionUtil as E;
 
 class CRM_DataprocessorOutputExport_CSV implements ExportOutputInterface {
 
-  const MAX_DIRECT_SIZE = 500;
+  const MAX_DIRECT_SIZE = 1;
 
-  const RECORDS_PER_JOB = 250;
+  const RECORDS_PER_JOB = 1;
 
   /**
    * Returns true when this filter has additional configuration
