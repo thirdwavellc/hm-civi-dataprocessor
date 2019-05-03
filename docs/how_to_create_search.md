@@ -1,16 +1,5 @@
 # How to create a search
 
-In this tutorial we are going to create a search action. We search all people who have an active relationship with a household.
-We will show the name, e-mailaddress of the person and we will show the name and address of the household. 
-
-We will also add an additional filter to the search so the user can search on gender and/or birth date.
-
-Our search will look like as follows:
-
-![screenshot 12](images/howto_create_search_12.png)
-
-## Table of contents
-
 - [How to create a search](#how-to-create-a-search)
   * [Create the data processor](#create-the-data-processor)
   * [Add the data sources](#add-the-data-sources)
@@ -25,6 +14,15 @@ Our search will look like as follows:
     + [Add the contact search output](#add-the-contact-search-output)
     + [Add the CSV Export output](#add-the-csv-export-output)
   * [Start using the search](#start-using-the-search)
+
+In this tutorial we are going to create a search action. We search all people who have an active relationship with a household.
+We will show the name, e-mailaddress of the person and we will show the name and address of the household. 
+
+We will also add an additional filter to the search so the user can search on gender and/or birth date.
+
+Our search will look like as follows:
+
+![screenshot 12](images/howto_create_search_12.png)
 
 ## Create the data processor
 
