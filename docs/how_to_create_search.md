@@ -9,6 +9,23 @@ Our search will look like as follows:
 
 ![screenshot 12](images/howto_create_search_12.png)
 
+## Table of contents
+
+- [How to create a search](#how-to-create-a-search)
+  * [Create the data processor](#create-the-data-processor)
+  * [Add the data sources](#add-the-data-sources)
+    + [Add a data source for the household member](#add-a-data-source-for-the-household-member)
+    + [Add a data source for the e-mail address of the household member](#add-a-data-source-for-the-e-mail-address-of-the-household-member)
+    + [Add the Relationship data source](#add-the-relationship-data-source)
+    + [Add the Household data source](#add-the-household-data-source)
+    + [Add the address data source](#add-the-address-data-source)
+  * [Add the fields](#add-the-fields)
+  * [Add the exposed filters](#add-the-exposed-filters)
+  * [Add the Contact Search Output.](#add-the-contact-search-output)
+    + [Add the contact search output](#add-the-contact-search-output)
+    + [Add the CSV Export output](#add-the-csv-export-output)
+  * [Start using the search](#start-using-the-search)
+
 ## Create the data processor
 
 Go to Administer --> Data Processor --> Add data processor. 
