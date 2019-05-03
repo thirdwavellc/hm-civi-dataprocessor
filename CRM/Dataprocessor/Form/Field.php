@@ -64,18 +64,13 @@ class CRM_Dataprocessor_Form_Field extends CRM_Core_Form {
         'class' => 'crm-select2 huge',
         'placeholder' => E::ts('- select -'),
       ));
-    }
-    if ($this->_action == CRM_Core_Action::ADD) {
+
       $this->addButtons(array(
-        array('type' => 'next', 'name' => E::ts('Next'), 'isDefault' => TRUE,),
+        array('type' => 'next', 'name' => E::ts('Save'), 'isDefault' => TRUE,),
         array('type' => 'cancel', 'name' => E::ts('Cancel'))));
     } elseif ($this->_action == CRM_Core_Action::DELETE) {
       $this->addButtons(array(
         array('type' => 'next', 'name' => E::ts('Delete'), 'isDefault' => TRUE,),
-        array('type' => 'cancel', 'name' => E::ts('Cancel'))));
-    } else {
-      $this->addButtons(array(
-        array('type' => 'next', 'name' => E::ts('Save'), 'isDefault' => TRUE,),
         array('type' => 'cancel', 'name' => E::ts('Cancel'))));
     }
     parent::buildQuickForm();

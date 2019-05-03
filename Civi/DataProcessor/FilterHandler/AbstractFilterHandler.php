@@ -9,6 +9,8 @@ namespace Civi\DataProcessor\FilterHandler;
 use Civi\DataProcessor\DataSpecification\FieldSpecification;
 use Civi\DataProcessor\ProcessorType\AbstractProcessorType;
 
+use CRM_Dataprocessor_ExtensionUtil as E;
+
 abstract class AbstractFilterHandler {
 
   /**
