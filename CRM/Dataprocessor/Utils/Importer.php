@@ -70,6 +70,8 @@ class CRM_Dataprocessor_Utils_Importer {
       // Do nothing
     }
 
+    CRM_Dataprocessor_BAO_DataProcessor::setDataProcessorToImportingState($data['name']);
+
     switch ($status) {
       case CRM_Dataprocessor_Status::STATUS_IN_DATABASE:
         // Update to overriden
@@ -157,7 +159,6 @@ class CRM_Dataprocessor_Utils_Importer {
       $params = $data_source;
       $params['data_processor_id'] = $id;
       $params['debug'] = 1;
-      var_dump($params);
       try {
         civicrm_api3('DataProcessorSource', 'create', $params);
       } catch (\CiviCRM_API3_Exception $e) {
@@ -200,7 +201,7 @@ class CRM_Dataprocessor_Utils_Importer {
     }
 
     // Remove all data processors which are in code or overridden but not imported
-    $dao = CRM_Core_DAO::executeQuery("SELECT id, name FROM civicrm_data_processor WHERE id NOT IN (".implode($importedIds, ",").") AND status IN (".CRM_Dataprocessor_DAO_DataProcessor::STATUS_IN_CODE.", ".CRM_Dataprocessor_DAO_DataProcessor::STATUS_OVERRIDDEN.")");
+    $dao = CRM_Core_DAO::executeQuery("SELECT id, name FROM civicrm_data_processor WHERE id NOT IN (".implode($importedIds, ",").") AND status IN (".CRM_Dataprocessor_Status::STATUS_IN_CODE.", ".CRM_Dataprocessor_Status::STATUS_OVERRIDDEN.")");
     while ($dao->fetch()) {
       CRM_Dataprocessor_BAO_DataProcessor::deleteWithId($dao->id);
       $return['deleted data processors'][] = $dao->id.": ".$dao->name;

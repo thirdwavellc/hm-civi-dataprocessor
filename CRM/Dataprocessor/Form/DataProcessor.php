@@ -27,22 +27,29 @@ class CRM_Dataprocessor_Form_DataProcessor extends CRM_Core_Form {
    */
   function preProcess() {
     $this->dataProcessorId = CRM_Utils_Request::retrieve('id', 'Integer');
+    if ($this->dataProcessorId) {
+      $this->dataProcessor = civicrm_api3('DataProcessor', 'getsingle', ['id' => $this->dataProcessorId]);
+      $this->dataProcessorClass = CRM_Dataprocessor_BAO_DataProcessor::dataProcessorToClass($this->dataProcessor);
+    }
     $this->currentUrl = CRM_Utils_System::url('civicrm/dataprocessor/form/edit', array('reset' => 1, 'action' => 'update', 'id' => $this->dataProcessorId));
     $this->assign('data_processor_id', $this->dataProcessorId);
 
     $session = CRM_Core_Session::singleton();
     switch($this->_action) {
       case CRM_Core_Action::DISABLE:
+        CRM_Dataprocessor_BAO_DataProcessor::setDataProcessorToImportingState($this->dataProcessor['name']);
         civicrm_api3('DataProcessor', 'create', array('id' => $this->dataProcessorId, 'is_active' => 0));
         $session->setStatus('Data Processor disabled', 'Disable', 'success');
         CRM_Utils_System::redirect($session->readUserContext());
         break;
       case CRM_Core_Action::ENABLE:
+        CRM_Dataprocessor_BAO_DataProcessor::setDataProcessorToImportingState($this->dataProcessor['name']);
         civicrm_api3('DataProcessor', 'create', array('id' => $this->dataProcessorId, 'is_active' => 1));
         $session->setStatus('Data Processor enabled', 'Enable', 'success');
         CRM_Utils_System::redirect($session->readUserContext());
         break;
       case CRM_Core_Action::REVERT:
+        CRM_Dataprocessor_BAO_DataProcessor::setDataProcessorToImportingState($this->dataProcessor['name']);
         CRM_Dataprocessor_BAO_DataProcessor::revert($this->dataProcessorId);
         $session->setStatus('Data Processor reverted', 'Revert', 'success');
         CRM_Utils_System::redirect($session->readUserContext());
@@ -53,8 +60,6 @@ class CRM_Dataprocessor_Form_DataProcessor extends CRM_Core_Form {
     }
 
     if ($this->dataProcessorId) {
-      $this->dataProcessor = civicrm_api3('DataProcessor', 'getsingle', array('id' => $this->dataProcessorId));
-      $this->dataProcessorClass = CRM_Dataprocessor_BAO_DataProcessor::dataProcessorToClass($this->dataProcessor);
       $this->assign('dataProcessor', $this->dataProcessor);
       $this->addSources();
       $this->addFields();

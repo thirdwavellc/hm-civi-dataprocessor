@@ -4,8 +4,6 @@
         <table>
             <tr>
                 <th>{ts}Title{/ts}</th>
-                <th>{ts}System name{/ts}</th>
-                <th></th>
                 <th></th>
                 <th></th>
             </tr>
@@ -15,14 +13,12 @@
                         {$filter.title}
                         {if ($filter.is_required)}
                             <span class="crm-marker">*</span>
-                        {/if}
+                        {/if} <br />
+                        <span class="description">{$filter.name}</span>
                     </td>
-                    <td><span class="description">{$filter.name}</span></td>
-                    <td>{if ($filter.weight && !is_numeric($filter.weight))}{$filter.weight}{/if}</td>
-                    <td>
+                    <td style="width: 20%">{if ($filter.weight && !is_numeric($filter.weight))}{$filter.weight}{/if}</td>
+                    <td style="width: 20%">
                         <a href="{crmURL p="civicrm/dataprocessor/form/filter" q="reset=1&action=update&data_processor_id=`$filter.data_processor_id`&id=`$filter.id`"}">{ts}Edit{/ts}</a>
-                    </td>
-                    <td>
                         <a href="{crmURL p="civicrm/dataprocessor/form/filter" q="reset=1&action=delete&data_processor_id=`$filter.data_processor_id`&id=`$filter.id`"}">{ts}Remove{/ts}</a>
                     </td>
                 </tr>

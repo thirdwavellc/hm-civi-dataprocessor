@@ -3,6 +3,8 @@ use CRM_Dataprocessor_ExtensionUtil as E;
 
 class CRM_Dataprocessor_BAO_DataProcessor extends CRM_Dataprocessor_DAO_DataProcessor {
 
+  static $importingDataProcessors = array();
+
   public static function checkName($title, $id=null,$name=null) {
     if (!$name) {
       $name = preg_replace('@[^a-z0-9_]+@','_',strtolower($title));
@@ -114,5 +116,36 @@ class CRM_Dataprocessor_BAO_DataProcessor extends CRM_Dataprocessor_DAO_DataProc
     CRM_Dataprocessor_Utils_Importer::importDataProcessor($data, $dao->source_file, $data_processor_id, CRM_Dataprocessor_Status::STATUS_IN_CODE);
     return true;
   }
+
+  /**
+   * Update the status from in code to overriden when a data processor has been changed
+   *
+   * @param $dataProcessorId
+   */
+  public static function updateAndChekStatus($dataProcessorId) {
+    $sql = "SELECT `status`, `name` FROM `civicrm_data_processor` WHERE `id` = %1";
+    $params[1] = array($dataProcessorId, 'Integer');
+    $dao = CRM_Core_DAO::executeQuery($sql, $params);
+    if ($dao->fetch()) {
+      if (!in_array($dao->name, self::$importingDataProcessors) && $dao->status == CRM_Dataprocessor_Status::STATUS_IN_CODE) {
+        $sql = "UPDATE `civicrm_data_processor` SET `status` = %2 WHERE `id` = %1";
+        $params[1] = array($dataProcessorId, 'String');
+        $params[2] = array(CRM_Dataprocessor_Status::STATUS_OVERRIDDEN, 'Integer');
+        CRM_Core_DAO::executeQuery($sql, $params);
+      }
+    }
+  }
+
+  /**
+   * Store the data processor name so we know that we are importing this data processor
+   * and should not update its status on the way.
+   *
+   * @param $dataProcessorName
+   */
+  public static function setDataProcessorToImportingState($dataProcessorName) {
+    self::$importingDataProcessors[] = $dataProcessorName;
+  }
+
+
 
 }

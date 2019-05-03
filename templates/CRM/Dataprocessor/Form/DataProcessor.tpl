@@ -58,15 +58,15 @@
   {if $data_processor_id}
     <table>
       <tr>
-        <td>
+        <td style="width: 33%;">
           {include file="CRM/Dataprocessor/Form/DataProcessorBlocks/Sources.tpl"}
           {include file="CRM/Dataprocessor/Form/DataProcessorBlocks/AggregateFields.tpl"}
           {include file="CRM/Dataprocessor/Form/DataProcessorBlocks/Outputs.tpl"}
         </td>
-        <td>
+        <td style="width: 33%;">
           {include file="CRM/Dataprocessor/Form/DataProcessorBlocks/Fields.tpl"}
         </td>
-        <td>
+        <td style="width: 33%;">
           {include file="CRM/Dataprocessor/Form/DataProcessorBlocks/Filters.tpl"}
         </td>
       </tr>

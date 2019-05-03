@@ -34,7 +34,9 @@ function civicrm_api3_data_processor_create($params) {
   if (!isset($params['id']) && !isset($params['type'])) {
     $params['type'] = 'default';
   }
-  return _civicrm_api3_basic_create(_civicrm_api3_get_BAO(__FUNCTION__), $params);
+  $return = _civicrm_api3_basic_create(_civicrm_api3_get_BAO(__FUNCTION__), $params);
+  CRM_Dataprocessor_BAO_DataProcessor::updateAndChekStatus($return['id']);
+  return $return;
 }
 
 /**
@@ -139,4 +141,20 @@ function civicrm_api3_data_processor_check_name($params) {
   return array(
     'name' => $name,
   );
+}
+
+/**
+ * DataProcessor.Import API
+ *
+ * @param array $params
+ * @return array API result descriptor
+ * @see civicrm_api3_create_success
+ * @see civicrm_api3_create_error
+ * @throws API_Exception
+ */
+function civicrm_api3_data_processor_import($params) {
+  $returnValues = array();
+  $returnValues['import'] = CRM_Dataprocessor_Utils_Importer::importFromExtensions();
+  $returnValues['is_error'] = 0;
+  return $returnValues;
 }

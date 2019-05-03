@@ -3,21 +3,18 @@
 <div class="crm-block crm-form-block crm-data-processor_source-block">
     <table>
         <tr>
-            <th>{ts}Source{/ts}</th>
             <th>{ts}Title{/ts}</th>
-            <th></th>
             <th></th>
             <th></th>
         </tr>
         {foreach from=$sources item=source}
             <tr>
-                <td>{$source.type_name}</td>
-                <td>{$source.title}</td>
-                <td>{if ($source.weight && !is_numeric($source.weight))}{$source.weight}{/if}</td>
-                <td>
-                    <a href="{crmURL p="civicrm/dataprocessor/form/source" q="reset=1&action=update&data_processor_id=`$source.data_processor_id`&id=`$source.id`"}">{ts}Edit{/ts}</a>
+                <td>{$source.title} <br />
+                    <span class="description">{$source.type_name}</span>
                 </td>
-                <td>
+                <td style="width: 20%">{if ($source.weight && !is_numeric($source.weight))}{$source.weight}{/if}</td>
+                <td style="width: 20%">
+                    <a href="{crmURL p="civicrm/dataprocessor/form/source" q="reset=1&action=update&data_processor_id=`$source.data_processor_id`&id=`$source.id`"}">{ts}Edit{/ts}</a>
                     <a href="{crmURL p="civicrm/dataprocessor/form/source" q="reset=1&action=delete&data_processor_id=`$source.data_processor_id`&id=`$source.id`"}">{ts}Remove{/ts}</a>
                 </td>
             </tr>

@@ -4,20 +4,15 @@
     <table>
         <tr>
             <th>{ts}Title{/ts}</th>
-            <th>{ts}System Name{/ts}</th>
-            <th></th>
             <th></th>
             <th></th>
         </tr>
         {foreach from=$fields item=field}
             <tr>
-                <td>{$field.title}</td>
-                <td><span class="description">{$field.name}</span></td>
-                <td>{if ($field.weight && !is_numeric($field.weight))}{$field.weight}{/if}</td>
-                <td>
+                <td>{$field.title} <br /><span class="description">{$field.name}</span></td>
+                <td style="width: 20%">{if ($field.weight && !is_numeric($field.weight))}{$field.weight}{/if}</td>
+                <td style="width: 20%">
                     <a href="{crmURL p="civicrm/dataprocessor/form/field" q="reset=1&action=update&data_processor_id=`$field.data_processor_id`&id=`$field.id`"}">{ts}Edit{/ts}</a>
-                </td>
-                <td>
                     <a href="{crmURL p="civicrm/dataprocessor/form/field" q="reset=1&action=delete&data_processor_id=`$field.data_processor_id`&id=`$field.id`"}">{ts}Remove{/ts}</a>
                 </td>
             </tr>
