@@ -150,14 +150,14 @@ Press *Add Field* and select *E-mail :: Email* and give it the tThe filters whic
 
 Press *Add Field* and select *Household Member :: Gender (Option)* and give it the title *Gender*. 
 
-    There are two fields for gender one with the addition '(option)' and one without. The first one shows the label of the option
-    the latter the value. E.g. in CiviCRM the value 1 for gender has the value of Female.
+> There are two fields for gender one with the addition '(option)' and one without. The first one shows the label of the option
+> the latter the value. E.g. in CiviCRM the value 1 for gender has the value of Female.
 
 Press *Add Field* and select *Household Member :: Birth Date* and give it the title *Birth Date*.
 
 Press *Add Field* and select *Address :: Street Address* and give it the title *Address*. 
 
-    Street address is the CiviCRM field which holds the full address, e.g. street name plus housenumber.
+> Street address is the CiviCRM field which holds the full address, e.g. street name plus housenumber.
     
 Press *Add Field* and select *Address :: Postal code* and give it the title *Postal code*.
 
@@ -221,7 +221,7 @@ You also see a button to download the results as CSV File.
 
 And if you select one or more contacts you can perform the same actions as you can with a normal contact search. 
 
-    If you want to create your own actions you can use the Search Action Designer extension.
+> If you want to create your own actions you can use the [Search Action Designer](https://lab.civicrm.org/extensions/searchactiondesigner) extension.
     
 To refine the search results press *Edit Search Criteria* and you will see the screen below:
 
