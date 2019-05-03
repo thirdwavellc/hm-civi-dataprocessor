@@ -19,6 +19,7 @@ The extension is licensed under [AGPL-3.0](LICENSE.txt).
 ## Documentation
 
 * [How to create a search with the data processor](docs/how_to_create_search.md)
+* How to export and import a data processor
 
 ## Developer documentation
 
@@ -26,6 +27,7 @@ The extension is licensed under [AGPL-3.0](LICENSE.txt).
 * [Available Hooks](docs/hooks.md)
 * Add your own data source for a CiviCRM Entity
 * Add your own data source for a CSV File
+* How to store a data processor in code in your extension
 
 ## Installation
 
