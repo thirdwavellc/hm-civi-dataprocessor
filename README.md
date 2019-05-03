@@ -1,44 +1,34 @@
-# dataprocessor
+# Data Processor
 
-![Screenshot](/images/screenshot.png)
+The data processor is an extension with which system administrator can do the following:
 
-(*FIXME: In one or two paragraphs, describe what the extension does and why one would download it. *)
+* Create custom searches with optional the possibility to export the results
+* Create an API to fetch data. This is quite useful if you have external systems which need data from CiviCRM. 
+* ... and developers can enhance the outputs of the data processor so that much more is possible, even things we haven't thought of yet.
+
+Below a screenshot of the configuration screen
+
+![Screenshot configuration screen](docs/images/dataprocessor_1.png)
+
+And below a screenshot of the above data processor in action as a custom search:
+
+![Screen of data processor in action as a search](docs/images/dataprocessor_2.png) 
 
 The extension is licensed under [AGPL-3.0](LICENSE.txt).
 
-## Requirements
+## Documentation
 
-* PHP v5.4+
-* CiviCRM (*FIXME: Version number*)
+* [How to create a search with the data processor](docs/how_to_create_search.md)
 
-## Installation (Web UI)
+## Developer documentation
 
-This extension has not yet been published for installation via the web UI.
+* Enhancing the data processor
+* [Available Hooks](docs/hooks.md)
+* Add your own data source for a CiviCRM Entity
+* Add your own data source for a CSV File
 
-## Installation (CLI, Zip)
+## Installation
 
-Sysadmins and developers may download the `.zip` file for this extension and
-install it with the command-line tool [cv](https://github.com/civicrm/cv).
-
-```bash
-cd <extension-dir>
-cv dl dataprocessor@https://github.com/FIXME/dataprocessor/archive/master.zip
-```
-
-## Installation (CLI, Git)
-
-Sysadmins and developers may clone the [Git](https://en.wikipedia.org/wiki/Git) repo for this extension and
-install it with the command-line tool [cv](https://github.com/civicrm/cv).
-
-```bash
-git clone https://github.com/FIXME/dataprocessor.git
-cv en dataprocessor
-```
-
-## Usage
-
-(* FIXME: Where would a new user navigate to get started? What changes would they see? *)
-
-## Known Issues
-
-(* FIXME *)
+Install this extension by downloading it from https://lab.civicrm.org/extensions/dataprocessor/-/archive/master/dataprocessor-master.zip
+and then upload it to your civicrm server in the extension folder.
+And then press install in the Administer -->  System Settings --> Extensions screen.
