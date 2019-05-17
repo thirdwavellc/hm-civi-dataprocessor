@@ -51,7 +51,6 @@ class CRM_DataprocessorSearch_Controller_ParticipantSearch extends CRM_Core_Cont
   public function run() {
 
     $actionName = $this->getActionName();
-    print_r($actionName);
     list($pageName, $action) = $actionName;
     // Hack to replace to userContext for redirecting after a Task has been completed.
     // We want the redirect

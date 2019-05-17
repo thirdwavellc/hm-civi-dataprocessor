@@ -35,9 +35,6 @@ class CRM_Dataprocessor_Form_Output extends CRM_Core_Form {
     }
 
     $factory = dataprocessor_get_factory();
-    // echo "<pre>";
-    // print_r($factory);
-    // echo "</pre>";
     $this->dataProcessorId = CRM_Utils_Request::retrieve('data_processor_id', 'Integer');
     $this->assign('data_processor_id', $this->dataProcessorId);
 
