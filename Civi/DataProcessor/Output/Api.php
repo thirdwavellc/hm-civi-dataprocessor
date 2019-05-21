@@ -104,10 +104,6 @@ class Api implements OutputInterface, API_ProviderInterface, EventSubscriberInte
       Events::RESOLVE => array(
         array('onApiResolve', Events::W_EARLY),
       ),
-      /*Events::RESPOND => array(
-        'onGetFieldsRepsonse', // we use this method to add our field definition to the getFields action.
-        'onGetOptionsRepsonse', // we use this method to add our field definition to the getFields action.
-      ),*/
     );
   }
 
@@ -210,6 +206,7 @@ class Api implements OutputInterface, API_ProviderInterface, EventSubscriberInte
         'title' => $fieldSpec->title,
         'description' => '',
         'type' => $type,
+        'data_type' => $fieldSpec->type,
         'api.required' => FALSE,
         'api.aliases' => [],
         'api.filter' => FALSE,

@@ -10,6 +10,7 @@ use Civi\DataProcessor\DataFlow\Sort\SortCompareFactory;
 use Civi\DataProcessor\DataSpecification\FieldSpecification;
 use Civi\DataProcessor\Event\FilterHandlerEvent;
 use Civi\DataProcessor\Event\OutputHandlerEvent;
+use Civi\DataProcessor\FieldOutputHandler\FileFieldOutputHandler;
 use Civi\DataProcessor\FieldOutputHandler\OptionFieldOutputHandler;
 use Civi\DataProcessor\FieldOutputHandler\RawFieldOutputHandler;
 use Civi\DataProcessor\FilterHandler\SimpleSqlFilter;
@@ -278,6 +279,10 @@ class Factory {
     if ($field->getOptions()) {
       $optionOutputHandler = new OptionFieldOutputHandler($field, $source);
       $event->handlers[$optionOutputHandler->getName()] = $optionOutputHandler;
+    }
+    if ($field->type == 'File') {
+      $fileOutputHandler = new FileFieldOutputHandler($field, $source);
+      $event->handlers[$fileOutputHandler->getName()] = $fileOutputHandler;
     }
     $this->dispatcher->dispatch(OutputHandlerEvent::NAME, $event);
     return $event->handlers;
