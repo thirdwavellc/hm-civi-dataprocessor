@@ -27,7 +27,7 @@
 
         <div class="crm-submit-buttons">
             <a class="add button" title="{ts}Add Filter{/ts}" href="{$addFilterUrl}">
-                <span><div class="icon add-icon ui-icon-circle-plus"></div>{ts}Add Filter{/ts}</span></a>
+                <i class='crm-i fa-plus-circle'></i> {ts}Add Filter{/ts}</a>
         </div>
     </div>
 {/crmScope}
