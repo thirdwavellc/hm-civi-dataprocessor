@@ -84,7 +84,7 @@ class SimpleSqlFilter extends AbstractFilterHandler {
    */
   protected function isMultiValueField() {
     if ($this->fieldSpecification instanceof CustomFieldSpecification) {
-      if ($this->fieldSpecification->type != 'Boolean' && $this->fieldSpecification->getOptions() != null) {
+      if ($this->fieldSpecification->isMultiple()) {
         return TRUE;
       }
     }

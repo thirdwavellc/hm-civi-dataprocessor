@@ -97,7 +97,7 @@ class Utils {
           $alias = $aliasPrefix . $customGroup['name'] . '_' . $field['name'];
           $customFieldSpec = new CustomFieldSpecification(
             $customGroup['name'], $customGroup['table_name'], $customGroup['title'],
-            $field['id'], $field['column_name'], $field['name'], $field['data_type'], $field['label'],
+            $field,
             $alias
           );
           $dataSpecification->addFieldSpecification($customFieldSpec->name, $customFieldSpec);
