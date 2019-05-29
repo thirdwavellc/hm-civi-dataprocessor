@@ -16,7 +16,7 @@ class CRM_DataprocessorSearch_Form_ParticipantSearch extends CRM_DataprocessorSe
    * @return false|string
    */
   protected function link($row) {
-    return CRM_Utils_System::url('civicrm/contact/view', 'reset=1&cid='.$row['id']);
+    return CRM_Utils_System::url('civicrm/contact/view/participant', 'reset=1&id='.$row['id'].'&cid='.$row['id'].'&action=view');
   }
 
   /**
