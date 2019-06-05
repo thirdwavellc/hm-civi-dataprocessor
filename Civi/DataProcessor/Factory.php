@@ -122,6 +122,7 @@ class Factory {
     $this->addOutput('api', 'Civi\DataProcessor\Output\Api', E::ts('API'));
     $this->addOutput('contact_search', 'CRM_DataprocessorSearch_ContactSearch', E::ts('Contact Search'));
     $this->addOutput('activity_search', 'CRM_DataprocessorSearch_ActivitySearch', E::ts('Activity Search'));
+    $this->addOutput('case_search', 'CRM_DataprocessorSearch_CaseSearch', E::ts('Case Search'));
     $this->addOutput('export_csv', 'CRM_DataprocessorOutputExport_CSV', E::ts('CSV Export'));
     $this->addFilter('simple_sql_filter', 'Civi\DataProcessor\FilterHandler\SimpleSqlFilter', E::ts('Field filter'));
     $this->addjoinType('simple_join', 'Civi\DataProcessor\DataFlow\MultipleDataFlows\SimpleJoin', E::ts('Select fields to join on'));

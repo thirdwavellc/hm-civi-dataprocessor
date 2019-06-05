@@ -1,0 +1,187 @@
+<?php
+/**
+ * @author Jaap Jansma <jaap.jansma@civicoop.org>
+ * @license AGPL-3.0
+ */
+
+use Civi\DataProcessor\Output\UIOutputInterface;
+
+use CRM_Dataprocessor_ExtensionUtil as E;
+
+class CRM_DataprocessorSearch_CaseSearch implements UIOutputInterface {
+
+  /**
+   * Returns true when this filter has additional configuration
+   *
+   * @return bool
+   */
+  public function hasConfiguration() {
+    return true;
+  }
+
+  /**
+   * When this filter type has additional configuration you can add
+   * the fields on the form with this function.
+   *
+   * @param \CRM_Core_Form $form
+   * @param array $filter
+   */
+  public function buildConfigurationForm(\CRM_Core_Form $form, $output=array()) {
+    $navigation = CRM_Dataprocessor_Utils_Navigation::singleton();
+    $dataProcessor = civicrm_api3('DataProcessor', 'getsingle', array('id' => $output['data_processor_id']));
+    $dataProcessorClass = \CRM_Dataprocessor_BAO_DataProcessor::dataProcessorToClass($dataProcessor);
+    $fields = array();
+    foreach($dataProcessorClass->getDataFlow()->getOutputFieldHandlers() as $outputFieldHandler) {
+      $field = $outputFieldHandler->getOutputFieldSpecification();
+      $fields[$field->alias] = $field->title;
+    }
+
+    $form->add('text', 'title', E::ts('Title'), true);
+
+    $form->add('select','permission', E::ts('Permission'), \CRM_Core_Permission::basicPermissions(), true, array(
+      'style' => 'min-width:250px',
+      'class' => 'crm-select2 huge',
+      'placeholder' => E::ts('- select -'),
+    ));
+    $form->add('select', 'contact_id_field', E::ts('Contact ID field'), $fields, true, array(
+      'style' => 'min-width:250px',
+      'class' => 'crm-select2 huge',
+      'placeholder' => E::ts('- select -'),
+    ));
+    $form->add('select', 'case_id_field', E::ts('Case ID field'), $fields, true, array(
+      'style' => 'min-width:250px',
+      'class' => 'crm-select2 huge',
+      'placeholder' => E::ts('- select -'),
+    ));
+    $form->add('select', 'hide_id_fields', E::ts('Show Contact and Case ID field'), array(0=>'Contact and Case ID are Visible', 1=> 'Contact and Case ID are hidden'));
+
+    $form->add('wysiwyg', 'help_text', E::ts('Help text for this search'), array('rows' => 6, 'cols' => 80));
+
+    // navigation field
+    $navigationOptions = $navigation->getNavigationOptions();
+    if (isset($output['configuration']['navigation_id'])) {
+      $navigationPath = $navigation->getNavigationPathById($output['configuration']['navigation_id']);
+      unset($navigationOptions[$navigationPath]);
+    }
+    $form->add('select', 'navigation_parent_path', ts('Parent Menu'), array('' => ts('- select -')) + $navigationOptions, true);
+
+    $defaults = array();
+    if ($output) {
+      if (isset($output['permission'])) {
+        $defaults['permission'] = $output['permission'];
+      }
+      if (isset($output['configuration']) && is_array($output['configuration'])) {
+        if (isset($output['configuration']['contact_id_field'])) {
+          $defaults['contact_id_field'] = $output['configuration']['contact_id_field'];
+        }
+        if (isset($output['configuration']['case_id_field'])) {
+          $defaults['case_id_field'] = $output['configuration']['case_id_field'];
+        }
+        if (isset($output['configuration']['navigation_id'])) {
+          $defaults['navigation_parent_path'] = $navigation->getNavigationParentPathById($output['configuration']['navigation_id']);
+        }
+        if (isset($output['configuration']['title'])) {
+          $defaults['title'] = $output['configuration']['title'];
+        }
+        if (isset($output['configuration']['hide_id_fields'])) {
+          $defaults['hide_id_fields'] = $output['configuration']['hide_id_fields'];
+        }
+        if (isset($output['configuration']['help_text'])) {
+          $defaults['help_text'] = $output['configuration']['help_text'];
+        }
+      }
+    }
+    if (!isset($defaults['permission'])) {
+      $defaults['permission'] = 'access CiviCRM';
+    }
+    if (empty($defaults['title'])) {
+      $defaults['title'] = civicrm_api3('DataProcessor', 'getvalue', array('id' => $output['data_processor_id'], 'return' => 'title'));
+    }
+    $form->setDefaults($defaults);
+  }
+
+  /**
+   * When this filter type has configuration specify the template file name
+   * for the configuration form.
+   *
+   * @return false|string
+   */
+  public function getConfigurationTemplateFileName() {
+    return "CRM/DataprocessorSearch/Form/OutputConfiguration/CaseSearch.tpl";
+  }
+
+
+  /**
+   * Process the submitted values and create a configuration array
+   *
+   * @param $submittedValues
+   * @param array $output
+   * @return array
+   */
+  public function processConfiguration($submittedValues, &$output) {
+    $output['permission'] = $submittedValues['permission'];
+    $configuration['title'] = $submittedValues['title'];
+    $configuration['contact_id_field'] = $submittedValues['contact_id_field'];
+    $configuration['case_id_field'] = $submittedValues['case_id_field'];
+    $configuration['navigation_parent_path'] = $submittedValues['navigation_parent_path'];
+    $configuration['hide_id_fields'] = $submittedValues['hide_id_fields'];
+    $configuration['help_text'] = $submittedValues['help_text'];
+    return $configuration;
+  }
+
+  /**
+   * Returns the url for the page/form this output will show to the user
+   *
+   * @param array $output
+   * @param array $dataProcessor
+   * @return string
+   */
+  public function getUrlToUi($output, $dataProcessor) {
+    return "civicrm/dataprocessor_case_search/{$dataProcessor['name']}";
+  }
+
+  /**
+   * Returns the url for the page/form this output will show to the user
+   *
+   * @param array $output
+   * @param array $dataProcessor
+   * @return string
+   */
+  public function getTitleForUiLink($output, $dataProcessor) {
+    return isset($output['configuration']['title']) ? $output['configuration']['title'] : $dataProcessor['title'];
+  }
+
+  /**
+   * Returns the url for the page/form this output will show to the user
+   *
+   * @param array $output
+   * @param array $dataProcessor
+   * @return string|false
+   */
+  public function getIconForUiLink($output, $dataProcessor) {
+    return false;
+  }
+
+  /**
+   * Returns the callback for the UI.
+   *
+   * @return string
+   */
+  public function getCallbackForUi() {
+    return 'CRM_DataprocessorSearch_Controller_CaseSearch';
+  }
+
+  /**
+   * Checks whether the current user has access to this output
+   *
+   * @param array $output
+   * @param array $dataProcessor
+   * @return bool
+   */
+  public function checkUIPermission($output, $dataProcessor) {
+    return CRM_Core_Permission::check(array(
+      $output['permission']
+    ));
+  }
+
+}
