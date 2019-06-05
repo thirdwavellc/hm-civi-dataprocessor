@@ -217,7 +217,7 @@ abstract class AbstractCivicrmEntitySource extends AbstractSource {
   protected function ensureCustomGroup($customGroupTableName, $customGroupName) {
     if (isset($this->customGroupDataFlowDescriptions[$customGroupName])) {
       return $this->customGroupDataFlowDescriptions[$customGroupName]->getDataFlow();
-    } elseif ($this->primaryDataFlow && $this->primaryDataFlow->getTable() == $customGroupTableName) {
+    } elseif ($this->primaryDataFlow && $this->primaryDataFlow instanceof SqlTableDataFlow && $this->primaryDataFlow->getTable() == $customGroupTableName) {
       return $this->primaryDataFlow;
     }
     $customGroupTableAlias = $this->getSourceName().'_'.$customGroupName;
