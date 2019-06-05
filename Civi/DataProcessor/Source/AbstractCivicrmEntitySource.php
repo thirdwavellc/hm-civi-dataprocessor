@@ -93,7 +93,13 @@ abstract class AbstractCivicrmEntitySource extends AbstractSource {
     }
     $this->addFilters($this->configuration);
     if (count($this->customGroupDataFlowDescriptions) || count($this->additionalDataFlowDescriptions)) {
-      $this->dataFlow = new CombinedSqlDataFlow('', $this->primaryDataFlow->getTable(), $this->primaryDataFlow->getTableAlias());
+      if ($this->primaryDataFlow instanceof CombinedSqlDataFlow) {
+        $this->dataFlow = new CombinedSqlDataFlow('', $this->primaryDataFlow->getPrimaryTable(), $this->primaryDataFlow->getPrimaryTableAlias());
+      } elseif ($this->primaryDataFlow instanceof SqlTableDataFlow) {
+        $this->dataFlow = new CombinedSqlDataFlow('', $this->primaryDataFlow->getTable(), $this->primaryDataFlow->getTableAlias());
+      } else {
+        throw new \Exception("Invalid primary data source in data source ".$this->getSourceName());
+      }
       $this->dataFlow->addSourceDataFlow(new DataFlowDescription($this->primaryDataFlow));
       foreach ($this->additionalDataFlowDescriptions as $additionalDataFlowDescription) {
         $this->dataFlow->addSourceDataFlow($additionalDataFlowDescription);
