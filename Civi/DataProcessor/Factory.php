@@ -10,6 +10,7 @@ use Civi\DataProcessor\DataFlow\Sort\SortCompareFactory;
 use Civi\DataProcessor\DataSpecification\FieldSpecification;
 use Civi\DataProcessor\Event\FilterHandlerEvent;
 use Civi\DataProcessor\Event\OutputHandlerEvent;
+use Civi\DataProcessor\FieldOutputHandler\FileFieldOutputHandler;
 use Civi\DataProcessor\FieldOutputHandler\OptionFieldOutputHandler;
 use Civi\DataProcessor\FieldOutputHandler\RawFieldOutputHandler;
 use Civi\DataProcessor\FilterHandler\SimpleSqlFilter;
@@ -106,6 +107,7 @@ class Factory {
     $this->addDataSource('address', 'Civi\DataProcessor\Source\Contact\AddressSource', E::ts('Address'));
     $this->addDataSource('phone', 'Civi\DataProcessor\Source\Contact\PhoneSource', E::ts('Phone'));
     $this->addDataSource('website', 'Civi\DataProcessor\Source\Contact\WebsiteSource', E::ts('Website'));
+    $this->addDataSource('campaign', 'Civi\DataProcessor\Source\Campaign\CampaignSource', E::ts('Campaign'));
     $this->addDataSource('contribution', 'Civi\DataProcessor\Source\Contribution\ContributionSource', E::ts('Contribution'));
     $this->addDataSource('case', 'Civi\DataProcessor\Source\Cases\CaseSource', E::ts('Case'));
     $this->addDataSource('relationship', 'Civi\DataProcessor\Source\Contact\RelationshipSource', E::ts('Relationship'));
@@ -123,6 +125,7 @@ class Factory {
     $this->addOutput('contact_search', 'CRM_DataprocessorSearch_ContactSearch', E::ts('Contact Search'));
     $this->addOutput('activity_search', 'CRM_DataprocessorSearch_ActivitySearch', E::ts('Activity Search'));
     $this->addOutput('case_search', 'CRM_DataprocessorSearch_CaseSearch', E::ts('Case Search'));
+    $this->addOutput('participant_search', 'CRM_DataprocessorSearch_ParticipantSearch', E::ts('Participant Search'));
     $this->addOutput('export_csv', 'CRM_DataprocessorOutputExport_CSV', E::ts('CSV Export'));
     $this->addFilter('simple_sql_filter', 'Civi\DataProcessor\FilterHandler\SimpleSqlFilter', E::ts('Field filter'));
     $this->addjoinType('simple_join', 'Civi\DataProcessor\DataFlow\MultipleDataFlows\SimpleJoin', E::ts('Select fields to join on'));
@@ -280,6 +283,10 @@ class Factory {
     if ($field->getOptions()) {
       $optionOutputHandler = new OptionFieldOutputHandler($field, $source);
       $event->handlers[$optionOutputHandler->getName()] = $optionOutputHandler;
+    }
+    if ($field->type == 'File') {
+      $fileOutputHandler = new FileFieldOutputHandler($field, $source);
+      $event->handlers[$fileOutputHandler->getName()] = $fileOutputHandler;
     }
     $this->dispatcher->dispatch(OutputHandlerEvent::NAME, $event);
     return $event->handlers;

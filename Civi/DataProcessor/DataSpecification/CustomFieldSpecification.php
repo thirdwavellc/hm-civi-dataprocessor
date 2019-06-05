@@ -22,18 +22,39 @@ class CustomFieldSpecification extends FieldSpecification {
 
   public $customFieldId;
 
-  public function __construct($custom_group_name, $custom_group_table_name, $custom_group_title, $id, $column_name, $name, $type, $title, $alias) {
-    $this->customFieldColumnName = $column_name;
+  public $customField;
+
+  public function __construct($custom_group_name, $custom_group_table_name, $custom_group_title, $field, $alias) {
+    $this->customField = $field;
+    $this->customFieldColumnName = $field['column_name'];
     $this->customGroupName = $custom_group_name;
     $this->customGroupTableName = $custom_group_table_name;
     $this->customGroupTitle = $custom_group_title;
-    $this->customFieldId = $id;
-    $this->customFieldName = $name;
-    $this->customFieldTitle = $title;
+    $this->customFieldId = $field['id'];
+    $this->customFieldName = $field['name'];
+    $this->customFieldTitle = $field['label'];
 
-    $options = \CRM_Core_PseudoConstant::get('CRM_Core_BAO_CustomField', 'custom_' . $id, array(), 'search');
-    parent::__construct($column_name, $type, $custom_group_title. ': '.$title, $options, $alias);
+    $options = \CRM_Core_PseudoConstant::get('CRM_Core_BAO_CustomField', 'custom_' . $this->customFieldId, array(), 'search');
+    parent::__construct($field['column_name'], $field['data_type'], $custom_group_title. ': '.$this->customFieldTitle, $options, $alias);
 
+  }
+
+  /**
+   * Returns whether this field is a multiple select field.
+   *
+   * @return bool
+   */
+  public function isMultiple() {
+    if (!$this->getOptions()) {
+      return false;
+    }
+    if ($this->type == 'Boolean') {
+      return false;
+    }
+    if ($this->customField['html_type'] == 'Radio') {
+      return false;
+    }
+    return true;
   }
 
 }

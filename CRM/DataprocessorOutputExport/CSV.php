@@ -20,7 +20,7 @@ class CRM_DataprocessorOutputExport_CSV implements ExportOutputInterface {
    * @return bool
    */
   public function hasConfiguration() {
-    return false;
+    return true;
   }
 
   /**
@@ -31,7 +31,30 @@ class CRM_DataprocessorOutputExport_CSV implements ExportOutputInterface {
    * @param array $filter
    */
   public function buildConfigurationForm(\CRM_Core_Form $form, $output=array()) {
+    $form->add('text', 'delimiter', E::ts('Delimiter'), array(), true);
+    $form->add('text', 'enclosure', E::ts('Enclosure'), array(), true);
+    $form->add('text', 'escape_char', E::ts('Escape char'), array(), true);
 
+    $configuration = false;
+    if ($output && isset($output['configuration'])) {
+      $configuration = $output['configuration'];
+    }
+    if ($configuration && isset($configuration['delimiter']) && $configuration['delimiter']) {
+      $defaults['delimiter'] = $configuration['delimiter'];
+    } else {
+      $defaults['delimiter'] = ';';
+    }
+    if ($configuration && isset($configuration['enclosure']) && $configuration['enclosure']) {
+      $defaults['enclosure'] = $configuration['enclosure'];
+    } else {
+      $defaults['enclosure'] = '"';
+    }
+    if ($configuration && isset($configuration['escape_char']) && $configuration['escape_char']) {
+      $defaults['escape_char'] = $configuration['escape_char'];
+    } else {
+      $defaults['escape_char'] = '\\';
+    }
+    $form->setDefaults($defaults);
   }
 
   /**
@@ -41,7 +64,7 @@ class CRM_DataprocessorOutputExport_CSV implements ExportOutputInterface {
    * @return false|string
    */
   public function getConfigurationTemplateFileName() {
-    return false;
+    return "CRM/DataprocessorOutputExport/Form/Configuration/CSV.tpl";
   }
 
 
@@ -53,7 +76,11 @@ class CRM_DataprocessorOutputExport_CSV implements ExportOutputInterface {
    * @return array
    */
   public function processConfiguration($submittedValues, &$output) {
-    return array();
+    $configuration = array();
+    $configuration['delimiter'] = $submittedValues['delimiter'];
+    $configuration['enclosure'] = $submittedValues['enclosure'];
+    $configuration['escape_char'] = $submittedValues['escape_char'];
+    return $configuration;
   }
 
   /**
@@ -116,11 +143,11 @@ class CRM_DataprocessorOutputExport_CSV implements ExportOutputInterface {
 
     $path = CRM_Core_Config::singleton()->templateCompileDir . 'dataprocessor_export_csv/'. $filename;
     if ($sortFieldName) {
-      $dataProcessor->getDataFlow()->addSort($sortFieldName, $sortDirection);
+      $dataProcessorClass->getDataFlow()->addSort($sortFieldName, $sortDirection);
     }
 
-    self::createHeaderLine($path, $dataProcessorClass);
-    self::exportDataProcessor($path, $dataProcessorClass);
+    self::createHeaderLine($path, $dataProcessorClass, $outputBAO['configuration']);
+    self::exportDataProcessor($path, $dataProcessorClass, $outputBAO['configuration']);
 
     $mimeType = CRM_Utils_Request::retrieveValue('mime-type', 'String', '', FALSE);
 
@@ -160,7 +187,7 @@ class CRM_DataprocessorOutputExport_CSV implements ExportOutputInterface {
     CRM_Utils_File::restrictAccess($basePath.'/');
     $filename = $basePath.'/'. $name.'.csv';
 
-    self::createHeaderLine($filename, $dataProcessorClass);
+    self::createHeaderLine($filename, $dataProcessorClass, $outputBAO['configuration']);
 
     $count = $dataProcessorClass->getDataFlow()->recordCount();
     $recordsPerJob = self::RECORDS_PER_JOB;
@@ -176,7 +203,7 @@ class CRM_DataprocessorOutputExport_CSV implements ExportOutputInterface {
           'CRM_DataprocessorOutputExport_CSV',
           'exportBatch'
         ), //call back method
-        array($filename,$formValues, $dataProcessor['id'], $i, $recordsPerJob, $sortFieldName, $sortDirection), //parameters,
+        array($filename,$formValues, $dataProcessor['id'], $outputBAO['id'], $i, $recordsPerJob, $sortFieldName, $sortDirection), //parameters,
         $title
       );
       //now add this task to the queue
@@ -196,18 +223,18 @@ class CRM_DataprocessorOutputExport_CSV implements ExportOutputInterface {
     $runner->runAllViaWeb(); // does not return
   }
 
-  protected static function createHeaderLine($filename, \Civi\DataProcessor\ProcessorType\AbstractProcessorType $dataProcessor) {
+  protected static function createHeaderLine($filename, \Civi\DataProcessor\ProcessorType\AbstractProcessorType $dataProcessor, $configuration) {
     $file = fopen($filename, 'a');
     fwrite($file, "\xEF\xBB\xBF"); // BOF this will make sure excel opens the file correctly.
     $headerLine = array();
     foreach($dataProcessor->getDataFlow()->getOutputFieldHandlers() as $outputHandler) {
       $headerLine[] = $outputHandler->getOutputFieldSpecification()->title;
     }
-    fputcsv($file, $headerLine);
+    fputcsv($file, $headerLine, $configuration['delimiter'], $configuration['enclosure'], $configuration['escape_char']);
     fclose($file);
   }
 
-  protected static function exportDataProcessor($filename, \Civi\DataProcessor\ProcessorType\AbstractProcessorType $dataProcessor) {
+  protected static function exportDataProcessor($filename, \Civi\DataProcessor\ProcessorType\AbstractProcessorType $dataProcessor, $configuration) {
     $file = fopen($filename, 'a');
     try {
       while($record = $dataProcessor->getDataFlow()->nextRecord()) {
@@ -215,7 +242,7 @@ class CRM_DataprocessorOutputExport_CSV implements ExportOutputInterface {
         foreach($record as $field => $value) {
           $row[] = $value->formattedValue;
         }
-        fputcsv($file, $row);
+        fputcsv($file, $row, $configuration['delimiter'], $configuration['enclosure'], $configuration['escape_char']);
       }
     } catch (\Civi\DataProcessor\DataFlow\EndOfFlowException $e) {
       // Do nothing
@@ -223,8 +250,9 @@ class CRM_DataprocessorOutputExport_CSV implements ExportOutputInterface {
     fclose($file);
   }
 
-  public static function exportBatch(CRM_Queue_TaskContext $ctx, $filename, $params, $dataProcessorId, $offset, $limit, $sortFieldName = null, $sortDirection = 'ASC') {
+  public static function exportBatch(CRM_Queue_TaskContext $ctx, $filename, $params, $dataProcessorId, $outputId, $offset, $limit, $sortFieldName = null, $sortDirection = 'ASC') {
     $dataProcessor = civicrm_api3('DataProcessor', 'getsingle', array('id' => $dataProcessorId));
+    $output = civicrm_api3('DataProcessorOutput', 'getsingle', array('id' => $outputId));
     $dataProcessorClass = \CRM_Dataprocessor_BAO_DataProcessor::dataProcessorToClass($dataProcessor);
     CRM_Dataprocessor_Form_Output_AbstractUIOutputForm::applyFilters($dataProcessorClass, $params);
     if ($sortFieldName) {
@@ -232,7 +260,7 @@ class CRM_DataprocessorOutputExport_CSV implements ExportOutputInterface {
     }
     $dataProcessorClass->getDataFlow()->setOffset($offset);
     $dataProcessorClass->getDataFlow()->setLimit($limit);
-    self::exportDataProcessor($filename, $dataProcessorClass);
+    self::exportDataProcessor($filename, $dataProcessorClass, $output['configuration']);
     return TRUE;
   }
 
