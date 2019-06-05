@@ -6,8 +6,7 @@
 
 namespace Civi\DataProcessor\Event;
 
-use Civi\DataProcessor\DataSpecification\FieldSpecification;
-use Civi\DataProcessor\Source\SourceInterface;
+use Civi\DataProcessor\ProcessorType\AbstractProcessorType;
 use Symfony\Component\EventDispatcher\Event;
 
 class OutputHandlerEvent extends Event {
@@ -15,23 +14,17 @@ class OutputHandlerEvent extends Event {
   const NAME = 'dataprocessor.outputhandler';
 
   /**
-   * @var FieldSpecification
+   * @var \Civi\DataProcessor\ProcessorType\AbstractProcessorType
    */
-  public $fieldSpecification;
-
-  /**
-   * @var SourceInterface
-   */
-  public $dataSource;
+  public $dataProcessor;
 
   /**
    * @var array
    */
   public $handlers = array();
 
-  public function __construct(FieldSpecification $field, SourceInterface $source) {
-      $this->fieldSpecification = $field;
-      $this->dataSource = $source;
+  public function __construct(AbstractProcessorType $dataProcessor) {
+      $this->dataProcessor = $dataProcessor;
   }
 
 }

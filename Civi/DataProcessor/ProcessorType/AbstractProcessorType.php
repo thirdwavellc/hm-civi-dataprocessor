@@ -14,7 +14,9 @@ use Civi\DataProcessor\DataFlow\MultipleDataFlows\JoinInterface;
 use Civi\DataProcessor\DataFlow\MultipleDataFlows\JoinSpecification;
 use Civi\DataProcessor\DataFlow\SqlDataFlow;
 use Civi\DataProcessor\DataSpecification\FieldSpecification;
+use Civi\DataProcessor\Event\OutputHandlerEvent;
 use Civi\DataProcessor\FieldOutputHandler\AbstractFieldOutputHandler;
+use Civi\DataProcessor\FieldOutputHandler\ContactLinkFieldOutputHandler;
 use Civi\DataProcessor\FilterHandler\AbstractFilterHandler;
 use Civi\DataProcessor\Storage\StorageInterface;
 
@@ -110,6 +112,7 @@ abstract class AbstractProcessorType {
    * @return \Civi\DataProcessor\FieldOutputHandler\AbstractFieldOutputHandler[]
    */
   public function getAvailableOutputHandlers() {
+    $dispatcher = \Civi::dispatcher();
     $factory = dataprocessor_get_factory();
     $handlers = array();
     foreach($this->dataSources as $dataSource) {
@@ -118,6 +121,13 @@ abstract class AbstractProcessorType {
         $handlers = array_merge($handlers, $fieldHandlers);
       }
     }
+
+    $handlers['contact_link'] = new ContactLinkFieldOutputHandler($this);
+
+    $event = new OutputHandlerEvent($this);
+    $event->handlers = $handlers;
+    $dispatcher->dispatch(OutputHandlerEvent::NAME, $event);
+
     return $handlers;
   }
 

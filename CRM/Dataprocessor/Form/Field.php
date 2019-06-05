@@ -22,12 +22,30 @@ class CRM_Dataprocessor_Form_Field extends CRM_Core_Form {
 
   private $field;
 
+  private $snippet;
+
+  /**
+   * @var \Civi\DataProcessor\FieldOutputHandler\AbstractFieldOutputHandler
+   */
+  private $outputHandlerClass;
+
+  /**
+   * @var \Civi\DataProcessor\FieldOutputHandler\AbstractFieldOutputHandler[]
+   */
+  private $outputHandlers;
+
   /**
    * Function to perform processing before displaying form (overrides parent function)
    *
    * @access public
    */
   function preProcess() {
+    $this->snippet = CRM_Utils_Request::retrieve('snippet', 'String');
+    if ($this->snippet) {
+      $this->assign('suppressForm', TRUE);
+      $this->controller->_generateQFKey = FALSE;
+    }
+
     $this->dataProcessorId = CRM_Utils_Request::retrieve('data_processor_id', 'Integer');
     $this->assign('data_processor_id', $this->dataProcessorId);
     if ($this->dataProcessorId) {
@@ -38,9 +56,21 @@ class CRM_Dataprocessor_Form_Field extends CRM_Core_Form {
     $this->id = CRM_Utils_Request::retrieve('id', 'Integer');
     $this->assign('id', $this->id);
 
+
     if ($this->id) {
       $this->field = civicrm_api3('DataProcessorField', 'getsingle', array('id' => $this->id));
       $this->assign('field', $this->field);
+    }
+
+    $this->outputHandlers = $this->dataProcessorClass->getAvailableOutputHandlers();
+
+    $type = CRM_Utils_Request::retrieve('type', 'String');
+    if (!$type && $this->field) {
+      $type = $this->field['type'];
+    }
+    if ($type) {
+      $this->outputHandlerClass = $this->outputHandlers[$type];
+      $this->assign('has_configuration', $this->outputHandlerClass->hasConfiguration());
     }
 
     $title = E::ts('Data Processor Field');
@@ -54,16 +84,21 @@ class CRM_Dataprocessor_Form_Field extends CRM_Core_Form {
       $this->add('text', 'name', E::ts('Name'), array('size' => CRM_Utils_Type::HUGE), FALSE);
       $this->add('text', 'title', E::ts('Title'), array('size' => CRM_Utils_Type::HUGE), TRUE);
 
-      $outputHandlers = $this->dataProcessorClass->getAvailableOutputHandlers();
-      foreach($outputHandlers as $outputHandler) {
+      foreach($this->outputHandlers as $outputHandler) {
         $outputHandlersSelect[$outputHandler->getName()] = $outputHandler->getTitle();
       }
+      asort($outputHandlersSelect);
 
       $this->add('select', 'type', E::ts('Select Field'), $outputHandlersSelect, true, array(
         'style' => 'min-width:250px',
         'class' => 'crm-select2 huge',
         'placeholder' => E::ts('- select -'),
       ));
+
+      if ($this->outputHandlerClass && $this->outputHandlerClass->hasConfiguration()) {
+        $this->outputHandlerClass->buildConfigurationForm($this, $this->field);
+        $this->assign('configuration_template', $this->outputHandlerClass->getConfigurationTemplateFileName());
+      }
 
       $this->addButtons(array(
         array('type' => 'next', 'name' => E::ts('Save'), 'isDefault' => TRUE,),
@@ -123,6 +158,10 @@ class CRM_Dataprocessor_Form_Field extends CRM_Core_Form {
     $params['data_processor_id'] = $this->dataProcessorId;
     if ($this->id) {
       $params['id'] = $this->id;
+    }
+
+    if ($this->outputHandlerClass && $this->outputHandlerClass->hasConfiguration()) {
+      $params['configuration'] = $this->outputHandlerClass->processConfiguration($values);
     }
 
     civicrm_api3('DataProcessorField', 'create', $params);

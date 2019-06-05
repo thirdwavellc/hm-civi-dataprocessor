@@ -15,6 +15,7 @@ use Civi\DataProcessor\DataFlow\MultipleDataFlows\SimpleJoin;
 use Civi\DataProcessor\DataSpecification\AggregationField;
 use Civi\DataProcessor\DataSpecification\CustomFieldSpecification;
 use Civi\DataProcessor\DataSpecification\DataSpecification;
+use Civi\DataProcessor\DataSpecification\FieldExistsException;
 use Civi\DataProcessor\DataSpecification\FieldSpecification;
 use Civi\DataProcessor\DataSpecification\Utils as DataSpecificationUtils;
 use Civi\DataProcessor\ProcessorType\AbstractProcessorType;
@@ -328,17 +329,25 @@ abstract class AbstractCivicrmEntitySource extends AbstractSource {
    * @throws \Exception
    */
   public function ensureFieldInSource(FieldSpecification $fieldSpecification) {
-    if ($this->getAvailableFields()->doesFieldExist($fieldSpecification->name)) {
-      if ($fieldSpecification instanceof CustomFieldSpecification) {
-        $customGroupDataFlow = $this->ensureCustomGroup($fieldSpecification->customGroupTableName, $fieldSpecification->customGroupName);
-        if (!$customGroupDataFlow->getDataSpecification()->doesFieldExist($fieldSpecification->alias)) {
-          $customGroupDataFlow->getDataSpecification()
+    try {
+      if ($this->getAvailableFields()
+        ->doesFieldExist($fieldSpecification->name)) {
+        if ($fieldSpecification instanceof CustomFieldSpecification) {
+          $customGroupDataFlow = $this->ensureCustomGroup($fieldSpecification->customGroupTableName, $fieldSpecification->customGroupName);
+          if (!$customGroupDataFlow->getDataSpecification()
+            ->doesFieldExist($fieldSpecification->alias)) {
+            $customGroupDataFlow->getDataSpecification()
+              ->addFieldSpecification($fieldSpecification->alias, $fieldSpecification);
+          }
+        }
+        else {
+          $entityDataFlow = $this->ensureEntity();
+          $entityDataFlow->getDataSpecification()
             ->addFieldSpecification($fieldSpecification->alias, $fieldSpecification);
         }
-      } else {
-        $entityDataFlow = $this->ensureEntity();
-        $entityDataFlow->getDataSpecification()->addFieldSpecification($fieldSpecification->alias, $fieldSpecification);
       }
+    } catch (FieldExistsException $e) {
+      // Do nothing.
     }
   }
 

@@ -10,6 +10,8 @@ use Civi\DataProcessor\DataFlow\Sort\SortCompareFactory;
 use Civi\DataProcessor\DataSpecification\FieldSpecification;
 use Civi\DataProcessor\Event\FilterHandlerEvent;
 use Civi\DataProcessor\Event\OutputHandlerEvent;
+use Civi\DataProcessor\Event\SourceOutputHandlerEvent;
+use Civi\DataProcessor\FieldOutputHandler\ContactLinkFieldOutputHandler;
 use Civi\DataProcessor\FieldOutputHandler\FileFieldOutputHandler;
 use Civi\DataProcessor\FieldOutputHandler\OptionFieldOutputHandler;
 use Civi\DataProcessor\FieldOutputHandler\RawFieldOutputHandler;
@@ -277,7 +279,7 @@ class Factory {
   }
 
   public function getOutputHandlers(FieldSpecification $field, SourceInterface $source) {
-    $event = new OutputHandlerEvent($field, $source);
+    $event = new SourceOutputHandlerEvent($field, $source);
     $rawOutputhandler = new RawFieldOutputHandler($field, $source);
     $event->handlers[$rawOutputhandler->getName()] = $rawOutputhandler;
     if ($field->getOptions()) {
@@ -288,7 +290,7 @@ class Factory {
       $fileOutputHandler = new FileFieldOutputHandler($field, $source);
       $event->handlers[$fileOutputHandler->getName()] = $fileOutputHandler;
     }
-    $this->dispatcher->dispatch(OutputHandlerEvent::NAME, $event);
+    $this->dispatcher->dispatch(SourceOutputHandlerEvent::NAME, $event);
     return $event->handlers;
   }
 
