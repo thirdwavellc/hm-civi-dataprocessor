@@ -74,7 +74,10 @@ class CaseRolesFieldOutputHandler extends AbstractFieldOutputHandler {
     $this->outputFieldSpecification = new FieldSpecification($this->caseIdField->name, 'String', $title, null, $alias);
 
     if (isset($configuration['relationship_types']) && is_array($configuration['relationship_types'])) {
-      $this->relationship_type_ids = $configuration['relationship_types'];
+      $this->relationship_type_ids = array();
+      foreach($configuration['relationship_types'] as $rel_type) {
+        $this->relationship_type_ids[] = civicrm_api3('RelationshipType', 'getvalue', array('return' => 'id', 'name_a_b' => $rel_type));
+      };
     }
     if (isset($configuration['show_label'])) {
       $this->show_label = $configuration['show_label'];
@@ -148,7 +151,7 @@ class CaseRolesFieldOutputHandler extends AbstractFieldOutputHandler {
     $relationshipTypeApi = civicrm_api3('RelationshipType', 'get', array('is_active' => 1, 'options' => array('limit' => 0)));
     $relationshipTypes = array();
     foreach($relationshipTypeApi['values'] as $relationship_type) {
-      $relationshipTypes[$relationship_type['id']] = $relationship_type['label_a_b'];
+      $relationshipTypes[$relationship_type['name_a_b']] = $relationship_type['label_a_b'];
     }
 
     $form->add('select', 'case_id_field', E::ts('Case ID Field'), $fieldSelect, true, array(
