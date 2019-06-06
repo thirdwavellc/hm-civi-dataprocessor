@@ -106,4 +106,30 @@ class CRM_DataprocessorSearch_Form_CaseSearch extends CRM_DataprocessorSearch_Fo
     return $this->_taskList;
   }
 
+  /**
+   * Returns whether the ID field is Visible
+   *
+   * @return bool
+   */
+  protected function isIdFieldVisible() {
+    if (isset($this->dataProcessorOutput['configuration']['hide_id_fields']) && $this->dataProcessorOutput['configuration']['hide_id_fields']) {
+      return false;
+    }
+    return true;
+  }
+
+  /**
+   * Returns an array with hidden columns
+   *
+   * @return array
+   */
+  protected function getHiddenFields() {
+    $hiddenFields = array();
+    if (!$this->isIdFieldVisible()) {
+      $hiddenFields[] = $this->getIdFieldName();
+      $hiddenFields[] = $this->getContactIdFieldName();
+    }
+    return $hiddenFields;
+  }
+
 }

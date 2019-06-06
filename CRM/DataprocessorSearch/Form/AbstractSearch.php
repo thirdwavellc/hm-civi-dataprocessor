@@ -85,6 +85,19 @@ abstract class CRM_DataprocessorSearch_Form_AbstractSearch extends CRM_Dataproce
   }
 
   /**
+   * Returns an array with hidden columns
+   *
+   * @return array
+   */
+  protected function getHiddenFields() {
+    $hiddenFields = array();
+    if (!$this->isIdFieldVisible()) {
+      $hiddenFields[] = $this->getIdFieldName();
+    }
+    return $hiddenFields;
+  }
+
+  /**
    * Returns the url for view of the record action
    *
    * @param $row
@@ -278,19 +291,12 @@ abstract class CRM_DataprocessorSearch_Form_AbstractSearch extends CRM_Dataproce
    */
   protected function addColumnHeaders() {
     $sortFields = array();
-    $id_field = $this->getIdFieldName();
-    $idFieldVisible = $this->isIdFieldVisible();
+    $hiddenFields = $this->getHiddenFields();
     $columnHeaders = array();
     $sortColumnNr = 1;
     foreach($this->dataProcessorClass->getDataFlow()->getOutputFieldHandlers() as $outputFieldHandler) {
       $field = $outputFieldHandler->getOutputFieldSpecification();
-      $hiddenField = true;
-      if ($field->alias != $id_field) {
-        $hiddenField = false;
-      } elseif ($field->alias == $id_field && $idFieldVisible) {
-        $hiddenField = false;
-      }
-      if (!$hiddenField) {
+      if (!in_array($field->alias, $hiddenFields)) {
         $columnHeaders[$field->alias] = $field->title;
         $sortFields[$sortColumnNr] = array(
           'name' => $field->title,
