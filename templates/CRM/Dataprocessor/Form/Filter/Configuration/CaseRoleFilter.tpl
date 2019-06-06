@@ -4,4 +4,9 @@
     <div class="content">{$form.case_id_field.html}</div>
     <div class="clear"></div>
 </div>
+<div class="crm-section">
+    <div class="label">{$form.relationship_types.label}</div>
+    <div class="content">{$form.relationship_types.html}</div>
+    <div class="clear"></div>
+</div>
 {/crmScope}

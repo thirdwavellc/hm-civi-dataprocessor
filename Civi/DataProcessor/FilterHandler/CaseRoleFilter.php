@@ -25,6 +25,11 @@ class CaseRoleFilter extends AbstractFilterHandler {
    */
   protected $dataSource;
 
+  /**
+   * @var array
+   */
+  protected $relationship_type_ids = array();
+
   public function __construct() {
     parent::__construct();
   }
@@ -53,6 +58,10 @@ class CaseRoleFilter extends AbstractFilterHandler {
       $this->fieldSpecification->alias = $alias;
       $this->fieldSpecification->title = $title;
     }
+
+    if (isset($configuration['relationship_types']) && is_array($configuration['relationship_types'])) {
+      $this->relationship_type_ids = $configuration['relationship_types'];
+    }
   }
 
   /**
@@ -74,16 +83,21 @@ class CaseRoleFilter extends AbstractFilterHandler {
       $cids = array($cids);
     }
     $relationshipTableAlias = 'civicrm_relationship_'.$this->fieldSpecification->alias;
+    $relationshipFilters = array(
+      new SqlDataFlow\SimpleWhereClause($relationshipTableAlias, 'is_active', '=', '1'),
+      new SqlDataFlow\SimpleWhereClause($relationshipTableAlias, 'case_id', 'IS NOT NULL', 0),
+      new SqlDataFlow\SimpleWhereClause($relationshipTableAlias, 'contact_id_b', 'IN', $cids),
+    );
+    if (count($this->relationship_type_ids)) {
+      $relationshipFilters[] = new SqlDataFlow\SimpleWhereClause($relationshipTableAlias, 'relationship_type_id', 'IN', $this->relationship_type_ids, 'Integer');
+    }
+
     if ($dataFlow && $dataFlow instanceof SqlDataFlow) {
       $whereClause = new SqlDataFlow\InTableWhereClause(
         'case_id',
         'civicrm_relationship',
         $relationshipTableAlias,
-        array(
-          new SqlDataFlow\SimpleWhereClause($relationshipTableAlias, 'is_active', '=', '1'),
-          new SqlDataFlow\SimpleWhereClause($relationshipTableAlias, 'case_id', 'IS NOT NULL', 0),
-          new SqlDataFlow\SimpleWhereClause($relationshipTableAlias, 'contact_id_b', 'IN', $cids),
-        ),
+        $relationshipFilters,
         $dataFlow->getName(),
         $this->fieldSpecification->name,
         $filter['op']
@@ -111,18 +125,35 @@ class CaseRoleFilter extends AbstractFilterHandler {
    */
   public function buildConfigurationForm(\CRM_Core_Form $form, $filter=array()) {
     $fieldSelect = \CRM_Dataprocessor_Utils_DataSourceFields::getAvailableFilterFieldsInDataSources($filter['data_processor_id']);
+    $relationshipTypeApi = civicrm_api3('RelationshipType', 'get', array('is_active' => 1, 'options' => array('limit' => 0)));
+    $relationshipTypes = array();
+    foreach($relationshipTypeApi['values'] as $relationship_type) {
+      $relationshipTypes[$relationship_type['id']] = $relationship_type['label_a_b'];
+    }
 
     $form->add('select', 'case_id_field', E::ts('Case ID Field'), $fieldSelect, true, array(
       'style' => 'min-width:250px',
       'class' => 'crm-select2 huge',
       'placeholder' => E::ts('- select -'),
     ));
+
+    $form->add('select', 'relationship_types', E::ts('Restrict to roles'), $relationshipTypes, false, array(
+      'style' => 'min-width:250px',
+      'class' => 'crm-select2 huge',
+      'placeholder' => E::ts('- Filter on all roles -'),
+      'multiple' => true,
+    ));
+
     if (isset($filter['configuration'])) {
       $configuration = $filter['configuration'];
+      $defaults = array();
       if (isset($configuration['field']) && isset($configuration['datasource'])) {
-        $defaults['field'] = $configuration['datasource'] . '::' . $configuration['field'];
-        $form->setDefaults($defaults);
+        $defaults['case_id_field'] = $configuration['datasource'] . '::' . $configuration['field'];
       }
+      if (isset($configuration['relationship_types'])) {
+        $defaults['relationship_types'] = $configuration['relationship_types'];
+      }
+      $form->setDefaults($defaults);
     }
   }
 
@@ -147,6 +178,7 @@ class CaseRoleFilter extends AbstractFilterHandler {
     list($datasource, $field) = explode('::', $submittedValues['case_id_field'], 2);
     $configuration['field'] = $field;
     $configuration['datasource'] = $datasource;
+    $configuration['relationship_types'] = isset($submittedValues['relationship_types']) ? $submittedValues['relationship_types'] : array();
     return $configuration;
   }
 
