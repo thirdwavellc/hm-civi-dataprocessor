@@ -108,7 +108,7 @@ class SimpleSqlFilter extends AbstractFilterHandler {
    * @param array $filter
    */
   public function buildConfigurationForm(\CRM_Core_Form $form, $filter=array()) {
-    $fieldSelect = \CRM_Dataprocessor_Utils_DataSourceFields::getAvailableFieldsInDataSources($filter['data_processor_id']);
+    $fieldSelect = \CRM_Dataprocessor_Utils_DataSourceFields::getAvailableFilterFieldsInDataSources($filter['data_processor_id']);
 
     $form->add('select', 'field', E::ts('Field'), $fieldSelect, true, array(
       'style' => 'min-width:250px',

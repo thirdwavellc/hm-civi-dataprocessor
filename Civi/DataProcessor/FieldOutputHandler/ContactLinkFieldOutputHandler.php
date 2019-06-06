@@ -12,17 +12,12 @@ use Civi\DataProcessor\Source\SourceInterface;
 use Civi\DataProcessor\DataSpecification\FieldSpecification;
 use Civi\DataProcessor\FieldOutputHandler\FieldOutput;
 
-class ContactLinkFieldOutputHandler extends AbstractFieldOutputHandler {
+class ContactLinkFieldOutputHandler extends AbstractFieldOutputHandler implements OutputHandlerSortable {
 
   /**
    * @var \Civi\DataProcessor\Source\SourceInterface
    */
   protected $dataSource;
-
-  /**
-   * @var AbstractProcessorType
-   */
-  protected $dataProcessor;
 
   /**
    * @var SourceInterface
@@ -44,18 +39,23 @@ class ContactLinkFieldOutputHandler extends AbstractFieldOutputHandler {
    */
   protected $contactNameField;
 
+  /**
+   * @var FieldSpecification
+   */
+  protected $outputFieldSpecification;
 
-  public function __construct(AbstractProcessorType $dataProcessor) {
-    $this->dataProcessor = $dataProcessor;
+  /**
+   * @return \Civi\DataProcessor\DataSpecification\FieldSpecification
+   */
+  public function getOutputFieldSpecification() {
+    return $this->outputFieldSpecification;
   }
 
   /**
-   * Returns the name of the handler type.
-   *
-   * @return String
+   * @return \Civi\DataProcessor\DataSpecification\FieldSpecification
    */
-  public function getName() {
-    return 'contact_link';
+  public function getSortableInputFieldSpec() {
+    return $this->contactNameField;
   }
 
   /**
@@ -68,15 +68,6 @@ class ContactLinkFieldOutputHandler extends AbstractFieldOutputHandler {
   }
 
   /**
-   * Returns the title of this field
-   *
-   * @return String
-   */
-  public function getTitle() {
-    return E::ts('Link to view contact');
-  }
-
-  /**
    * Initialize the processor
    *
    * @param String $alias
@@ -85,7 +76,7 @@ class ContactLinkFieldOutputHandler extends AbstractFieldOutputHandler {
    * @param \Civi\DataProcessor\ProcessorType\AbstractProcessorType $processorType
    */
   public function initialize($alias, $title, $configuration) {
-    $this->outputFieldSpecification = new FieldSpecification($this->getName(), 'String', $title, null, $alias);
+    $this->outputFieldSpecification = new FieldSpecification($alias, 'String', $title, null, $alias);
     $this->contactIdSource = $this->dataProcessor->getDataSourceByName($configuration['contact_id_datasource']);
     $this->contactIdField = $this->contactIdSource->getAvailableFields()->getFieldSpecificationByName($configuration['contact_id_field']);
     $this->contactIdSource->ensureFieldInSource($this->contactIdField);
@@ -94,7 +85,7 @@ class ContactLinkFieldOutputHandler extends AbstractFieldOutputHandler {
     $this->contactNameField = $this->contactNameSource->getAvailableFields()->getFieldSpecificationByName($configuration['contact_name_field']);
     $this->contactNameSource->ensureFieldInSource($this->contactNameField);
 
-    //$this->dataSource->ensureFieldInSource($this->inputFieldSpec);
+    $this->outputFieldSpecification = new FieldSpecification($this->contactIdField->name, 'String', $title, null, $alias);
   }
 
   /**
@@ -158,9 +149,6 @@ class ContactLinkFieldOutputHandler extends AbstractFieldOutputHandler {
       }
       $form->setDefaults($defaults);
     }
-
-    // Example add a checkbox to the form.
-    // $form->add('checkbox', 'show_label', E::ts('Show label'));
   }
 
   /**

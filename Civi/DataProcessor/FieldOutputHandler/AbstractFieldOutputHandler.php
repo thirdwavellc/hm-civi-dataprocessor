@@ -12,28 +12,9 @@ use Civi\DataProcessor\ProcessorType\AbstractProcessorType;
 abstract class AbstractFieldOutputHandler {
 
   /**
-   * @var \Civi\DataProcessor\DataSpecification\FieldSpecification
+   * @var AbstractProcessorType
    */
-  protected $outputFieldSpecification;
-
-  /**
-   * @var \Civi\DataProcessor\Source\SourceInterface
-   */
-  protected $dataSource;
-
-  /**
-   * Returns the name of the handler type.
-   *
-   * @return String
-   */
-  abstract public function getName();
-
-  /**
-   * Returns the title of the handler type.
-   *
-   * @return String
-   */
-  abstract public function getTitle();
+  protected $dataProcessor;
 
   /**
    * Returns the data type of this field
@@ -53,19 +34,28 @@ abstract class AbstractFieldOutputHandler {
   abstract public function formatField($rawRecord, $formattedRecord);
 
   /**
-   * AbstractFieldOutputHandler constructor.
-   *
-   * @param \Civi\DataProcessor\Source\SourceInterface $dataSource
+   * @return \Civi\DataProcessor\DataSpecification\FieldSpecification
    */
-  public function __construct(\Civi\DataProcessor\Source\SourceInterface $dataSource) {
-    $this->dataSource = $dataSource;
+  abstract public function getOutputFieldSpecification();
+
+  /**
+   * AbstractFieldOutputHandler constructor.
+   */
+  public function __construct() {
   }
 
   /**
-   * @return \Civi\DataProcessor\Source\SourceInterface
+   * @param \Civi\DataProcessor\ProcessorType\AbstractProcessorType $dataProcessor
    */
-  public function getDataSource() {
-    return $this->dataSource;
+  public function setDataProcessor(AbstractProcessorType $dataProcessor) {
+    $this->dataProcessor = $dataProcessor;
+  }
+
+  /**
+   * @return \Civi\DataProcessor\ProcessorType\AbstractProcessorType
+   */
+  public function getDataProcessor() {
+    return $this->dataProcessor;
   }
 
   /**
@@ -77,15 +67,8 @@ abstract class AbstractFieldOutputHandler {
    */
   public function initialize($alias, $title, $configuration) {
     // Override this in child classes.
-    $this->outputFieldSpecification->title = $title;
-    $this->outputFieldSpecification->alias = $alias;
-  }
-
-  /**
-   * @return \Civi\DataProcessor\DataSpecification\FieldSpecification
-   */
-  public function getOutputFieldSpecification() {
-    return $this->outputFieldSpecification;
+    //$this->outputFieldSpecification->title = $title;
+    //$this->outputFieldSpecification->alias = $alias;
   }
 
   /**

@@ -85,10 +85,10 @@ class CRM_Dataprocessor_BAO_DataProcessor extends CRM_Dataprocessor_DAO_DataProc
     }
 
     $fields = civicrm_api3('DataProcessorField', 'get', array('data_processor_id' => $dataProcessor['id'], 'options' => array('limit' => 0)));
-    $outputHandlers = $dataProcessorClass->getAvailableOutputHandlers();
     foreach($fields['values'] as $field) {
-      if (isset($outputHandlers[$field['type']])) {
-        $outputHandler = $outputHandlers[$field['type']];
+      $outputHandler = $factory->getOutputHandlerByName($field['type']);
+      if ($outputHandler) {
+        $outputHandler->setDataProcessor($dataProcessorClass);
         $outputHandler->initialize($field['name'], $field['title'], $field['configuration']);
         $dataProcessorClass->addOutputFieldHandlers($outputHandler);
       }

@@ -17,11 +17,21 @@ class RawFieldOutputHandler extends AbstractFieldOutputHandler implements Output
    */
   protected $inputFieldSpec;
 
-  public function __construct(FieldSpecification $inputFieldSpec, SourceInterface $dataSource) {
-    parent::__construct($dataSource);
-    $this->inputFieldSpec = $inputFieldSpec;
-    $this->outputFieldSpecification = clone $inputFieldSpec;
-    $this->outputFieldSpecification->alias = $this->getName();
+  /**
+   * @var \Civi\DataProcessor\DataSpecification\FieldSpecification
+   */
+  protected $outputFieldSpec;
+
+  /**
+   * @var SourceInterface
+   */
+  protected $dataSource;
+
+  /**
+   * @return \Civi\DataProcessor\DataSpecification\FieldSpecification
+   */
+  public function getOutputFieldSpecification() {
+    return $this->outputFieldSpec;
   }
 
   /**
@@ -29,15 +39,6 @@ class RawFieldOutputHandler extends AbstractFieldOutputHandler implements Output
    */
   public function getSortableInputFieldSpec() {
     return $this->inputFieldSpec;
-  }
-
-  /**
-   * Returns the name of the handler type.
-   *
-   * @return String
-   */
-  public function getName() {
-    return 'raw_'.$this->inputFieldSpec->alias;
   }
 
   /**
@@ -50,15 +51,6 @@ class RawFieldOutputHandler extends AbstractFieldOutputHandler implements Output
   }
 
   /**
-   * Returns the title of this field
-   *
-   * @return String
-   */
-  public function getTitle() {
-    return E::ts('%1 :: %2', array(1 => $this->dataSource->getSourceTitle(), 2 => $this->inputFieldSpec->title));
-  }
-
-  /**
    * Initialize the processor
    *
    * @param String $alias
@@ -67,8 +59,13 @@ class RawFieldOutputHandler extends AbstractFieldOutputHandler implements Output
    * @param \Civi\DataProcessor\ProcessorType\AbstractProcessorType $processorType
    */
   public function initialize($alias, $title, $configuration) {
-    parent::initialize($alias, $title, $configuration);
+    $this->dataSource = $this->dataProcessor->getDataSourceByName($configuration['datasource']);
+    $this->inputFieldSpec = $this->dataSource->getAvailableFields()->getFieldSpecificationByName($configuration['field']);
     $this->dataSource->ensureFieldInSource($this->inputFieldSpec);
+
+    $this->outputFieldSpec = clone $this->inputFieldSpec;
+    $this->outputFieldSpec->alias = $alias;
+    $this->outputFieldSpec->title = $title;
   }
 
   /**
@@ -81,6 +78,87 @@ class RawFieldOutputHandler extends AbstractFieldOutputHandler implements Output
    */
   public function formatField($rawRecord, $formattedRecord) {
     return new FieldOutput($rawRecord[$this->inputFieldSpec->alias]);
+  }
+
+  /**
+   * Returns true when this handler has additional configuration.
+   *
+   * @return bool
+   */
+  public function hasConfiguration() {
+    return true;
+  }
+
+  /**
+   * When this handler has additional configuration you can add
+   * the fields on the form with this function.
+   *
+   * @param \CRM_Core_Form $form
+   * @param array $field
+   */
+  public function buildConfigurationForm(\CRM_Core_Form $form, $field=array()) {
+    $fieldSelect = $this->getFieldOptions($field['data_processor_id']);
+
+    $form->add('select', 'field', E::ts('Field'), $fieldSelect, true, array(
+      'style' => 'min-width:250px',
+      'class' => 'crm-select2 huge',
+      'placeholder' => E::ts('- select -'),
+    ));
+    if (isset($field['configuration'])) {
+      $configuration = $field['configuration'];
+      $defaults = array();
+      if (isset($configuration['field']) && isset($configuration['datasource'])) {
+        $defaults['field'] = $configuration['datasource'] . '::' . $configuration['field'];
+      }
+      $form->setDefaults($defaults);
+    }
+  }
+
+  /**
+   * When this handler has configuration specify the template file name
+   * for the configuration form.
+   *
+   * @return false|string
+   */
+  public function getConfigurationTemplateFileName() {
+    return "CRM/Dataprocessor/Form/Field/Configuration/RawFieldOutputHandler.tpl";
+  }
+
+
+  /**
+   * Process the submitted values and create a configuration array
+   *
+   * @param $submittedValues
+   * @return array
+   */
+  public function processConfiguration($submittedValues) {
+    list($datasource, $field) = explode('::', $submittedValues['field'], 2);
+    $configuration['field'] = $field;
+    $configuration['datasource'] = $datasource;
+    return $configuration;
+  }
+
+  /**
+   * Returns all possible fields
+   *
+   * @param $data_processor_id
+   *
+   * @return array
+   * @throws \Exception
+   */
+  protected function getFieldOptions($data_processor_id) {
+    $fieldSelect = \CRM_Dataprocessor_Utils_DataSourceFields::getAvailableFieldsInDataSources($data_processor_id, array($this, 'isFieldValid'));
+    return $fieldSelect;
+  }
+
+  /**
+   * Callback function for determining whether this field could be handled by this output handler.
+   *
+   * @param \Civi\DataProcessor\DataSpecification\FieldSpecification $field
+   * @return bool
+   */
+  public function isFieldValid(FieldSpecification $field) {
+    return true;
   }
 
 

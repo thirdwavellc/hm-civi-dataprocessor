@@ -298,12 +298,14 @@ abstract class CRM_DataprocessorSearch_Form_AbstractSearch extends CRM_Dataproce
       $field = $outputFieldHandler->getOutputFieldSpecification();
       if (!in_array($field->alias, $hiddenFields)) {
         $columnHeaders[$field->alias] = $field->title;
-        $sortFields[$sortColumnNr] = array(
-          'name' => $field->title,
-          'sort' => $field->alias,
-          'direction' => CRM_Utils_Sort::DONTCARE,
-        );
-        $sortColumnNr++;
+        if ($outputFieldHandler instanceof \Civi\DataProcessor\FieldOutputHandler\OutputHandlerSortable) {
+          $sortFields[$sortColumnNr] = array(
+            'name' => $field->title,
+            'sort' => $field->alias,
+            'direction' => CRM_Utils_Sort::DONTCARE,
+          );
+          $sortColumnNr++;
+        }
       }
     }
     $this->assign('columnHeaders', $columnHeaders);

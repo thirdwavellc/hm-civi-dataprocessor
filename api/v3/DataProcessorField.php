@@ -132,3 +132,47 @@ function civicrm_api3_data_processor_field_check_name($params) {
     'name' => $name,
   );
 }
+
+function civicrm_api3_data_processor_field_correct_field_configuration($params) {
+  $return = array();
+  $fields = CRM_COre_DAO::executeQuery("SELECT * FROM civicrm_data_processor_field");
+  $dataProcessors = array();
+  while($fields->fetch()) {
+    if (!isset($dataProcessors[$fields->data_processor_id])) {
+      $dataProcessors[$fields->data_processor_id] = civicrm_api3('DataProcessor', 'getsingle', array('id' => $fields->data_processor_id));
+    }
+    $dataProcessor = CRM_Dataprocessor_BAO_DataProcessor::dataProcessorToClass($dataProcessors[$fields->data_processor_id]);
+    foreach($dataProcessor->getDataSources() as $dataSource) {
+      foreach($dataSource->getAvailableFields()->getFields() as $dataSourceField) {
+        // Check fields for type raw_... or option_label_.... or file_...
+        // and change their type to raw, option_label or file
+        // and set the right configuration.
+        $newType = false;
+        $configuration = false;
+        if ($fields->type == 'raw_'.$dataSourceField->alias) {
+          $configuration = array('field' => $dataSourceField->name, 'datasource' => $dataSource->getSourceName());
+          $newType = 'raw';
+        } elseif ($fields->type == 'option_label_'.$dataSourceField->alias) {
+          $configuration = array('field' => $dataSourceField->name, 'datasource' => $dataSource->getSourceName());
+          $newType = 'option_label';
+        } elseif ($fields->type == 'file_field_'.$dataSourceField->alias) {
+          $configuration = array('field' => $dataSourceField->name, 'datasource' => $dataSource->getSourceName());
+          $newType = 'file_field';
+        }
+
+        if ($newType) {
+          CRM_Core_DAO::executeQuery("UPDATE civicrm_data_processor_field SET `type` = 'raw', `configuration` = %1 WHERE id = %2", array(
+            1 => array(json_encode($configuration), 'String'),
+            2 => array($fields->id, 'Integer')
+          ));
+          $return[$fields->id] = array(
+            'original_type' => $fields->type,
+            'type' => $newType,
+            'configuration' => $configuration,
+          );
+        }
+      }
+    }
+  }
+  return civicrm_api3_create_success($return);
+}

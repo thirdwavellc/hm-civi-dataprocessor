@@ -40,6 +40,7 @@ class CRM_Dataprocessor_Form_Field extends CRM_Core_Form {
    * @access public
    */
   function preProcess() {
+    $factory = dataprocessor_get_factory();
     $this->snippet = CRM_Utils_Request::retrieve('snippet', 'String');
     if ($this->snippet) {
       $this->assign('suppressForm', TRUE);
@@ -56,20 +57,23 @@ class CRM_Dataprocessor_Form_Field extends CRM_Core_Form {
     $this->id = CRM_Utils_Request::retrieve('id', 'Integer');
     $this->assign('id', $this->id);
 
-
     if ($this->id) {
       $this->field = civicrm_api3('DataProcessorField', 'getsingle', array('id' => $this->id));
       $this->assign('field', $this->field);
     }
+    if (!$this->field) {
+      $this->field['data_processor_id'] = $this->dataProcessorId;
+    }
 
-    $this->outputHandlers = $this->dataProcessorClass->getAvailableOutputHandlers();
+    $this->outputHandlers = $factory->getOutputHandlers();
+    asort($this->outputHandlers);
 
     $type = CRM_Utils_Request::retrieve('type', 'String');
-    if (!$type && $this->field) {
+    if (!$type && $this->field && isset($this->field['type'])) {
       $type = $this->field['type'];
     }
     if ($type) {
-      $this->outputHandlerClass = $this->outputHandlers[$type];
+      $this->outputHandlerClass = $factory->getOutputHandlerByName($type);
       $this->assign('has_configuration', $this->outputHandlerClass->hasConfiguration());
     }
 
@@ -84,12 +88,7 @@ class CRM_Dataprocessor_Form_Field extends CRM_Core_Form {
       $this->add('text', 'name', E::ts('Name'), array('size' => CRM_Utils_Type::HUGE), FALSE);
       $this->add('text', 'title', E::ts('Title'), array('size' => CRM_Utils_Type::HUGE), TRUE);
 
-      foreach($this->outputHandlers as $outputHandler) {
-        $outputHandlersSelect[$outputHandler->getName()] = $outputHandler->getTitle();
-      }
-      asort($outputHandlersSelect);
-
-      $this->add('select', 'type', E::ts('Select Field'), $outputHandlersSelect, true, array(
+      $this->add('select', 'type', E::ts('Select Field'), $this->outputHandlers, true, array(
         'style' => 'min-width:250px',
         'class' => 'crm-select2 huge',
         'placeholder' => E::ts('- select -'),

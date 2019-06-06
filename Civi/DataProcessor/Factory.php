@@ -7,29 +7,15 @@
 namespace Civi\DataProcessor;
 
 use Civi\DataProcessor\DataFlow\Sort\SortCompareFactory;
-use Civi\DataProcessor\DataSpecification\FieldSpecification;
 use Civi\DataProcessor\Event\FilterHandlerEvent;
 use Civi\DataProcessor\Event\OutputHandlerEvent;
 use Civi\DataProcessor\Event\SourceOutputHandlerEvent;
-use Civi\DataProcessor\FieldOutputHandler\ContactLinkFieldOutputHandler;
-use Civi\DataProcessor\FieldOutputHandler\FileFieldOutputHandler;
-use Civi\DataProcessor\FieldOutputHandler\OptionFieldOutputHandler;
-use Civi\DataProcessor\FieldOutputHandler\RawFieldOutputHandler;
-use Civi\DataProcessor\FilterHandler\SimpleSqlFilter;
 use Civi\DataProcessor\ProcessorType\AbstractProcessorType;
-use Civi\DataProcessor\Source\SourceInterface;
-use Symfony\Component\EventDispatcher\EventDispatcher;
-use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 use CRM_Dataprocessor_ExtensionUtil as E;
 
 
 class Factory {
-
-  /**
-   * @var EventDispatcher
-   */
-  protected $dispatcher;
 
   /**
    * @var array<String>
@@ -76,6 +62,16 @@ class Factory {
   protected $filterClasses = array();
 
   /**
+   * @var String[]
+   */
+  protected $outputHandlers = array();
+
+  /**
+   * @var String[]
+   */
+  protected $outputHandlerClasses = array();
+
+  /**
    * @var array<String>
    */
   protected $joins = array();
@@ -95,8 +91,6 @@ class Factory {
 
 
   public function __construct() {
-    $this->dispatcher = \Civi::dispatcher();
-
     $this->addDataProcessorType('default', 'Civi\DataProcessor\ProcessorType\DefaultProcessorType', E::ts('Default'));
     $this->addDataSource('activity', 'Civi\DataProcessor\Source\Activity\ActivitySource', E::ts('Activity'));
     $this->addDataSource('contact', 'Civi\DataProcessor\Source\Contact\ContactSource', E::ts('Contact'));
@@ -132,6 +126,11 @@ class Factory {
     $this->addFilter('simple_sql_filter', 'Civi\DataProcessor\FilterHandler\SimpleSqlFilter', E::ts('Field filter'));
     $this->addjoinType('simple_join', 'Civi\DataProcessor\DataFlow\MultipleDataFlows\SimpleJoin', E::ts('Select fields to join on'));
     $this->addjoinType('simple_non_required_join', 'Civi\DataProcessor\DataFlow\MultipleDataFlows\SimpleNonRequiredJoin', E::ts('Select fields to join on (not required)'));
+    $this->addOutputHandler('raw', 'Civi\DataProcessor\FieldOutputHandler\RawFieldOutputHandler', E::ts('Raw field value'));
+    $this->addOutputHandler('contact_link', 'Civi\DataProcessor\FieldOutputHandler\ContactLinkFieldOutputHandler', E::ts('Link to view contact'));
+    $this->addOutputHandler('file_field', 'Civi\DataProcessor\FieldOutputHandler\FileFieldOutputHandler', E::ts('File download link'));
+    $this->addOutputHandler('option_label', 'Civi\DataProcessor\FieldOutputHandler\OptionFieldOutputHandler', E::ts('Option label'));
+
   }
 
   /**
@@ -270,37 +269,43 @@ class Factory {
    * @param $name
    * @param $class
    * @param $label
+   */
+  public function addOutputHandler($name, $class, $label) {
+    $this->outputHandlerClasses[$name] = $class;
+    $this->outputHandlers[$name] = $label;
+  }
+
+  /**
+   * @return String[]
+   */
+  public function getOutputHandlers() {
+    return $this->outputHandlers;
+  }
+
+  /**
+   * @param $name
+   *
+   * @return \Civi\DataProcessor\FieldOutputHandler\AbstractFieldOutputHandler
+   */
+  public function getOutputHandlerByName($name) {
+    if ($name && isset($this->outputHandlerClasses[$name])) {
+      $class = $this->outputHandlerClasses[$name];
+      return new $class();
+    } else {
+      return null;
+    }
+  }
+
+  /**
+   * @param $name
+   * @param $class
+   * @param $label
    * @return Factory
    */
   public function addOutput($name, $class, $label) {
     $this->outputClasses[$name] = $class;
     $this->outputs[$name] = $label;
     return $this;
-  }
-
-  public function getOutputHandlers(FieldSpecification $field, SourceInterface $source) {
-    $event = new SourceOutputHandlerEvent($field, $source);
-    $rawOutputhandler = new RawFieldOutputHandler($field, $source);
-    $event->handlers[$rawOutputhandler->getName()] = $rawOutputhandler;
-    if ($field->getOptions()) {
-      $optionOutputHandler = new OptionFieldOutputHandler($field, $source);
-      $event->handlers[$optionOutputHandler->getName()] = $optionOutputHandler;
-    }
-    if ($field->type == 'File') {
-      $fileOutputHandler = new FileFieldOutputHandler($field, $source);
-      $event->handlers[$fileOutputHandler->getName()] = $fileOutputHandler;
-    }
-    $this->dispatcher->dispatch(SourceOutputHandlerEvent::NAME, $event);
-    return $event->handlers;
-  }
-
-  /**
-   * Add an event subscriber class
-   *
-   * @param \Symfony\Component\EventDispatcher\EventSubscriberInterface $subscriber
-   */
-  public function addSubscriber(EventSubscriberInterface $subscriber) {
-    $this->dispatcher->addSubscriber($subscriber);
   }
 
   /**
