@@ -130,6 +130,7 @@ class Factory {
     $this->addOutputHandler('contact_link', 'Civi\DataProcessor\FieldOutputHandler\ContactLinkFieldOutputHandler', E::ts('Link to view contact'));
     $this->addOutputHandler('file_field', 'Civi\DataProcessor\FieldOutputHandler\FileFieldOutputHandler', E::ts('File download link'));
     $this->addOutputHandler('option_label', 'Civi\DataProcessor\FieldOutputHandler\OptionFieldOutputHandler', E::ts('Option label'));
+    $this->addOutputHandler('case_roles', 'Civi\DataProcessor\FieldOutputHandler\CaseRolesFieldOutputHandler', E::ts('Case Roles'));
 
   }
 
