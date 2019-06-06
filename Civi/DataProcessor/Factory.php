@@ -124,6 +124,7 @@ class Factory {
     $this->addOutput('participant_search', 'CRM_DataprocessorSearch_ParticipantSearch', E::ts('Participant Search'));
     $this->addOutput('export_csv', 'CRM_DataprocessorOutputExport_CSV', E::ts('CSV Export'));
     $this->addFilter('simple_sql_filter', 'Civi\DataProcessor\FilterHandler\SimpleSqlFilter', E::ts('Field filter'));
+    $this->addFilter('case_role_filter', 'Civi\DataProcessor\FilterHandler\CaseRoleFilter', E::ts('Case Role filter'));
     $this->addjoinType('simple_join', 'Civi\DataProcessor\DataFlow\MultipleDataFlows\SimpleJoin', E::ts('Select fields to join on'));
     $this->addjoinType('simple_non_required_join', 'Civi\DataProcessor\DataFlow\MultipleDataFlows\SimpleNonRequiredJoin', E::ts('Select fields to join on (not required)'));
     $this->addOutputHandler('raw', 'Civi\DataProcessor\FieldOutputHandler\RawFieldOutputHandler', E::ts('Raw field value'));

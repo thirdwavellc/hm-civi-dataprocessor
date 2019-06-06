@@ -82,6 +82,10 @@ class SimpleWhereClause implements WhereClauseInterface {
       case '!=':
         return "(`{$this->table_alias}`.`{$this->field}` {$this->operator} {$this->value} OR `{$this->table_alias}`.`{$this->field}` IS NULL)";
         break;
+      case 'IS NULL':
+      case 'IS NOT NULL':
+        return "`{$this->table_alias}`.`{$this->field}` {$this->operator}";
+        break;
       default:
         return "`{$this->table_alias}`.`{$this->field}` {$this->operator} {$this->value}";
         break;
