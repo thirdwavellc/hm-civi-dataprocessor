@@ -68,9 +68,10 @@ class UIOutputHelper {
     if ($op == 'delete') {
       $output = civicrm_api3('DataProcessorOutput', 'getsingle', array('id' => $id));
       if (isset($output['configuration']['navigation_id'])) {
+        echo "here";
         $navId = $output['configuration']['navigation_id'];
-        \CRM_Core_BAO_Navigation::processDelete($navId);
-        \CRM_Core_BAO_Navigation::resetNavigation();
+        CRM_Core_BAO_Navigation::processDelete($navId);
+        CRM_Core_BAO_Navigation::resetNavigation();
         self::$rebuildMenu = TRUE;
       }
     } elseif ($op == 'edit') {
@@ -80,8 +81,8 @@ class UIOutputHelper {
       } elseif (!isset($params['configuration']['navigation_parent_path'])) {
         // Delete the navigation item
         $navId = $output['configuration']['navigation_id'];
-        \CRM_Core_BAO_Navigation::processDelete($navId);
-        \CRM_Core_BAO_Navigation::resetNavigation();
+        CRM_Core_BAO_Navigation::processDelete($navId);
+        CRM_Core_BAO_Navigation::resetNavigation();
         self::$rebuildMenu = TRUE;
       } else {
         $dataProcessor = civicrm_api3('DataProcessor', 'getsingle', array('id' => $output['data_processor_id']));

@@ -111,8 +111,21 @@ class CRM_Dataprocessor_Form_Output extends CRM_Core_Form {
     $session = CRM_Core_Session::singleton();
     $redirectUrl = CRM_Utils_System::url('civicrm/dataprocessor/form/edit', array('reset' => 1, 'action' => 'update', 'id' => $this->dataProcessorId));
     if ($this->_action == CRM_Core_Action::DELETE) {
+      $result = civicrm_api3('DataProcessorOutput', 'get', [
+        'sequential' => 1,
+        'return' => ["configuration"],
+        'id' => $this->id,
+      ]);
+      // Civi::log()->info(print_r($result));
+      // Civi::log()->error('{name}.  do that.', array('name' => 'Stanley Kubrick'));
+      // echo "<pre>";
+      // print_r($result['values'][0]['configuration']['navigation_id']);
+      // echo "</pre>";
+      // exit;
+      civicrm_api3('Navigation', 'delete', ['id' => $result['values'][0]['configuration']['navigation_id']]);
       civicrm_api3('DataProcessorOutput', 'delete', array('id' => $this->id));
       $session->setStatus(E::ts('Data Processor Output removed'), E::ts('Removed'), 'success');
+      CRM_Core_BAO_Navigation::resetNavigation();
       CRM_Utils_System::redirect($redirectUrl);
     }
 
