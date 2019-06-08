@@ -161,9 +161,10 @@ function civicrm_api3_data_processor_field_correct_field_configuration($params) 
         }
 
         if ($newType) {
-          CRM_Core_DAO::executeQuery("UPDATE civicrm_data_processor_field SET `type` = 'raw', `configuration` = %1 WHERE id = %2", array(
-            1 => array(json_encode($configuration), 'String'),
-            2 => array($fields->id, 'Integer')
+          CRM_Core_DAO::executeQuery("UPDATE civicrm_data_processor_field SET `type` = %1, `configuration` = %2 WHERE id = %3", array(
+            1 => array($newType, 'String'),
+            2 => array(json_encode($configuration), 'String'),
+            3 => array($fields->id, 'Integer')
           ));
           $return[$fields->id] = array(
             'original_type' => $fields->type,

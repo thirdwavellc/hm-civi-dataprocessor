@@ -134,6 +134,7 @@ class Factory {
     $this->addOutputHandler('option_label', 'Civi\DataProcessor\FieldOutputHandler\OptionFieldOutputHandler', E::ts('Option label'));
     $this->addOutputHandler('case_roles', 'Civi\DataProcessor\FieldOutputHandler\CaseRolesFieldOutputHandler', E::ts('Case Roles'));
     $this->addOutputHandler('groups_of_contact', 'Civi\DataProcessor\FieldOutputHandler\GroupsOfContactFieldOutputHandler', E::ts('Display the groups of a contact'));
+    $this->addOutputHandler('event_repeating_info', 'Civi\DataProcessor\FieldOutputHandler\EventRepeatingInfoFieldOutputHandler', E::ts('Display info about repeating event'));
 
   }
 
