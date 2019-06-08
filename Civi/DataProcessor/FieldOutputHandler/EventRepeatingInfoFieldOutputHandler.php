@@ -78,7 +78,7 @@ class EventRepeatingInfoFieldOutputHandler extends AbstractFieldOutputHandler im
     $event_id = $rawRecord[$this->inputFieldSpec->alias];
     $output = new FieldOutput();
     if ($event_id) {
-      $repeat = CRM_Core_BAO_RecurringEntity::getPositionAndCount($event_id, 'civicrm_event');
+      $repeat = \CRM_Core_BAO_RecurringEntity::getPositionAndCount($event_id, 'civicrm_event');
       if ($repeat) {
         $output->rawValue = $repeat;
         $output->formattedValue = E::ts('Repeating (%1 of %2)', array(1 => $repeat[0], 2 => $repeat[1]));
