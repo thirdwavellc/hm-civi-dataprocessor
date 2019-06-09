@@ -116,12 +116,7 @@ class CRM_Dataprocessor_Form_Output extends CRM_Core_Form {
         'return' => ["configuration"],
         'id' => $this->id,
       ]);
-      // Civi::log()->info(print_r($result));
-      // Civi::log()->error('{name}.  do that.', array('name' => 'Stanley Kubrick'));
-      // echo "<pre>";
-      // print_r($result['values'][0]['configuration']['navigation_id']);
-      // echo "</pre>";
-      // exit;
+
       civicrm_api3('Navigation', 'delete', ['id' => $result['values'][0]['configuration']['navigation_id']]);
       civicrm_api3('DataProcessorOutput', 'delete', array('id' => $this->id));
       $session->setStatus(E::ts('Data Processor Output removed'), E::ts('Removed'), 'success');

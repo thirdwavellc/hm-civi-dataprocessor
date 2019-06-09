@@ -68,7 +68,6 @@ class UIOutputHelper {
     if ($op == 'delete') {
       $output = civicrm_api3('DataProcessorOutput', 'getsingle', array('id' => $id));
       if (isset($output['configuration']['navigation_id'])) {
-        echo "here";
         $navId = $output['configuration']['navigation_id'];
         CRM_Core_BAO_Navigation::processDelete($navId);
         CRM_Core_BAO_Navigation::resetNavigation();
