@@ -23,7 +23,7 @@
 
     <div class="crm-submit-buttons">
         <a class="add button" title="{ts}Add Data Source{/ts}" href="{$addDataSourceUrl}">
-            <span><div class="icon add-icon ui-icon-circle-plus"></div>{ts}Add Data Source{/ts}</span></a>
+            <i class='crm-i fa-plus-circle'></i> {ts}Add Data Source{/ts}</a>
     </div>
 </div>
 {/crmScope}
