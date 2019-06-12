@@ -56,7 +56,7 @@
           var data_processor_id = {/literal}{$data_processor_id}{literal};
 
           $(document).on('change','#type_configuration select.crm-form-select',function () {
-            {/literal}{if ($action) == 1}{literal}
+            {/literal}{if $action eq 1}{literal}
               var titlepreset = $.trim($('#type_configuration select.crm-form-select option:selected').text().split("::").pop());
               $('#title').val(titlepreset).trigger('blur');
             {/literal}{/if}{literal};

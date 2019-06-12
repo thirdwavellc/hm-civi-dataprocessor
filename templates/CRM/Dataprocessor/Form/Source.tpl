@@ -58,7 +58,7 @@
 
         CRM.$(function($) {
           $('#type').on('change', function() {
-            {/literal}{if ($action) == 1}{literal}
+            {/literal}{if $action eq 1}{literal}
               var titlepreset = $.trim($('#type option:selected').text().split("::").pop());
               $('#title').val(titlepreset).trigger('blur');
             {/literal}{/if}{literal};
