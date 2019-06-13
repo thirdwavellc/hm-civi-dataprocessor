@@ -191,8 +191,19 @@ class CRM_Dataprocessor_Form_DataProcessor extends CRM_Core_Form {
   public function postProcess() {
     $session = CRM_Core_Session::singleton();
     if ($this->_action == CRM_Core_Action::DELETE) {
+      $result = civicrm_api3('DataProcessorOutput', 'get', [
+        'sequential' => 1,
+        'return' => ["configuration"],
+        'data_processor_id' => $this->dataProcessorId,
+      ]);	
+      foreach($result['values'] as $output_navigation){
+      	// $output_navigation['configuration']['navigation_id'] outputs the navigation id for each of the output
+      	civicrm_api3('Navigation', 'delete', ['id' => $output_navigation['configuration']['navigation_id']]);
+	  }
+
       civicrm_api3('DataProcessor', 'delete', array('id' => $this->dataProcessorId));
       $session->setStatus(E::ts('Data Processor removed'), E::ts('Removed'), 'success');
+      CRM_Core_BAO_Navigation::resetNavigation();
       $redirectUrl = $session->popUserContext();
       CRM_Utils_System::redirect($redirectUrl);
     }
