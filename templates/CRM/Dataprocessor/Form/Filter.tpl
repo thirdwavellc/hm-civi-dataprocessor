@@ -24,6 +24,11 @@
             <div class="content">{$form.type.html}</div>
             <div class="clear"></div>
         </div>
+        <div id="type_configuration">
+            {if ($configuration_template)}
+                {include file=$configuration_template}
+            {/if}
+        </div>            
         <div class="crm-section">
             <div class="label">{$form.title.label}</div>
             <div class="content">
@@ -48,12 +53,6 @@
             <div class="content">{$form.is_required.html}</div>
             <div class="clear"></div>
         </div>
-
-        <div id="type_configuration">
-            {if ($configuration_template)}
-                {include file=$configuration_template}
-            {/if}
-        </div>
     </div>
 
     <script type="text/javascript">
@@ -61,6 +60,13 @@
         CRM.$(function($) {
           var id = {/literal}{if ($filter)}{$filter.id}{else}false{/if}{literal};
           var data_processor_id = {/literal}{$data_processor_id}{literal};
+
+          $(document).on('change','#type_configuration select.crm-form-select',function () {
+            {/literal}{if $action eq 1}{literal}
+              var titlepreset = $.trim($('#type_configuration select.crm-form-select option:selected').text().split("::").pop());
+              $('#title').val(titlepreset).trigger('blur');
+            {/literal}{/if}{literal};
+          });
 
           $('#type').on('change', function() {
             var type = $('#type').val();

@@ -58,6 +58,10 @@
 
         CRM.$(function($) {
           $('#type').on('change', function() {
+            {/literal}{if $action eq 1}{literal}
+              var titlepreset = $.trim($('#type option:selected').text().split("::").pop());
+              $('#title').val(titlepreset).trigger('blur');
+            {/literal}{/if}{literal};
             var type = $('#type').val();
             var join_type = $('#join_type').val();
             var id = {/literal}{if ($source)}{$source.id}{else}false{/if}{literal};
