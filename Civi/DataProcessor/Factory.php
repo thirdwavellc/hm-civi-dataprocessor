@@ -110,6 +110,7 @@ class Factory {
     $this->addDataSource('relationship_type', 'Civi\DataProcessor\Source\Contact\RelationshipTypeSource', E::ts('Relationship Type'));
     $this->addDataSource('event', 'Civi\DataProcessor\Source\Event\EventSource', E::ts('Event'));
     $this->addDataSource('participant', 'Civi\DataProcessor\Source\Event\ParticipantSource', E::ts('Participant'));
+    $this->addDataSource('line_item', 'Civi\DataProcessor\Source\Price\LineItemSource', E::ts('Line Item'));
     $this->addDataSource('mailing', 'Civi\DataProcessor\Source\Mailing\MailingSource', E::ts('Mailing'));
     $this->addDataSource('mailing_job', 'Civi\DataProcessor\Source\Mailing\MailingJobSource', E::ts('Mailing Job'));
     $this->addDataSource('mailing_group', 'Civi\DataProcessor\Source\Mailing\MailingGroupSource', E::ts('Mailing Group'));
