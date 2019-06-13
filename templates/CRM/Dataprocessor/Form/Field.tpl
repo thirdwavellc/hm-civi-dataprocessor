@@ -57,7 +57,7 @@
 
           $(document).on('change','#type_configuration select.crm-form-select',function () {
             {/literal}{if $action eq 1}{literal}
-              var titlepreset = $.trim($('#type_configuration select.crm-form-select option:selected').text().split("::").pop());
+              var titlepreset = $.trim($('#type_configuration select.crm-form-select option:selected').first().text().split("::").pop());
               $('#title').val(titlepreset).trigger('blur');
             {/literal}{/if}{literal};
           });
