@@ -24,6 +24,12 @@ class UIOutputHelper {
    */
   public static function alterMenu(&$items) {
     $factory = dataprocessor_get_factory();
+    // Check whether the factory exists. Usually just after
+    // installation the factory does not exists but then no
+    // outputs exists either. So we can safely return this function.
+    if (!$factory) {
+      return;
+    }
 
     $sql = "
     SELECT o.permission, p.id, p.title, o.configuration, o.type, o.id as output_id 

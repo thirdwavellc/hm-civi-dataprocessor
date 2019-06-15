@@ -10,7 +10,11 @@ use \Symfony\Component\DependencyInjection\Definition;
  * @return \Civi\DataProcessor\Factory
  */
 function dataprocessor_get_factory() {
-  return \Civi::service('data_processor_factory');
+  $container = \Civi::container();
+  if ($container->has('data_processor_factory')) {
+    return \Civi::service('data_processor_factory');
+  }
+  return null;
 }
 
 /**
