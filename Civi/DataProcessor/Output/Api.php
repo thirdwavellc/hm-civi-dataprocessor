@@ -386,6 +386,7 @@ class Api implements OutputInterface, API_ProviderInterface, EventSubscriberInte
       if (isset($params['debug']) && $params['debug']) {
         $return['debug_info'] = $dataProcessorClass->getDataFlow()->getDebugInformation();
       }
+
       return $return;
     }
   }

@@ -16,7 +16,7 @@ class CountFieldSpecification extends FieldSpecification {
    * @return string
    */
   public function getSqlSelectStatement($table_alias) {
-    return "COUNT(`{$table_alias}`.`{$this->name}`) AS `{$this->alias}`";
+    return "COUNT(DISTINCT `{$table_alias}`.`{$this->name}`) AS `{$this->alias}`";
   }
 
 }

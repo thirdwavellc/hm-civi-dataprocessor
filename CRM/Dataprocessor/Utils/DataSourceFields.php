@@ -17,12 +17,12 @@ class CRM_Dataprocessor_Utils_DataSourceFields {
    * @return array
    * @throws \Exception
    */
-  public static function getAvailableFieldsInDataSources($dataProcessorId, $filterFieldsCallback=null) {
+  public static function getAvailableFieldsInDataSources($dataProcessorId, $callback=null) {
     $dataProcessor = civicrm_api3('DataProcessor', 'getsingle', array('id' => $dataProcessorId));
     $dataProcessorClass = \CRM_Dataprocessor_BAO_DataProcessor::dataProcessorToClass($dataProcessor);
     $fieldSelect = array();
     foreach($dataProcessorClass->getDataSources() as $dataSource) {
-      $fieldSelect = array_merge($fieldSelect, self::getAvailableFieldsInDataSource($dataSource, $dataSource->getSourceTitle().' :: ', $dataSource->getSourceName().'::', $filterFieldsCallback));
+      $fieldSelect = array_merge($fieldSelect, self::getAvailableFieldsInDataSource($dataSource, $dataSource->getSourceTitle().' :: ', $dataSource->getSourceName().'::', $callback));
     }
     return $fieldSelect;
   }
@@ -38,15 +38,15 @@ class CRM_Dataprocessor_Utils_DataSourceFields {
    * @return array
    * @throws \Exception
    */
-  public static function getAvailableFieldsInDataSource(SourceInterface $dataSource, $titlePrefix='', $namePrefix='', $filterFieldsCallback=null) {
+  public static function getAvailableFieldsInDataSource(SourceInterface $dataSource, $titlePrefix='', $namePrefix='', $callback=null) {
     $fieldSelect = array();
-    foreach($dataSource->getAvailableFields()->getFields() as $field) {
+    foreach($dataSource->getAvailableFields()->getFields() as $fieldName => $field) {
       $isFieldValid = true;
-      if ($filterFieldsCallback) {
-        $isFieldValid = call_user_func($filterFieldsCallback, $field);
+      if ($callback) {
+        $isFieldValid = call_user_func($callback, $field);
       }
       if ($isFieldValid) {
-        $fieldSelect[$namePrefix . $field->name] = $titlePrefix . $field->title;
+        $fieldSelect[$namePrefix . $fieldName] = $titlePrefix . $field->title;
       }
     }
     return $fieldSelect;
@@ -66,7 +66,7 @@ class CRM_Dataprocessor_Utils_DataSourceFields {
     $dataProcessorClass = \CRM_Dataprocessor_BAO_DataProcessor::dataProcessorToClass($dataProcessor);
     $fieldSelect = array();
     foreach($dataProcessorClass->getDataSources() as $dataSource) {
-      $fieldSelect = array_merge($fieldSelect, self::getAvailableFieldsInDataSource($dataSource, $dataSource->getSourceTitle().' :: ', $dataSource->getSourceName().'::', $filterFieldsCallback));
+      $fieldSelect = array_merge($fieldSelect, self::getAvailableFilterFieldsInDataSource($dataSource, $dataSource->getSourceTitle().' :: ', $dataSource->getSourceName().'::', $filterFieldsCallback));
     }
     return $fieldSelect;
   }
@@ -84,13 +84,13 @@ class CRM_Dataprocessor_Utils_DataSourceFields {
    */
   public static function getAvailableFilterFieldsInDataSource(SourceInterface $dataSource, $titlePrefix='', $namePrefix='', $filterFieldsCallback=null) {
     $fieldSelect = array();
-    foreach($dataSource->getAvailableFilterFields()->getFields() as $field) {
+    foreach($dataSource->getAvailableFilterFields()->getFields() as $fieldName => $field) {
       $isFieldValid = true;
       if ($filterFieldsCallback) {
         $isFieldValid = call_user_func($filterFieldsCallback, $field);
       }
       if ($isFieldValid) {
-        $fieldSelect[$namePrefix . $field->name] = $titlePrefix . $field->title;
+        $fieldSelect[$namePrefix . $fieldName] = $titlePrefix . $field->title;
       }
     }
     return $fieldSelect;
