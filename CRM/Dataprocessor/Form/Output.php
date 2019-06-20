@@ -117,7 +117,10 @@ class CRM_Dataprocessor_Form_Output extends CRM_Core_Form {
         'id' => $this->id,
       ]);
 
-      civicrm_api3('Navigation', 'delete', ['id' => $result['values'][0]['configuration']['navigation_id']]);
+      $navigation_id = $result['values'][0]['configuration']['navigation_id'] ?? NULL;
+      if ($navigation_id) {
+        civicrm_api3('Navigation', 'delete', ['id' => $navigation_id]);
+      }
       civicrm_api3('DataProcessorOutput', 'delete', array('id' => $this->id));
       $session->setStatus(E::ts('Data Processor Output removed'), E::ts('Removed'), 'success');
       CRM_Core_BAO_Navigation::resetNavigation();
