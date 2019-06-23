@@ -49,28 +49,21 @@ class CRM_Myextension_MyHeadlessTest extends \PHPUnit_Framework_TestCase impleme
 
 	    // Retrieving the data processor
         $result = civicrm_api3('DataProcessor', 'get');
-
+        if(isset($result['id'])){
         // Retrieving the id of data processor
-        $id = $result['id'];
+          $id = $result['id'];
 
-        $this->assertEquals('test', $result['values'][$id]['name']);
-        $this->assertEquals('title', $result['values'][$id]['title']);
-        $this->assertEquals('Creating a Test Description', $result['values'][$id]['description']);
-        $this->assertEquals(1, $result['values'][$id]['is_active']);
+          $this->assertEquals('test', $result['values'][$id]['name']);
+          $this->assertEquals('title', $result['values'][$id]['title']);
+          $this->assertEquals('Creating a Test Description', $result['values'][$id]['description']);
+          $this->assertEquals(1, $result['values'][$id]['is_active']);
+        }
+        else{
+          echo "DataProcessor Failed to setup";
+          $this->assertFalse(true);    
+        }
 
   }
-  /**
-   * Example: Test that a version is returned.
-   */
-  public function testWellFormedVersion() {
-    $this->assertRegExp('/^([0-9\.]|alpha|beta)*$/', \CRM_Utils_System::version());
-  }
 
-  /**
-   * Example: Test that we're using a fake CMS.
-   */
-  public function testWellFormedUF() {
-    $this->assertEquals('UnitTests', CIVICRM_UF);
-  }
 
 }
