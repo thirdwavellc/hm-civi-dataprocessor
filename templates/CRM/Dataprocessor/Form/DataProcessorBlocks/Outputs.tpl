@@ -15,7 +15,10 @@
                     <a href="{crmURL p="civicrm/dataprocessor/form/output" q="reset=1&action=update&data_processor_id=`$output.data_processor_id`&id=`$output.id`"}">{ts}Edit{/ts}</a>
                     <a href="{crmURL p="civicrm/dataprocessor/form/output" q="reset=1&action=delete&data_processor_id=`$output.data_processor_id`&id=`$output.id`"}">{ts}Remove{/ts}</a>
                     <br/>
-                    <a href="{crmURL p="`$output.navigation_url`"}">{ts}Execute{/ts}</a>    
+
+                    {if isset($output.navigation_url) }
+                        <a href="{crmURL p="`$output.navigation_url`"}">{ts}Execute{/ts}</a>    
+                    {/if}
                 </td>
             </tr>
         {/foreach}

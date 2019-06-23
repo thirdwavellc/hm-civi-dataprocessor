@@ -131,20 +131,25 @@ class CRM_Dataprocessor_Form_DataProcessor extends CRM_Core_Form {
     $outputs = $outputs['values'];
     foreach($outputs as $idx => $output) {
       
-      $navigation_result = civicrm_api3('Navigation', 'get', [
-        'sequential' => 1,
-        'return' => ["url"],
-        'id' => $output['configuration']['navigation_id'],
-      ]);
-      $navigation_url = $navigation_result['values'][0]['url'];
+      if (array_key_exists("navigation_id",$output['configuration']))
+      {
+        $navigation_result = civicrm_api3('Navigation', 'get', [
+          'sequential' => 1,
+          'return' => ["url"],
+          'id' => $output['configuration']['navigation_id'],
+        ]);
+        $navigation_url = $navigation_result['values'][0]['url'];
+        
+        $outputs[$idx]['navigation_url'] = $navigation_url;
+      }
       if (isset($types[$output['type']])) {
         $outputs[$idx]['type_name'] = $types[$output['type']];
       } else {
         $outputs[$idx]['type_name'] = '';
       }
       $outputs[$idx]['configuration_link'] = '';
-      $outputs[$idx]['navigation_url'] = $navigation_url;
     }
+
     $this->assign('outputs', $outputs);
   }
 
