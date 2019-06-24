@@ -8,6 +8,16 @@ use CRM_Dataprocessor_ExtensionUtil as E;
 
 class CRM_DataprocessorSearch_Form_ActivitySearch extends CRM_DataprocessorSearch_Form_AbstractSearch {
 
+
+  /**
+   * Returns the name of the default Entity
+   *
+   * @return string
+   */
+  public function getDefaultEntity() {
+    return 'Contact';
+  }
+
   /**
    * Returns the url for view of the record action
    *

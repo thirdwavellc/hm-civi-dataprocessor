@@ -130,6 +130,18 @@ class CRM_Dataprocessor_Form_DataProcessor extends CRM_Core_Form {
     $outputs = civicrm_api3('DataProcessorOutput', 'get', array('data_processor_id' => $this->dataProcessorId, 'options' => array('limit' => 0)));
     $outputs = $outputs['values'];
     foreach($outputs as $idx => $output) {
+      
+      if (array_key_exists("navigation_id",$output['configuration']))
+      {
+        $navigation_result = civicrm_api3('Navigation', 'get', [
+          'sequential' => 1,
+          'return' => ["url"],
+          'id' => $output['configuration']['navigation_id'],
+        ]);
+        $navigation_url = $navigation_result['values'][0]['url'];
+        
+        $outputs[$idx]['navigation_url'] = $navigation_url;
+      }
       if (isset($types[$output['type']])) {
         $outputs[$idx]['type_name'] = $types[$output['type']];
       } else {
@@ -137,6 +149,7 @@ class CRM_Dataprocessor_Form_DataProcessor extends CRM_Core_Form {
       }
       $outputs[$idx]['configuration_link'] = '';
     }
+
     $this->assign('outputs', $outputs);
   }
 

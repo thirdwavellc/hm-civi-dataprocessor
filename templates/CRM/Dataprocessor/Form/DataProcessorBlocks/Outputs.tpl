@@ -10,10 +10,15 @@
         {foreach from=$outputs item=output}
             <tr>
                 <td>{$output.type_name}</td>
-                <td>
+                <td style="width:20%"></td>
+                <td style="width:20%">
                     <a href="{crmURL p="civicrm/dataprocessor/form/output" q="reset=1&action=update&data_processor_id=`$output.data_processor_id`&id=`$output.id`"}">{ts}Edit{/ts}</a>
-                </td><td>
                     <a href="{crmURL p="civicrm/dataprocessor/form/output" q="reset=1&action=delete&data_processor_id=`$output.data_processor_id`&id=`$output.id`"}">{ts}Remove{/ts}</a>
+                    <br/>
+
+                    {if isset($output.navigation_url) }
+                        <a href="{crmURL p="`$output.navigation_url`"}">{ts}Execute{/ts}</a>    
+                    {/if}
                 </td>
             </tr>
         {/foreach}
