@@ -19,6 +19,7 @@ The extension is licensed under [AGPL-3.0](LICENSE.txt).
 ## Documentation
 
 * [How to create a search with the data processor](docs/how_to_create_search.md)
+* [Using API output to fetch the results in data processor](docs/HowToAddAPIDataOutput.md)
 * How to export and import a data processor
 
 ## Developer documentation
