@@ -239,6 +239,7 @@ abstract class CRM_DataprocessorSearch_Form_AbstractSearch extends CRM_Dataproce
     $pagerParams['pageID'] = $pageId;
     $this->pager = new CRM_Utils_Pager($pagerParams);
     $this->assign('pager', $this->pager);
+    $this->controller->set('rowCount', $this->dataProcessorClass->getDataFlow()->recordCount());
 
     $i=0;
     try {

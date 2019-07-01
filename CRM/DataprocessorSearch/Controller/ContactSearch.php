@@ -16,6 +16,18 @@
  */
 class CRM_DataprocessorSearch_Controller_ContactSearch extends CRM_Core_Controller {
 
+  protected $dataProcessor;
+
+  /**
+   * Setter function to set the data porcessor
+   *
+   * @param $dataProcessorName
+   * @param $dataProcessor
+   */
+  public function setDataProcessor($dataProcessorName, $dataProcessor) {
+    $this->dataProcessor = $dataProcessor;
+  }
+
   /**
    * Class constructor.
    *
@@ -26,7 +38,7 @@ class CRM_DataprocessorSearch_Controller_ContactSearch extends CRM_Core_Controll
   public function __construct($title = NULL, $modal = TRUE, $action = CRM_Core_Action::NONE) {
     parent::__construct($title, $modal);
 
-    $this->_stateMachine = new CRM_DataprocessorSearch_StateMachine_ContactSearch($this, $action);
+    $this->_stateMachine = new CRM_Contact_StateMachine_DataProcessorContactSearch($this, $action);
 
     // create and instantiate the pages
     $this->addPages($this->_stateMachine, $action);
@@ -72,7 +84,7 @@ class CRM_DataprocessorSearch_Controller_ContactSearch extends CRM_Core_Controll
    * @return mixed
    */
   public function selectorName() {
-    return $this->get('selectorName');
+    return 'CRM_Contact_Selector_DataProcessorContactSearch';
   }
 
 }

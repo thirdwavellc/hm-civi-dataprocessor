@@ -277,4 +277,11 @@ abstract class SqlDataFlow extends AbstractDataFlow {
     );
   }
 
+  /**
+   * @return \CRM_Core_DAO|null
+   */
+  public function getDataObject() {
+    return $this->dao;
+  }
+
 }
