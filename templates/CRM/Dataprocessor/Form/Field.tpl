@@ -3,7 +3,7 @@
     {* Are you sure to delete form *}
     <h3>{ts}Delete Field{/ts}</h3>
     <div class="crm-block crm-form-block crm-data-processor_label-block">
-        <div class="crm-section">{ts 1=$field->title}Are you sure to delete field '%1'?{/ts}</div>
+        <div class="crm-section">{ts 1=$field.title}Are you sure to delete field '%1'?{/ts}</div>
     </div>
 
     <div class="crm-submit-buttons">
