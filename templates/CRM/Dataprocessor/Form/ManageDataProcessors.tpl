@@ -63,6 +63,7 @@
                     <th scope="col" >{ts}Description{/ts}</th>
                     <th scope="col" >{ts}Is active{/ts}</th>
                     <th scope="col" >{ts}Status{/ts}</th>
+                    <th scope="col" >{ts}Outputs{/ts}</th>
                     <th>&nbsp;</th>
                 </tr>
                 </thead>
@@ -87,14 +88,23 @@
                                 </span>
                             {/if}
                         </td>
+                        <td class="crm-dataprocessor-navigation">
+                            {if $data_processor.navigation}
+                                {foreach from=$data_processor.navigation item=navigationItem}
+                                    <a href="{$navigationItem.url}"
+                                       class="action-item crm-hover-button" title="{$navigationItem.title}">{$navigationItem.title}</a>
+                                {/foreach}
+                            {/if}
+                        </td>
                         <td>
-                            <span>
+                          <span>
                             <a href="{crmURL p='civicrm/dataprocessor/form/edit' q="reset=1&action=update&id=`$data_processor.id`"}"
                                      class="action-item crm-hover-button" title="{ts}Edit Data Processor{/ts}">{ts}Edit{/ts}</a>
                             <a href="{crmURL p='civicrm/dataprocessor/form/edit' q="reset=1&action=export&id=`$data_processor.id`"}"
                                      class="action-item crm-hover-button" title="{ts}Export Data Processor{/ts}">{ts}Export{/ts}</a>
                             <a href="{crmURL p='civicrm/dataprocessor/form/edit' q="reset=1&action=delete&id=`$data_processor.id`"}"
-                                 class="action-item crm-hover-button" title="{ts}Delete Data Processor{/ts}">{ts}Delete{/ts}</a></span>
+                                 class="action-item crm-hover-button" title="{ts}Delete Data Processor{/ts}">{ts}Delete{/ts}</a>
+                          </span>
 
                         </td>
                     </tr>

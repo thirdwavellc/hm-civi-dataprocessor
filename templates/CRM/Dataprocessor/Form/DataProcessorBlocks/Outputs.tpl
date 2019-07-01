@@ -17,7 +17,7 @@
                     <br/>
 
                     {if isset($output.navigation_url) }
-                        <a href="{crmURL p="`$output.navigation_url`"}">{ts}Execute{/ts}</a>    
+                        <a href="{$output.navigation_url}">{ts}Execute{/ts}</a>
                     {/if}
                 </td>
             </tr>
