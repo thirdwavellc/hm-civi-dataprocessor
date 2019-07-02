@@ -29,7 +29,11 @@
                         <th scope="col"></th>
                         {foreach from=$columnHeaders key=headerName item=headerTitle}
                             <th scope="col">
-                                {$sort->_response.$headerName.link}
+                                {if ($sort->_response.$headerName)}
+                                    {$sort->_response.$headerName.link}
+                                {else}
+                                    {$headerTitle}
+                                {/if}
                             </th>
                         {/foreach}
                         <th scope="col"></th>
