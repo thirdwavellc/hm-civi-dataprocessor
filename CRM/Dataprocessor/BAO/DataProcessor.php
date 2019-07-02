@@ -158,6 +158,22 @@ class CRM_Dataprocessor_BAO_DataProcessor extends CRM_Dataprocessor_DAO_DataProc
     self::$importingDataProcessors[] = $dataProcessorName;
   }
 
+  /**
+   * Delete function so that the hook for deleting an output gets invoked.
+   *
+   * @param $id
+   */
+  public static function del($id) {
+    CRM_Utils_Hook::pre('delete', 'DataProcessor', $id, CRM_Core_DAO::$_nullArray);
+
+    $dao = new CRM_Dataprocessor_BAO_DataProcessor();
+    $dao->id = $id;
+    if ($dao->find(true)) {
+      $dao->delete();
+    }
+
+    CRM_Utils_Hook::post('delete', 'DataProcessor', $id, CRM_Core_DAO::$_nullArray);
+  }
 
 
 }

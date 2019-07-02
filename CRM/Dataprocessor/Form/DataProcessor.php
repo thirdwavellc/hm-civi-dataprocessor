@@ -200,11 +200,7 @@ class CRM_Dataprocessor_Form_DataProcessor extends CRM_Core_Form {
         'sequential' => 1,
         'return' => ["configuration"],
         'data_processor_id' => $this->dataProcessorId,
-      ]);	
-      foreach($result['values'] as $output_navigation){
-      	// $output_navigation['configuration']['navigation_id'] outputs the navigation id for each of the output
-      	civicrm_api3('Navigation', 'delete', ['id' => $output_navigation['configuration']['navigation_id']]);
-	  }
+      ]);
 
       civicrm_api3('DataProcessor', 'delete', array('id' => $this->dataProcessorId));
       $session->setStatus(E::ts('Data Processor removed'), E::ts('Removed'), 'success');
