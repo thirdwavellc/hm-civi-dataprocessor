@@ -33,6 +33,14 @@ class CRM_Dataprocessor_Form_ManageDataProcessors extends CRM_Core_Form {
 
     foreach($dataProcessors as $idx => $dataProcessor) {
       $dataProcessors[$idx]['status_label'] = CRM_Dataprocessor_Status::statusToLabel($dataProcessor['status']);
+      $outputs = civicrm_api3('DataProcessorOutput', 'get',['data_processor_id' => $dataProcessor['id'], 'options' => ['limit' => 0]]);
+      foreach(CRM_Utils_Array::value('values', $outputs) as $outputIndex => $output) {
+        $dataProcessors[$idx]['navigation'][$outputIndex] = [
+          'url' => CRM_Utils_System::url("civicrm/dataprocessor_{$output['type']}/{$dataProcessor['name']}", 'reset=1'),
+          'title' => $output['configuration']['title'],
+        ];
+      }
+
     }
     $this->assign('data_processors', $dataProcessors);
 
