@@ -48,7 +48,10 @@ class DataSpecification {
    * @return \Civi\DataProcessor\DataSpecification\FieldSpecification
    */
   public function getFieldSpecificationByName($name) {
-    return $this->fields[$name];
+    if (isset($this->fields[$name])) {
+      return $this->fields[$name];
+    }
+    return null;
   }
 
   /**

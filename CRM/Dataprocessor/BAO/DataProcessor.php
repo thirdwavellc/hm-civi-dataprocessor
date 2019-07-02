@@ -60,7 +60,11 @@ class CRM_Dataprocessor_BAO_DataProcessor extends CRM_Dataprocessor_DAO_DataProc
     $dataProcessorClass = $factory->getDataProcessorTypeByName($dataProcessor['type']);
     $sources = civicrm_api3('DataProcessorSource', 'get', array('data_processor_id' => $dataProcessor['id'], 'options' => array('limit' => 0)));
     foreach($sources['values'] as $sourceDao) {
-      CRM_Dataprocessor_BAO_DataProcessorSource::addSourceToDataProcessor($sourceDao, $dataProcessorClass);
+      try {
+        CRM_Dataprocessor_BAO_DataProcessorSource::addSourceToDataProcessor($sourceDao, $dataProcessorClass);
+      } catch (\Exception $e) {
+        CRM_Core_Session::setStatus($e->getMessage(), E::ts("Could not add data source"), 'error');
+      }
     }
 
     $aggregationFields = array();
@@ -79,8 +83,12 @@ class CRM_Dataprocessor_BAO_DataProcessor extends CRM_Dataprocessor_DAO_DataProc
       $filterHandler = $factory->getFilterByName($filter['type']);
       if ($filterHandler) {
         $filterHandler->setDataProcessor($dataProcessorClass);
-        $filterHandler->initialize($filter['name'], $filter['title'], $filter['is_required'], $filter['configuration']);
-        $dataProcessorClass->addFilterHandler($filterHandler);
+        try {
+          $filterHandler->initialize($filter['name'], $filter['title'], $filter['is_required'], $filter['configuration']);
+          $dataProcessorClass->addFilterHandler($filterHandler);
+        } catch (\Exception $e) {
+          CRM_Core_Session::setStatus($e->getMessage(), E::ts("Invalid filter"), 'error');
+        }
       }
     }
 
@@ -89,8 +97,12 @@ class CRM_Dataprocessor_BAO_DataProcessor extends CRM_Dataprocessor_DAO_DataProc
       $outputHandler = $factory->getOutputHandlerByName($field['type']);
       if ($outputHandler) {
         $outputHandler->setDataProcessor($dataProcessorClass);
-        $outputHandler->initialize($field['name'], $field['title'], $field['configuration']);
-        $dataProcessorClass->addOutputFieldHandlers($outputHandler);
+        try {
+          $outputHandler->initialize($field['name'], $field['title'], $field['configuration']);
+          $dataProcessorClass->addOutputFieldHandlers($outputHandler);
+        } catch (\Exception $e) {
+          CRM_Core_Session::setStatus($e->getMessage(), E::ts("Invalid field"), 'error');
+        }
       }
     }
     return $dataProcessorClass;

@@ -10,6 +10,8 @@ use CRM_Dataprocessor_ExtensionUtil as E;
 use Civi\DataProcessor\Source\SourceInterface;
 use Civi\DataProcessor\DataSpecification\FieldSpecification;
 use Civi\DataProcessor\FieldOutputHandler\FieldOutput;
+use Civi\DataProcessor\Exception\DataSourceNotFoundException;
+use Civi\DataProcessor\Exception\FieldNotFoundException;
 
 class FileFieldOutputHandler extends AbstractFieldOutputHandler {
 
@@ -88,7 +90,17 @@ class FileFieldOutputHandler extends AbstractFieldOutputHandler {
    */
   public function initialize($alias, $title, $configuration) {
     $this->dataSource = $this->dataProcessor->getDataSourceByName($configuration['datasource']);
+    if (!$this->dataSource) {
+      throw new DataSourceNotFoundException(E::ts("Field %1 requires data source '%2' which could not be found. Did you rename or deleted the data source?", array(1=>$title, 2=>$configuration['datasource'])));
+    }
     $this->inputFieldSpec = $this->dataSource->getAvailableFields()->getFieldSpecificationByName($configuration['field']);
+    if (!$this->inputFieldSpec) {
+      throw new FieldNotFoundException(E::ts("Field %1 requires a field with the name '%2' in the data source '%3'. Did you change the data source type?", array(
+        1 => $title,
+        2 => $configuration['field'],
+        3 => $configuration['datasource']
+      )));
+    }
     $this->dataSource->ensureFieldInSource($this->inputFieldSpec);
 
     $this->outputFieldSpec = clone $this->inputFieldSpec;

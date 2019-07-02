@@ -10,6 +10,8 @@ use Civi\DataProcessor\DataFlow\SqlDataFlow;
 use Civi\DataProcessor\DataFlow\SqlTableDataFlow;
 use Civi\DataProcessor\DataSpecification\CustomFieldSpecification;
 use Civi\DataProcessor\DataSpecification\FieldSpecification;
+use Civi\DataProcessor\Exception\DataSourceNotFoundException;
+use Civi\DataProcessor\Exception\FieldNotFoundException;
 use Civi\DataProcessor\Source\SourceInterface;
 use CRM_Dataprocessor_ExtensionUtil as E;
 
@@ -47,17 +49,25 @@ class ContactInGroupFilter extends AbstractFilterHandler {
       return; // Already initialized.
     }
     if (!isset($configuration['datasource']) || !isset($configuration['field'])) {
-      return; // Invalid configuration
+      throw new InvalidConfigurationException(E::ts("Filter %1 requires a field to filter on. None given.", array(1=>$title)));
     }
 
     $this->is_required = $is_required;
 
     $this->dataSource = $this->data_processor->getDataSourceByName($configuration['datasource']);
-    if ($this->dataSource) {
-      $this->fieldSpecification  =  clone $this->dataSource->getAvailableFilterFields()->getFieldSpecificationByName($configuration['field']);
-      $this->fieldSpecification->alias = $alias;
-      $this->fieldSpecification->title = $title;
+    if (!$this->dataSource) {
+      throw new DataSourceNotFoundException(E::ts("Filter %1 requires data source '%2' which could not be found. Did you rename or deleted the data source?", array(1=>$title, 2=>$configuration['datasource'])));
     }
+    $this->fieldSpecification  =  clone $this->dataSource->getAvailableFilterFields()->getFieldSpecificationByName($configuration['field']);
+    if (!$this->fieldSpecification) {
+      throw new FieldNotFoundException(E::ts("Filter %1 requires a field with the name '%2' in the data source '%3'. Did you change the data source type?", array(
+        1 => $title,
+        2 => $configuration['field'],
+        3 => $configuration['datasource']
+      )));
+    }
+    $this->fieldSpecification->alias = $alias;
+    $this->fieldSpecification->title = $title;
 
     if (isset($configuration['parent_group']) && $configuration['parent_group']) {
       $this->parent_group_id = civicrm_api3('Group', 'getvalue', array('return' => 'id', 'name' => $configuration['parent_group']));

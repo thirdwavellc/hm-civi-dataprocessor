@@ -29,7 +29,7 @@ class CRM_Dataprocessor_Form_DataProcessor extends CRM_Core_Form {
     $this->dataProcessorId = CRM_Utils_Request::retrieve('id', 'Integer');
     if ($this->dataProcessorId) {
       $this->dataProcessor = civicrm_api3('DataProcessor', 'getsingle', ['id' => $this->dataProcessorId]);
-      $this->dataProcessorClass = CRM_Dataprocessor_BAO_DataProcessor::dataProcessorToClass($this->dataProcessor);
+      $this->dataProcessorClass = CRM_Dataprocessor_BAO_DataProcessor::dataProcessorToClass($this->dataProcessor, true);
     }
     $this->currentUrl = CRM_Utils_System::url('civicrm/dataprocessor/form/edit', array('reset' => 1, 'action' => 'update', 'id' => $this->dataProcessorId));
     $this->assign('data_processor_id', $this->dataProcessorId);

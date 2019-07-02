@@ -23,7 +23,7 @@ class CRM_Dataprocessor_Form_AggregateField extends CRM_Core_Form {
   function preProcess() {
     $this->dataProcessorId = CRM_Utils_Request::retrieve('id', 'Integer');
     $this->dataProcessor = civicrm_api3('DataProcessor', 'getsingle', array('id' => $this->dataProcessorId));
-    $this->dataProcessorClass = CRM_Dataprocessor_BAO_DataProcessor::dataProcessorToClass($this->dataProcessor);
+    $this->dataProcessorClass = CRM_Dataprocessor_BAO_DataProcessor::dataProcessorToClass($this->dataProcessor, true);
     $this->assign('data_processor_id', $this->dataProcessorId);
 
     $title = E::ts('Data Processor Field');

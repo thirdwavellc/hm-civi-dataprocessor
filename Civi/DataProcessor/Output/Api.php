@@ -166,6 +166,9 @@ class Api implements OutputInterface, API_ProviderInterface, EventSubscriberInte
 
       $result['count'] = count($result['values']);
     }
+
+    $result = $this->checkForErrors($result);
+
     return $result;
   }
 
@@ -273,6 +276,9 @@ class Api implements OutputInterface, API_ProviderInterface, EventSubscriberInte
 
       $result['count'] = count($result['values']);
     }
+
+    $result = $this->checkForErrors($result);
+
     return $result;
   }
 
@@ -383,12 +389,44 @@ class Api implements OutputInterface, API_ProviderInterface, EventSubscriberInte
         'count' => count($values),
         'is_error' => 0,
       );
+
       if (isset($params['debug']) && $params['debug']) {
         $return['debug_info'] = $dataProcessorClass->getDataFlow()->getDebugInformation();
       }
 
+      $return = $this->checkForErrors($return);
+
       return $return;
     }
+  }
+
+  /**
+   * Check for errors in the CiviCRM Status messages list
+   * and if errors are present create a civicrm api return error with the messages in
+   * the status list
+   *
+   * @param $return
+   *
+   * @return mixed
+   */
+  protected function checkForErrors($return) {
+    $session = \CRM_Core_Session::singleton();
+    $statuses = $session->getStatus(true);
+    foreach($statuses as $status) {
+      if ($status['type'] == 'error') {
+        $return['is_error'] = 1;
+        unset($return['values']);
+        unset($return['count']);
+        if (!isset($return['error_message'])) {
+          $return['error_message'] = "";
+        }
+        $return['error_message'] .= " ".$status['text'];
+      }
+    }
+    if (isset($return['error_message'])) {
+      $return['error_message'] = trim($return['error_message']);
+    }
+    return $return;
   }
 
   /**

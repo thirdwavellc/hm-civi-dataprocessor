@@ -246,7 +246,11 @@ abstract class CRM_DataprocessorSearch_Form_AbstractSearch extends CRM_Dataproce
       while($record = $this->dataProcessorClass->getDataFlow()->nextRecord()) {
         $i ++;
         $row = array();
-        $row['id'] = $record[$id_field]->formattedValue;
+
+        $row['id'] = null;
+        if (isset($record[$id_field])) {
+          $row['id'] = $record[$id_field]->formattedValue;
+        }
         $row['checkbox'] = CRM_Core_Form::CB_PREFIX.$row['id'];
         $row['record'] = $record;
 
@@ -258,12 +262,14 @@ abstract class CRM_DataprocessorSearch_Form_AbstractSearch extends CRM_Dataproce
 
         $this->addElement('checkbox', $row['checkbox'], NULL, NULL, ['class' => 'select-row']);
 
-        $prevnextData[] = array(
-          'entity_id1' => $row['id'],
-          'entity_table' => $this->getEntityTable(),
-          'data' => $record,
-        );
-        $ids[] = $row['id'];
+        if ($row['id']) {
+          $prevnextData[] = array(
+            'entity_id1' => $row['id'],
+            'entity_table' => $this->getEntityTable(),
+            'data' => $record,
+          );
+          $ids[] = $row['id'];
+        }
 
         $rows[] = $row;
       }
