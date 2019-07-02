@@ -130,14 +130,16 @@ class CRM_Dataprocessor_Form_DataProcessor extends CRM_Core_Form {
     $outputs = civicrm_api3('DataProcessorOutput', 'get', array('data_processor_id' => $this->dataProcessorId, 'options' => array('limit' => 0)));
     $outputs = CRM_Utils_Array::value('values', $outputs);
     foreach($outputs as $idx => $output) {
-      $outputs[$idx]['navigation_url']
-        = CRM_Utils_System::url("civicrm/dataprocessor_{$output['type']}/{$this->dataProcessor['name']}", 'reset=1');
+      $outputClass = $factory->getOutputByName($output['type']);
+      if ($outputClass instanceof \Civi\DataProcessor\Output\UIOutputInterface) {
+        $outputs[$idx]['navigation_url'] = CRM_Utils_System::url($outputClass->getUrlToUi($output, $this->dataProcessor), array('reset' => '1'));
+      }
+
       if (isset($types[$output['type']])) {
         $outputs[$idx]['type_name'] = $types[$output['type']];
       } else {
         $outputs[$idx]['type_name'] = '';
       }
-      $outputs[$idx]['configuration_link'] = '';
     }
 
     $this->assign('outputs', $outputs);

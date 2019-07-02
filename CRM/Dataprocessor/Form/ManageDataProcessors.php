@@ -11,6 +11,7 @@ class CRM_Dataprocessor_Form_ManageDataProcessors extends CRM_Core_Form {
   public function preProcess() {
     parent::preProcess();
 
+    $factory = dataprocessor_get_factory();
     $formValues = $this->getSubmitValues();
 
     $this->setTitle(E::ts('Manage Data Processors'));
@@ -35,10 +36,11 @@ class CRM_Dataprocessor_Form_ManageDataProcessors extends CRM_Core_Form {
       $dataProcessors[$idx]['status_label'] = CRM_Dataprocessor_Status::statusToLabel($dataProcessor['status']);
       $outputs = civicrm_api3('DataProcessorOutput', 'get',['data_processor_id' => $dataProcessor['id'], 'options' => ['limit' => 0]]);
       foreach(CRM_Utils_Array::value('values', $outputs) as $outputIndex => $output) {
-        $dataProcessors[$idx]['navigation'][$outputIndex] = [
-          'url' => CRM_Utils_System::url("civicrm/dataprocessor_{$output['type']}/{$dataProcessor['name']}", 'reset=1'),
-          'title' => $output['configuration']['title'],
-        ];
+        $outputClass = $factory->getOutputByName($output['type']);
+        if ($outputClass instanceof \Civi\DataProcessor\Output\UIOutputInterface) {
+          $dataProcessors[$idx]['navigation'][$outputIndex]['url'] = CRM_Utils_System::url($outputClass->getUrlToUi($output, $dataProcessor), array('reset' => '1'));
+          $dataProcessors[$idx]['navigation'][$outputIndex]['title'] = $outputClass->getTitleForUiLink($output, $dataProcessor);
+        }
       }
 
     }
