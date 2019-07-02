@@ -7,7 +7,7 @@
 use Civi\DataProcessor\Output\UIOutputInterface;
 use CRM_Dataprocessor_ExtensionUtil as E;
 
-class CRM_DataprocessorSearch_ContactSearch implements UIOutputInterface {
+class CRM_Contact_DataProcessorContactSearch implements UIOutputInterface {
 
   /**
    * Returns true when this filter has additional configuration
@@ -98,7 +98,7 @@ class CRM_DataprocessorSearch_ContactSearch implements UIOutputInterface {
    * @return false|string
    */
   public function getConfigurationTemplateFileName() {
-    return "CRM/DataprocessorSearch/Form/OutputConfiguration/ContactSearch.tpl";
+    return "CRM/Contact/Form/OutputConfiguration/DataProcessorContactSearch.tpl";
   }
 
 
@@ -158,7 +158,7 @@ class CRM_DataprocessorSearch_ContactSearch implements UIOutputInterface {
    * @return string
    */
   public function getCallbackForUi() {
-    return 'CRM_DataprocessorSearch_Controller_ContactSearch';
+    return 'CRM_Contact_Controller_DataProcessorContactSearch';
   }
 
   /**

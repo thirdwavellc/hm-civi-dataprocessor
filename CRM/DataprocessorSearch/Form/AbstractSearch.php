@@ -355,16 +355,21 @@ abstract class CRM_DataprocessorSearch_Form_AbstractSearch extends CRM_Dataproce
 
     $this->buildCriteriaForm();
 
-    $selectedIds = array();
+    $selectedIds = [];
     $qfKeyParam = CRM_Utils_Array::value('qfKey', $this->_formValues);
+    if (empty($qfKeyParam) && $this->controller->_key) {
+      $qfKeyParam = $this->controller->_key;
+    }
     // We use ajax to handle selections only if the search results component_mode is set to "contacts"
-    if ($qfKeyParam && $this->usePrevNextCache()) {
+    if ($this->usePrevNextCache()) {
       $this->addClass('crm-ajax-selection-form');
+      if ($qfKeyParam) {
         $qfKeyParam = "civicrm search {$qfKeyParam}";
         $selectedIdsArr = CRM_DataprocessorSearch_Utils_PrevNextCache::getSelection($qfKeyParam);
         if (isset($selectedIdsArr[$qfKeyParam]) && is_array($selectedIdsArr[$qfKeyParam])) {
           $selectedIds = array_keys($selectedIdsArr[$qfKeyParam]);
         }
+      }
     }
 
     $this->assign_by_ref('selectedIds', $selectedIds);

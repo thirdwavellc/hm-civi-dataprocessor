@@ -14,7 +14,7 @@
  *
  * The second form is used to process search results with the associated actions.
  */
-class CRM_DataprocessorSearch_Controller_ContactSearch extends CRM_Core_Controller {
+class CRM_Contact_Controller_DataProcessorContactSearch extends CRM_Core_Controller {
 
   protected $dataProcessor;
 

@@ -24,7 +24,7 @@ class CRM_Contact_StateMachine_DataProcessorContactSearch extends CRM_Core_State
 
     $this->_pages = array();
     $this->_pages['Basic'] = array(
-      'className' => 'CRM_DataprocessorSearch_Form_ContactSearch',
+      'className' => 'CRM_Contact_Form_DataProcessorContactSearch',
     );
     list($task, $result) = $this->taskName($controller);
     $this->_task = $task;

@@ -75,7 +75,7 @@ class CRM_DataprocessorSearch_Utils_PrevNextCache {
    */
   public function getSelection($cacheKey, $action = 'get') {
     if (Civi::container()->has('prevnext')) {
-      Civi::service('prevnext')->getSelection($cacheKey, $action);
+      return Civi::service('prevnext')->getSelection($cacheKey, $action);
     } else {
       // Backwards compatibility
       if (!$cacheKey) {

@@ -6,7 +6,7 @@
 
 use CRM_Dataprocessor_ExtensionUtil as E;
 
-class CRM_DataprocessorSearch_Form_ContactSearch extends CRM_DataprocessorSearch_Form_AbstractSearch {
+class CRM_Contact_Form_DataProcessorContactSearch extends CRM_DataprocessorSearch_Form_AbstractSearch {
 
 
   /**
