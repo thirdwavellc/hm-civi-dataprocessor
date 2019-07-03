@@ -292,8 +292,6 @@ class Api implements OutputInterface, API_ProviderInterface, EventSubscriberInte
    * @throws \Exception
    */
   public function invoke($apiRequest) {
-    $isCountAction = FALSE;
-
     switch (strtolower($apiRequest['action'])) {
       case 'getfields':
         // Do get fields
@@ -310,6 +308,7 @@ class Api implements OutputInterface, API_ProviderInterface, EventSubscriberInte
   }
 
   protected function invokeDataProcessor($apiRequest) {
+    $isCountAction = FALSE;
     $dataProcessorIdSql = "
       SELECT *
       FROM civicrm_data_processor_output o 
@@ -412,6 +411,9 @@ class Api implements OutputInterface, API_ProviderInterface, EventSubscriberInte
   protected function checkForErrors($return) {
     $session = \CRM_Core_Session::singleton();
     $statuses = $session->getStatus(true);
+    if (is_array($statuses)) {
+      return $return;
+    }
     foreach($statuses as $status) {
       if ($status['type'] == 'error') {
         $return['is_error'] = 1;

@@ -20,8 +20,7 @@ class SimpleNonRequiredJoin  extends  SimpleJoin {
    */
   protected $filterClauses = array();
 
-  public function __construct($left_prefix = null, $left_field = null, $right_prefix = null, $right_field = null, $type = "INNER") {
-    $type = 'LEFT';
+  public function __construct($left_prefix = null, $left_field = null, $right_prefix = null, $right_field = null, $type = "LEFT") {
     parent::__construct($left_prefix, $left_field, $right_prefix, $right_field, $type);
   }
 
@@ -31,7 +30,6 @@ class SimpleNonRequiredJoin  extends  SimpleJoin {
    * @return \Civi\DataProcessor\DataFlow\MultipleDataFlows\JoinInterface
    */
   public function setConfiguration($configuration) {
-    $configuration[' type'] = 'LEFT';
     return parent::setConfiguration($configuration);
   }
 
