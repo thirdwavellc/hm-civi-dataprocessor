@@ -9,14 +9,7 @@
   <div class="crm-block crm-form-block crm-data-processor_label-block">
     <div class="crm-section">{ts 1=$rule.label}Are you sure to delete data processor '%1'?{/ts}</div>
   </div>
-{elseif $action eq 128}
-  {* Export form *}
-  <h3>{ts}Export Data Processor{/ts}</h3>
-  <div class="crm-block crm-form-block crm-data-processor_label-block">
-    <div class="crm-section">
-      <textarea style="width:100%;" rows="30">{$export}</textarea>
-    </div>
-  </div>
+
 {else}
 
 <h3>Data Processor</h3>
