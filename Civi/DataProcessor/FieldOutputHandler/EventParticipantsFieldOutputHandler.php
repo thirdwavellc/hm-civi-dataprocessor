@@ -183,7 +183,7 @@ class EventParticipantsFieldOutputHandler extends AbstractFieldOutputHandler imp
       'placeholder' => E::ts('- all roles -'),
       'multiple' => true,
     ));
-    $form->add('select', 'status_ids', E::ts('Event ID Field'), $statuses, false, array(
+    $form->add('select', 'status_ids', E::ts('Participant Status'), $statuses, false, array(
       'style' => 'min-width:250px',
       'class' => 'crm-select2 huge',
       'placeholder' => E::ts('- all statuses -'),
