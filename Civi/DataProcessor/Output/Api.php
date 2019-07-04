@@ -10,6 +10,7 @@ use Civi\API\Event\ResolveEvent;
 use Civi\API\Event\RespondEvent;
 use Civi\API\Events;
 use Civi\API\Provider\ProviderInterface as API_ProviderInterface;
+use Civi\DataProcessor\FieldOutputHandler\arrayFieldOutput;
 use Civi\DataProcessor\ProcessorType\AbstractProcessorType;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
@@ -380,7 +381,11 @@ class Api implements OutputInterface, API_ProviderInterface, EventSubscriberInte
       $values = array();
       foreach($records as $idx => $record) {
         foreach($record as $fieldname => $field) {
-          $values[$idx][$fieldname] = $field->formattedValue;
+          if ($field instanceof arrayFieldOutput) {
+            $values[$idx][$fieldname] = $field->getArrayData();
+          } else {
+            $values[$idx][$fieldname] = $field->formattedValue;
+          }
         }
       }
       $return = array(

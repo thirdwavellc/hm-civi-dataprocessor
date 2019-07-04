@@ -12,7 +12,7 @@ class FieldOutput {
 
   public $formattedValue;
 
-  public function __construct($rawValue) {
+  public function __construct($rawValue=null) {
     $this->rawValue = $rawValue;
     $this->formattedValue = $rawValue;
   }
