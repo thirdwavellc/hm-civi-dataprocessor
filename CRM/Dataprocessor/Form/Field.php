@@ -63,6 +63,7 @@ class CRM_Dataprocessor_Form_Field extends CRM_Core_Form {
     }
     if (!$this->field) {
       $this->field['data_processor_id'] = $this->dataProcessorId;
+      $this->field['type'] = 'raw';
     }
 
     $this->outputHandlers = $factory->getOutputHandlers();
