@@ -13,10 +13,14 @@
     <div class="crm-content-block">
         <div class="crm-results-block">
             {* This section handles form elements for action task select and submit *}
+            {if ($taskMetaData || (isset($other_outputs) && !empty($other_outputs)))}
             <div class="crm-search-tasks">
+                {if ($taskMetaData || true)}
                 {include file="CRM/common/searchResultTasks.tpl"}
+                {/if}
                 {include file="CRM/DataprocessorSearch/Form/OtherOutputs.tpl"}
             </div>
+            {/if}
 
             {include file="CRM/common/pager.tpl" location="top"}
 

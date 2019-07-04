@@ -51,7 +51,7 @@ abstract class CRM_DataprocessorSearch_Form_AbstractSearch extends CRM_Dataproce
   abstract protected function getIdFieldName();
 
   /**
-   * @return string
+   * @return false|string
    */
   abstract protected function getEntityTable();
 
@@ -262,7 +262,7 @@ abstract class CRM_DataprocessorSearch_Form_AbstractSearch extends CRM_Dataproce
 
         $this->addElement('checkbox', $row['checkbox'], NULL, NULL, ['class' => 'select-row']);
 
-        if ($row['id']) {
+        if ($row['id'] && $this->usePrevNextCache()) {
           $prevnextData[] = array(
             'entity_id1' => $row['id'],
             'entity_table' => $this->getEntityTable(),

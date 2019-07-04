@@ -111,6 +111,10 @@ function dataprocessor_civicrm_dataprocessor_export(&$dataProcessor) {
   \Civi\DataProcessor\Output\UIOutputHelper::hookExport($dataProcessor);
 }
 
+function dataprocessor_search_action_designer_types(&$types) {
+  CRM_DataprocessorSearch_Task::searchActionDesignerTypes($types);
+}
+
 /**
  * Implements hook_civicrm_config().
  *
