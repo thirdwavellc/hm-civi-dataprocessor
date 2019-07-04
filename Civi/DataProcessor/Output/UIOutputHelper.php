@@ -68,49 +68,62 @@ class UIOutputHelper {
    * @param $objectRef
    */
   public static function preHook($op, $objectName, $id, &$params) {
-    if ($objectName != 'DataProcessorOutput') {
-      return;
-    }
-    if ($op == 'delete') {
-      $output = civicrm_api3('DataProcessorOutput', 'getsingle', array('id' => $id));
-      if (isset($output['configuration']['navigation_id'])) {
-        $navId = $output['configuration']['navigation_id'];
-        \CRM_Core_BAO_Navigation::processDelete($navId);
-        \CRM_Core_BAO_Navigation::resetNavigation();
-        self::$rebuildMenu = TRUE;
+    if ($objectName == 'DataProcessorOutput') {
+      if ($op == 'delete') {
+        $output = civicrm_api3('DataProcessorOutput', 'getsingle', ['id' => $id]);
+        self::removeOutputFromNavigation($output['configuration']);
       }
-    } elseif ($op == 'edit') {
-      $output = civicrm_api3('DataProcessorOutput', 'getsingle', array('id' => $id));
-      if (!isset($output['configuration']['navigation_id']) && !isset($params['configuration']['navigation_parent_path'])) {
-        return;
-      } elseif (!isset($params['configuration']['navigation_parent_path'])) {
-        // Delete the navigation item
-        $navId = $output['configuration']['navigation_id'];
-        \CRM_Core_BAO_Navigation::processDelete($navId);
-        \CRM_Core_BAO_Navigation::resetNavigation();
-        self::$rebuildMenu = TRUE;
-      } else {
-        $dataProcessor = civicrm_api3('DataProcessor', 'getsingle', array('id' => $output['data_processor_id']));
-
-        // Retrieve the current navigation params.
-        $navigationParams = [];
-        if (isset($output['configuration']['navigation_id'])) {
-          // Get the default navigation parent id.
-          $navigationDefaults = [];
-          $navParams = ['id' => $output['configuration']['navigation_id']];
-          \CRM_Core_BAO_Navigation::retrieve($navParams, $navigationDefaults);
-          if (!empty($navigationDefaults['id'])) {
-            $navigationParams['id'] = $navigationDefaults['id'];
-            $navigationParams['current_parent_id'] = !empty($navigationDefaults['parent_id']) ? $navigationDefaults['parent_id'] : NULL;
-            $navigationParams['parent_id'] = !empty($navigationDefaults['parent_id']) ? $navigationDefaults['parent_id'] : NULL;
+      elseif ($op == 'edit') {
+        $output = civicrm_api3('DataProcessorOutput', 'getsingle', ['id' => $id]);
+        if (!isset($output['configuration']['navigation_id']) && !isset($params['configuration']['navigation_parent_path'])) {
+          return;
+        }
+        elseif (!isset($params['configuration']['navigation_parent_path'])) {
+          self::removeOutputFromNavigation($output['configuration']);
+        }
+        else {
+          // Merge the current output from the database with the updated values
+          $output = array_merge($output, $params);
+          $dataProcessor = civicrm_api3('DataProcessor', 'getsingle', ['id' => $output['data_processor_id']]);
+          $configuration = self::createOrUpdateNavigationItem($output, $dataProcessor);
+          if ($configuration) {
+            $params['configuration'] = $configuration;
           }
         }
-        self::$rebuildMenu = self::newNavigationItem($params, $dataProcessor, $navigationParams, $output);
+      }
+      elseif ($op == 'create' && isset($params['configuration']['navigation_parent_path'])) {
+        $dataProcessor = civicrm_api3('DataProcessor', 'getsingle', ['id' => $params['data_processor_id']]);
+        $configuration = self::createOrUpdateNavigationItem($params, $dataProcessor);
+        if ($configuration) {
+          $params['configuration'] = $configuration;
+        }
+      }
+    } elseif ($objectName == 'DataProcessor' && $op == 'edit') {
+      $dataProcessor = civicrm_api3('DataProcessor', 'getsingle', ['id' => $id]);
+      if (isset($params['is_active']) && $params['is_active'] != $dataProcessor['is_active']) {
+        // Only update navigation when is active is changed
+        $dataProcessor = array_merge($dataProcessor, $params);
+        $outputs = civicrm_api3('DataProcessorOutput', 'get', ['data_processor_id' => $id, 'options' => ['limit' => 0]]);
+        foreach($outputs['values'] as $output) {
+          if (isset($output['configuration']['navigation_id'])) {
+            self::createOrUpdateNavigationItem($output, $dataProcessor);
+          }
+        }
       }
     }
-    elseif ($op == 'create' && isset($params['configuration']['navigation_parent_path'])) {
-      $dataProcessor = civicrm_api3('DataProcessor', 'getsingle', array('id' => $params['data_processor_id']));
-      self::$rebuildMenu = self::newNavigationItem($params, $dataProcessor);
+  }
+
+  /**
+   * Remove an output from the navigation menu.
+   *
+   * @param array $configuration
+   */
+  private static function removeOutputFromNavigation($configuration) {
+    if (isset($configuration['navigation_id'])) {
+      $navId = $configuration['navigation_id'];
+      \CRM_Core_BAO_Navigation::processDelete($navId);
+      \CRM_Core_BAO_Navigation::resetNavigation();
+      self::$rebuildMenu = TRUE;
     }
   }
 
@@ -155,46 +168,63 @@ class UIOutputHelper {
    * Inserts/updates an navigation item.
    * @param $params
    * @param $dataProcessor
-   * @param array $navigationParams
    *
-   * @return bool
+   * @return array
    */
-  private static function newNavigationItem(&$params, $dataProcessor, $navigationParams=array(), $output=null) {
+  private static function createOrUpdateNavigationItem($output, $dataProcessor) {
     $url = "";
     $factory = dataprocessor_get_factory();
-    $outputClass = FALSE;
-    if (isset($params['type'])) {
-      $outputClass = $factory->getOutputByName($params['type']);
-    } elseif(isset($output['type'])) {
-      $outputClass = $factory->getOutputByName($output['type']);
+    if (!isset($output['type'])) {
+      return false;
     }
+    $outputClass = $factory->getOutputByName($output['type']);
+    $configuration = $output['configuration'];
 
     if ($outputClass && $outputClass instanceof \Civi\DataProcessor\Output\UIOutputInterface) {
-      $url = $outputClass->getUrlToUi($params, $dataProcessor);
+      $url = $outputClass->getUrlToUi($output, $dataProcessor);
     }
 
     $navigation = \CRM_Dataprocessor_Utils_Navigation::singleton();
-    $navigationParams['domain_id'] = \CRM_Core_Config::domainID();
-    $navigationParams['permission'] = array();
-    $navigationParams['label'] = isset($params['configuration']['title']) ? $params['configuration']['title'] : $dataProcessor['title'];
-    $navigationParams['name'] = $dataProcessor['name'];
+    $navigationParams = array();
 
-    $navigationParams['parent_id'] = $navigation->getNavigationIdByPath($params['configuration']['navigation_parent_path']);
-    $navigationParams['is_active'] = 1;
-
-    if (isset($params['permission'])) {
-      $navigationParams['permission'][] = $params['permission'];
+    // Retrieve the current navigation ID.
+    if (isset($configuration['navigation_id'])) {
+      // Get the default navigation parent id.
+      $navigationDefaults = [];
+      $retrieveNavParams = ['id' => $configuration['navigation_id']];
+      \CRM_Core_BAO_Navigation::retrieve($retrieveNavParams, $navigationDefaults);
+      if (!empty($navigationDefaults['id'])) {
+        $navigationParams['id'] = $navigationDefaults['id'];
+        $navigationParams['current_parent_id'] = !empty($navigationDefaults['parent_id']) ? $navigationDefaults['parent_id'] : NULL;
+        $navigationParams['parent_id'] = !empty($navigationDefaults['parent_id']) ? $navigationDefaults['parent_id'] : NULL;
+      }
     }
 
-    unset($params['configuration']['navigation_parent_path']);
+    $navigationParams['domain_id'] = \CRM_Core_Config::domainID();
+    $navigationParams['permission'] = array();
+    $navigationParams['label'] = isset($configuration['title']) ? $configuration['title'] : $dataProcessor['title'];
+    $navigationParams['name'] = $dataProcessor['name'];
+
+    if (!isset($navigationParams['parent_id']) && isset($configuration['navigation_parent_path'])) {
+      $navigationParams['parent_id'] = $navigation->getNavigationIdByPath($configuration['navigation_parent_path']);
+    }
+    $navigationParams['is_active'] = $dataProcessor['is_active'];
+
+    if (isset($output['permission'])) {
+      $navigationParams['permission'][] = $output['permission'];
+    }
+
+    unset($configuration['navigation_parent_path']);
 
     $navigationParams['url'] = $url.'?reset=1';
     $navigation = \CRM_Core_BAO_Navigation::add($navigationParams);
     \CRM_Core_BAO_Navigation::resetNavigation();
 
-    $params['configuration']['navigation_id'] = $navigation->id;
+    $configuration['navigation_id'] = $navigation->id;
 
-    return true;
+    self::$rebuildMenu = TRUE;
+
+    return $configuration;
   }
 
 }
