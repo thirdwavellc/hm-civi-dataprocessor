@@ -19,6 +19,17 @@ class SimpleWhereClause implements WhereClauseInterface {
   protected $isJoinClause = FALSE;
 
   public function __construct($table_alias, $field, $operator, $value, $valueType = 'String', $isJoinClause=FALSE) {
+    if (is_array($value)) {
+      switch ($operator) {
+        case '=':
+          $operator = 'IN';
+          break;
+        case '!=':
+          $operator = 'NOT IN';
+          break;
+      }
+    }
+
     $this->isJoinClause = $isJoinClause;
     $this->table_alias = $table_alias;
     $this->field = $field;
@@ -39,7 +50,8 @@ class SimpleWhereClause implements WhereClauseInterface {
       }
       if ($operator == 'BETWEEN' || $operator == 'NOT BETWEEN') {
         $this->value = implode(" AND ", $esacpedValues);
-      } else {
+      }
+      else {
         $this->value = "(" . implode(", ", $esacpedValues) . ")";
       }
     } else {

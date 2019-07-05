@@ -168,7 +168,7 @@ class CaseRolesFieldOutputHandler extends AbstractFieldOutputHandler {
 
     $form->add('select', 'case_id_field', E::ts('Case ID Field'), $fieldSelect, true, array(
       'style' => 'min-width:250px',
-      'class' => 'crm-select2 huge',
+      'class' => 'crm-select2 huge data-processor-field-for-name',
       'placeholder' => E::ts('- select -'),
     ));
     $form->add('select', 'relationship_types', E::ts('Restrict to roles'), $relationshipTypes, false, array(
