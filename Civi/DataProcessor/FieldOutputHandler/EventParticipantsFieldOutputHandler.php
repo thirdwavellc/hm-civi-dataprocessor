@@ -173,7 +173,7 @@ class EventParticipantsFieldOutputHandler extends AbstractFieldOutputHandler imp
 
     $form->add('select', 'field', E::ts('Event ID Field'), $fieldSelect, true, array(
       'style' => 'min-width:250px',
-      'class' => 'crm-select2 huge',
+      'class' => 'crm-select2 huge data-processor-field-for-name',
       'placeholder' => E::ts('- select -'),
     ));
 

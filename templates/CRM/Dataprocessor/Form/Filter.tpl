@@ -61,7 +61,7 @@
           var id = {/literal}{if ($filter)}{$filter.id}{else}false{/if}{literal};
           var data_processor_id = {/literal}{$data_processor_id}{literal};
 
-          $(document).on('change','#type_configuration select.crm-form-select',function () {
+          $(document).on('change','#type_configuration select.data-processor-field-for-name.crm-form-select',function () {
             {/literal}{if $action eq 1}{literal}
               var titlepreset = $.trim($('#type_configuration select.crm-form-select option:selected').first().text().split("::").pop());
               $('#title').val(titlepreset).trigger('blur');

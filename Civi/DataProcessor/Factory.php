@@ -129,6 +129,7 @@ class Factory {
     $this->addFilter('contact_filter', 'Civi\DataProcessor\FilterHandler\ContactFilter', E::ts('Contact filter'));
     $this->addFilter('contact_in_group_filter', 'Civi\DataProcessor\FilterHandler\ContactInGroupFilter', E::ts('Contact in Group filter'));
     $this->addFilter('case_role_filter', 'Civi\DataProcessor\FilterHandler\CaseRoleFilter', E::ts('Case Role filter'));
+    $this->addFilter('in_api_filter', 'Civi\DataProcessor\FilterHandler\InApiFilter', E::ts('API filter'));
     $this->addjoinType('simple_join', 'Civi\DataProcessor\DataFlow\MultipleDataFlows\SimpleJoin', E::ts('Select fields to join on'));
     $this->addjoinType('simple_non_required_join', 'Civi\DataProcessor\DataFlow\MultipleDataFlows\SimpleNonRequiredJoin', E::ts('Select fields to join on (not required)'));
     $this->addOutputHandler('raw', 'Civi\DataProcessor\FieldOutputHandler\RawFieldOutputHandler', E::ts('Raw field value'));

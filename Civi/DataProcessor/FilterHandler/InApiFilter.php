@@ -16,7 +16,7 @@ use Civi\DataProcessor\Exception\InvalidConfigurationException;
 use Civi\DataProcessor\Source\SourceInterface;
 use CRM_Dataprocessor_ExtensionUtil as E;
 
-class ContactFilter extends AbstractFilterHandler {
+class InApiFilter extends AbstractFilterHandler {
 
   /**
    * @var \Civi\DataProcessor\DataSpecification\FieldSpecification
@@ -64,6 +64,22 @@ class ContactFilter extends AbstractFilterHandler {
     }
     $this->fieldSpecification->alias = $alias;
     $this->fieldSpecification->title = $title;
+
+    $apiEntity = $configuration['api_entity'];
+    $apiAction = $configuration['api_action'];
+    $apiParams = isset($configuration['api_params']) && is_array($configuration['api_params'])? $configuration['api_params'] : array();
+    $id_field = $configuration['value_field'];
+    $label_field = $configuration['label_field'];
+    $apiParams['return'] = array($id_field, $label_field);
+    $apiParams['options']['limit'] = 0;
+    unset($apiParams['options']['offset']);
+    $this->fieldSpecification->options = array();
+    $apiResult = civicrm_api3($apiEntity, $apiAction, $apiParams);
+    foreach ($apiResult['values'] as $option) {
+      if (isset($option[$id_field]) && isset($option[$label_field])) {
+        $this->fieldSpecification->options[$option[$id_field]] = $option[$label_field];
+      }
+    }
   }
 
   /**
@@ -115,6 +131,16 @@ class ContactFilter extends AbstractFilterHandler {
       'placeholder' => E::ts('- select -'),
     ));
 
+    $form->add('text', 'api_entity', E::ts('API Entity'), array('style' => 'min-width:250px', 'class' => 'huge'), true);
+
+    $form->add('text', 'api_action', E::ts('API Action'), array('style' => 'min-width:250px', 'class' => 'huge'), true);
+
+    $form->add('text', 'value_field', E::ts('Value Field'), array('style' => 'min-width:250px', 'class' => 'huge'), true);
+
+    $form->add('text', 'label_field', E::ts('Label Field'), array('style' => 'min-width:250px', 'class' => 'huge'), true);
+
+    $form->add('textarea', 'api_params', E::ts('API Params'), array('style' => 'min-width:250px', 'class' => 'huge'), false);
+
 
     if (isset($filter['configuration'])) {
       $configuration = $filter['configuration'];
@@ -122,6 +148,11 @@ class ContactFilter extends AbstractFilterHandler {
       if (isset($configuration['field']) && isset($configuration['datasource'])) {
         $defaults['field'] = $configuration['datasource'] . '::' . $configuration['field'];
       }
+      $defaults['api_entity'] = $configuration['api_entity'];
+      $defaults['api_action'] = $configuration['api_action'];
+      $defaults['value_field'] = $configuration['value_field'];
+      $defaults['label_field'] = $configuration['label_field'];
+      $defaults['api_params'] = is_array($configuration['api_params']) ? json_encode($configuration['api_params'], JSON_PRETTY_PRINT) : '';
       $form->setDefaults($defaults);
     }
   }
@@ -133,7 +164,7 @@ class ContactFilter extends AbstractFilterHandler {
    * @return false|string
    */
   public function getConfigurationTemplateFileName() {
-    return "CRM/Dataprocessor/Form/Filter/Configuration/ContactFilter.tpl";
+    return "CRM/Dataprocessor/Form/Filter/Configuration/InApiFilter.tpl";
   }
 
 
@@ -147,44 +178,12 @@ class ContactFilter extends AbstractFilterHandler {
     list($datasource, $field) = explode('::', $submittedValues['field'], 2);
     $configuration['field'] = $field;
     $configuration['datasource'] = $datasource;
+    $configuration['api_entity'] = $submittedValues['api_entity'];
+    $configuration['api_action'] = $submittedValues['api_action'];
+    $configuration['value_field'] = $submittedValues['value_field'];
+    $configuration['label_field'] = $submittedValues['label_field'];
+    $configuration['api_params'] = !empty($submittedValues['api_params']) ? json_decode($submittedValues['api_params'], true) : null;
     return $configuration;
-  }
-
-  /**
-   * Add the elements to the filter form.
-   *
-   * @param \CRM_Core_Form $form
-   * @return array
-   *   Return variables belonging to this filter.
-   */
-  public function addToFilterForm(\CRM_Core_Form $form) {
-    $fieldSpec = $this->getFieldSpecification();
-    $operations = $this->getOperatorOptions($fieldSpec);
-
-    $title = $fieldSpec->title;
-    if ($this->isRequired()) {
-      $title .= ' <span class="crm-marker">*</span>';
-    }
-
-    $form->addElement('select', "{$fieldSpec->alias}_op", E::ts('Operator:'), $operations);
-    $form->addEntityRef( "{$fieldSpec->alias}_value", NULL, array(
-      'placeholder' => E::ts('Select a contact'),
-      'entity' => 'Contact',
-      'create' => false,
-      'multiple' => true,
-    ));
-
-    $filter['type'] = $fieldSpec->type;
-    $filter['title'] = $title;
-
-    return $filter;
-  }
-
-  protected function getOperatorOptions(\Civi\DataProcessor\DataSpecification\FieldSpecification $fieldSpec) {
-    return array(
-      'IN' => E::ts('Is one of'),
-      'NOT IN' => E::ts('Is not one of'),
-    );
   }
 
 

@@ -158,7 +158,7 @@ class ContactLinkFieldOutputHandler extends AbstractFieldOutputHandler implement
 
     $form->add('select', 'contact_id_field', E::ts('Contact ID Field'), $fieldSelect, true, array(
       'style' => 'min-width:250px',
-      'class' => 'crm-select2 huge',
+      'class' => 'crm-select2 huge data-processor-field-for-name',
       'placeholder' => E::ts('- select -'),
     ));
     $form->add('select', 'contact_name_field', E::ts('Contact Name Field'), $fieldSelect, true, array(
