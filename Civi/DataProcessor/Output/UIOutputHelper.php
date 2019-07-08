@@ -83,7 +83,9 @@ class UIOutputHelper {
         }
         else {
           // Merge the current output from the database with the updated values
+          $configuration = array_merge($output['configuration'], $params['configuration']);
           $output = array_merge($output, $params);
+          $output['configuration'] = $configuration;
           $dataProcessor = civicrm_api3('DataProcessor', 'getsingle', ['id' => $output['data_processor_id']]);
           $configuration = self::createOrUpdateNavigationItem($output, $dataProcessor);
           if ($configuration) {
@@ -186,7 +188,6 @@ class UIOutputHelper {
 
     $navigation = \CRM_Dataprocessor_Utils_Navigation::singleton();
     $navigationParams = array();
-
     // Retrieve the current navigation ID.
     if (isset($configuration['navigation_id'])) {
       // Get the default navigation parent id.
