@@ -17,7 +17,7 @@
     </div>
 
     {* block for rule data *}
-    <h3>{ts}Field{/ts}</h3>
+    <h3>{ts}Filter{/ts}</h3>
     <div class="crm-block crm-form-block crm-data-processor_filter-block">
         <div class="crm-section">
             <div class="label">{$form.type.label}</div>
@@ -51,6 +51,11 @@
         <div class="crm-section">
             <div class="label">{$form.is_required.label}</div>
             <div class="content">{$form.is_required.html}</div>
+            <div class="clear"></div>
+        </div>
+        <div class="crm-section">
+            <div class="label">{$form.is_exposed.label}</div>
+            <div class="content">{$form.is_exposed.html}</div>
             <div class="clear"></div>
         </div>
     </div>
@@ -89,7 +94,7 @@
             }
           });
 
-          $('#type').change();
+          //$('#type').change();
         });
         {/literal}
     </script>

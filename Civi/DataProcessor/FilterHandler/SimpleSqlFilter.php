@@ -7,71 +7,24 @@
 namespace Civi\DataProcessor\FilterHandler;
 
 use Civi\DataProcessor\DataFlow\SqlDataFlow;
-use Civi\DataProcessor\DataFlow\SqlTableDataFlow;
 use Civi\DataProcessor\DataSpecification\CustomFieldSpecification;
-use Civi\DataProcessor\DataSpecification\FieldSpecification;
-use Civi\DataProcessor\Exception\DataSourceNotFoundException;
-use Civi\DataProcessor\Exception\FieldNotFoundException;
 use Civi\DataProcessor\Exception\InvalidConfigurationException;
-use Civi\DataProcessor\Source\SourceInterface;
 use CRM_Dataprocessor_ExtensionUtil as E;
 
-class SimpleSqlFilter extends AbstractFilterHandler {
+class SimpleSqlFilter extends AbstractFieldFilterHandler {
 
   /**
-   * @var \Civi\DataProcessor\DataSpecification\FieldSpecification
-   */
-  protected $fieldSpecification;
-
-  /**
-   * @var SourceInterface
-   */
-  protected $dataSource;
-
-  public function __construct() {
-    parent::__construct();
-  }
-
-  /**
-   * Initialize the processor
+   * Initialize the filter
    *
-   * @param String $alias
-   * @param String $title
-   * @param bool $is_required
-   * @param array $configuration
+   * @throws \Civi\DataProcessor\Exception\DataSourceNotFoundException
+   * @throws \Civi\DataProcessor\Exception\InvalidConfigurationException
+   * @throws \Civi\DataProcessor\Exception\FieldNotFoundException
    */
-  public function initialize($alias, $title, $is_required, $configuration) {
-    if ($this->fieldSpecification) {
-      return; // Already initialized.
+  protected function doInitialization() {
+    if (!isset($this->configuration['datasource']) || !isset($this->configuration['field'])) {
+      throw new InvalidConfigurationException(E::ts("Filter %1 requires a field to filter on. None given.", array(1=>$this->title)));
     }
-    if (!isset($configuration['datasource']) || !isset($configuration['field'])) {
-      throw new InvalidConfigurationException(E::ts("Filter %1 requires a field to filter on. None given.", array(1=>$title)));
-    }
-
-    $this->is_required = $is_required;
-
-    $this->dataSource = $this->data_processor->getDataSourceByName($configuration['datasource']);
-    if (!$this->dataSource) {
-      throw new DataSourceNotFoundException(E::ts("Filter %1 requires data source '%2' which could not be found. Did you rename or deleted the data source?", array(1=>$title, 2=>$configuration['datasource'])));
-    }
-    $this->fieldSpecification  =  clone $this->dataSource->getAvailableFilterFields()->getFieldSpecificationByName($configuration['field']);
-    if (!$this->fieldSpecification) {
-      throw new FieldNotFoundException(E::ts("Filter %1 requires a field with the name '%2' in the data source '%3'. Did you change the data source type?", array(
-        1 => $title,
-        2 => $configuration['field'],
-        3 => $configuration['datasource']
-      )));
-    }
-    $this->fieldSpecification->alias = $alias;
-    $this->fieldSpecification->title = $title;
-
-  }
-
-  /**
-   * @return \Civi\DataProcessor\DataSpecification\FieldSpecification
-   */
-  public function getFieldSpecification() {
-    return $this->fieldSpecification;
+    $this->initializeField($this->configuration['datasource'], $this->configuration['field']);
   }
 
   /**
@@ -80,14 +33,15 @@ class SimpleSqlFilter extends AbstractFilterHandler {
    * @return mixed
    */
   public function setFilter($filter) {
+    $this->resetFilter();
     $dataFlow  = $this->dataSource->ensureField($this->fieldSpecification->name);
     if ($dataFlow && $dataFlow instanceof SqlDataFlow) {
       if ($this->isMultiValueField()) {
-        $whereClause = new SqlDataFlow\MultiValueFieldWhereClause($dataFlow->getName(), $this->fieldSpecification->name, $filter['op'], $filter['value'], $this->fieldSpecification->type);
+        $this->whereClause = new SqlDataFlow\MultiValueFieldWhereClause($dataFlow->getName(), $this->fieldSpecification->name, $filter['op'], $filter['value'], $this->fieldSpecification->type);
       } else {
-        $whereClause = new SqlDataFlow\SimpleWhereClause($dataFlow->getName(), $this->fieldSpecification->name, $filter['op'], $filter['value'], $this->fieldSpecification->type);
+        $this->whereClause = new SqlDataFlow\SimpleWhereClause($dataFlow->getName(), $this->fieldSpecification->name, $filter['op'], $filter['value'], $this->fieldSpecification->type);
       }
-      $dataFlow->addWhereClause($whereClause);
+      $dataFlow->addWhereClause($this->whereClause);
     }
   }
 

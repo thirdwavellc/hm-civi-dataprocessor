@@ -89,6 +89,11 @@ function civicrm_api3_data_processor_filter_get($params) {
     if (isset($value['configuration'])) {
       $return['values'][$id]['configuration'] = json_decode($value['configuration'], TRUE);
     }
+    if (isset($value['filter_value'])) {
+      $return['values'][$id]['filter_value'] = json_decode($value['filter_value'], TRUE);
+    } else {
+      $return['values'][$id]['filter_value'] = array();
+    }
   }
   return $return;
 }

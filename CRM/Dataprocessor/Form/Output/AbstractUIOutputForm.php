@@ -96,7 +96,7 @@ abstract class CRM_Dataprocessor_Form_Output_AbstractUIOutputForm extends CRM_Co
   protected function hasRequiredFilters() {
     if ($this->dataProcessorClass->getFilterHandlers()) {
       foreach ($this->dataProcessorClass->getFilterHandlers() as $filter) {
-        if ($filter->isRequired()) {
+        if ($filter->isRequired() && $filter->isExposed()) {
           return true;
         }
       }
@@ -113,7 +113,9 @@ abstract class CRM_Dataprocessor_Form_Output_AbstractUIOutputForm extends CRM_Co
     $errors = array();
     if ($this->dataProcessorClass->getFilterHandlers()) {
       foreach ($this->dataProcessorClass->getFilterHandlers() as $filter) {
-        $errors = array_merge($errors, $filter->validateSubmittedFilterParams($this->_formValues));
+        if ($filter->isExposed()) {
+          $errors = array_merge($errors, $filter->validateSubmittedFilterParams($this->_formValues));
+        }
       }
     }
     return $errors;
@@ -127,7 +129,10 @@ abstract class CRM_Dataprocessor_Form_Output_AbstractUIOutputForm extends CRM_Co
   public static function applyFilters(\Civi\DataProcessor\ProcessorType\AbstractProcessorType $dataProcessor, $submittedValues) {
     if ($dataProcessor->getFilterHandlers()) {
       foreach ($dataProcessor->getFilterHandlers() as $filter) {
-       $filter->applyFilterFromSubmittedFilterParams($submittedValues);
+        if ($filter->isExposed()) {
+          $filterValues = $filter->processSubmittedValues($submittedValues);
+          $filter->applyFilterFromSubmittedFilterParams($filterValues);
+        }
       }
     }
   }
@@ -140,10 +145,10 @@ abstract class CRM_Dataprocessor_Form_Output_AbstractUIOutputForm extends CRM_Co
     if ($this->dataProcessorClass->getFilterHandlers()) {
       foreach ($this->dataProcessorClass->getFilterHandlers() as $filterHandler) {
         $fieldSpec = $filterHandler->getFieldSpecification();
-        if (!$fieldSpec) {
+        if (!$fieldSpec || !$filterHandler->isExposed()) {
           continue;
         }
-        $filterElements[$fieldSpec->alias]['filter'] = $filterHandler->addToFilterForm($this);
+        $filterElements[$fieldSpec->alias]['filter'] = $filterHandler->addToFilterForm($this, $filterHandler->getDefaultFilterValues());
         $filterElements[$fieldSpec->alias]['template'] = $filterHandler->getTemplateFileName();
       }
       $this->assign('filters', $filterElements);

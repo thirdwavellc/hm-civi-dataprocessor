@@ -227,7 +227,7 @@ class Api implements OutputInterface, API_ProviderInterface, EventSubscriberInte
       if (isset($types[$fieldSpec->type])) {
         $type = $types[$fieldSpec->type];
       }
-      if (!$fieldSpec) {
+      if (!$fieldSpec || !$filterHandler->isExposed()) {
         continue;
       }
       $field = [
@@ -335,6 +335,9 @@ class Api implements OutputInterface, API_ProviderInterface, EventSubscriberInte
 
   protected function runDataProcessor(AbstractProcessorType $dataProcessorClass, $params, $isCount) {
     foreach($dataProcessorClass->getFilterHandlers() as $filter) {
+      if (!$filter->isExposed()) {
+        continue;
+      }
       $filterSpec = $filter->getFieldSpecification();
       if ($filter->isRequired() && !isset($params[$filterSpec->alias])) {
         throw new \API_Exception('Field '.$filterSpec->alias.' is required');

@@ -60,8 +60,23 @@
     <length>255</length>
   </field>
   <field>
+    <name>is_exposed</name>
+    <title>Is exposed</title>
+    <type>boolean</type>
+    <required>true</required>
+    <default>1</default>
+  </field>
+  <field>
     <name>configuration</name>
     <title>Configuration</title>
+    <type>text</type>
+    <required>false</required>
+    <length>255</length>
+    <serialize>JSON</serialize>
+  </field>
+  <field>
+    <name>filter_value</name>
+    <title>Default Filter Value</title>
     <type>text</type>
     <required>false</required>
     <length>255</length>

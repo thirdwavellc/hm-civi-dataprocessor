@@ -84,7 +84,7 @@ class CRM_Dataprocessor_BAO_DataProcessor extends CRM_Dataprocessor_DAO_DataProc
       if ($filterHandler) {
         $filterHandler->setDataProcessor($dataProcessorClass);
         try {
-          $filterHandler->initialize($filter['name'], $filter['title'], $filter['is_required'], $filter['configuration']);
+          $filterHandler->initialize($filter);
           $dataProcessorClass->addFilterHandler($filterHandler);
         } catch (\Exception $e) {
           CRM_Core_Session::setStatus($e->getMessage(), E::ts("Invalid filter"), 'error');

@@ -1,9 +1,10 @@
 {crmScope extensionKey='dataprocessor'}
-    <h3>{ts}Exposed Filters{/ts}</h3>
+    <h3>{ts}Filters{/ts}</h3>
     <div class="crm-block crm-form-block crm-data-processor_source-block">
         <table>
             <tr>
                 <th>{ts}Title{/ts}</th>
+                <th>{ts}Exposed{/ts}</th>
                 <th></th>
                 <th></th>
             </tr>
@@ -16,10 +17,18 @@
                         {/if} <br />
                         <span class="description">{$filter.name}</span>
                     </td>
+                    <td>
+                        {if ($filter.is_exposed)}{ts}Yes{/ts}{else}{ts}No{/ts}{/if}
+                    </td>
                     <td style="width: 20%">{if ($filter.weight && !is_numeric($filter.weight))}{$filter.weight}{/if}</td>
-                    <td style="width: 20%">
-                        <a href="{crmURL p="civicrm/dataprocessor/form/filter" q="reset=1&action=update&data_processor_id=`$filter.data_processor_id`&id=`$filter.id`"}">{ts}Edit{/ts}</a>
-                        <a href="{crmURL p="civicrm/dataprocessor/form/filter" q="reset=1&action=delete&data_processor_id=`$filter.data_processor_id`&id=`$filter.id`"}">{ts}Remove{/ts}</a>
+                    <td class="right nowrap">
+                        <span class="btn-slide crm-hover-button">{ts}Configure{/ts}
+                        <ul class="panel">
+                            <li><a class="crm-hover-button" href="{crmURL p="civicrm/dataprocessor/form/filter" q="reset=1&action=update&data_processor_id=`$filter.data_processor_id`&id=`$filter.id`"}">{ts}Type &amp; configuration{/ts}</a></li>
+                            <li><a class="crm-hover-button" href="{crmURL p="civicrm/dataprocessor/form/filter_value" q="reset&action=update&data_processor_id=`$filter.data_processor_id`&id=`$filter.id`"}">{ts}Filter setting{/ts}</a></li>
+                            <li><a class="crm-hover-button" href="{crmURL p="civicrm/dataprocessor/form/filter" q="reset=1&action=delete&data_processor_id=`$filter.data_processor_id`&id=`$filter.id`"}">{ts}Remove{/ts}</a></li>
+                        </ul>
+                        </span>
                     </td>
                 </tr>
             {/foreach}

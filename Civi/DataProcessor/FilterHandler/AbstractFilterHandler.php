@@ -24,19 +24,61 @@ abstract class AbstractFilterHandler {
   protected $is_required;
 
   /**
+   * @var bool
+   */
+  protected $is_exposed;
+
+  /**
+   * @var array
+   */
+  protected $defaultFilterValues;
+
+  /**
+   * @var array
+   */
+  protected $filter;
+
+  /**
+   * @var String
+   */
+  protected $alias;
+
+  /**
+   * @var String
+   */
+  protected $title;
+
+  /**
+   * @var array
+   */
+  protected $configuration;
+
+  /**
+   * @var bool
+   */
+  protected $is_initialized = false;
+
+  /**
    * @return \Civi\DataProcessor\DataSpecification\FieldSpecification
    */
   abstract public function getFieldSpecification();
 
   /**
-   * Initialize the processor
+   * Initialize the filter
    *
-   * @param String $alias
-   * @param String $title
-   * @param bool $is_required
-   * @param array $configuration
+   * @throws \Civi\DataProcessor\Exception\DataSourceNotFoundException
+   * @throws \Civi\DataProcessor\Exception\InvalidConfigurationException
+   * @throws \Civi\DataProcessor\Exception\FieldNotFoundException
    */
-  abstract public function initialize($alias, $title, $is_required, $configuration);
+  abstract protected function doInitialization();
+
+
+  /**
+   * Resets the filter
+   *
+   * @return void
+   */
+  abstract public function resetFilter();
 
   /**
    * @param array $filterParams
@@ -49,12 +91,58 @@ abstract class AbstractFilterHandler {
 
   }
 
+  public function initialize($filter) {
+    if ($this->isInitialized()) {
+      return;
+    }
+    $this->filter = $filter;
+    $this->alias = $filter['name'];
+    $this->title = $filter['title'];
+    $this->configuration = $filter['configuration'];
+    $this->is_required = $filter['is_required'];
+    $this->is_exposed = $filter['is_exposed'];
+    $this->defaultFilterValues = $filter['filter_value'];
+
+    $this->doInitialization();
+
+    if (!empty($this->defaultFilterValues)) {
+      $this->setFilter($this->defaultFilterValues);
+    }
+    $this->is_initialized = true;
+  }
+
+  /**
+   * Return whether the filter is initialized
+   *
+   * @return bool
+   */
+  public function isInitialized() {
+    return $this->is_initialized;
+  }
+
   public function setDataProcessor(AbstractProcessorType $dataProcessor) {
     $this->data_processor = $dataProcessor;
   }
 
+  /**
+   * @return bool
+   */
   public function isRequired() {
     return $this->is_required;
+  }
+
+  /**
+   * @return bool
+   */
+  public function isExposed() {
+    return $this->is_exposed;
+  }
+
+  /**
+   * @return array
+   */
+  public function getDefaultFilterValues() {
+    return $this->defaultFilterValues;
   }
 
   /**
@@ -151,27 +239,26 @@ abstract class AbstractFilterHandler {
   public function applyFilterFromSubmittedFilterParams($submittedValues) {
     $isFilterSet = FALSE;
     $filterSpec = $this->getFieldSpecification();
-    $filterName = $filterSpec->alias;
     if ($filterSpec->type == 'Date' || $filterSpec->type == 'Timestamp') {
       $isFilterSet = $this->applyDateFilter($submittedValues);
     }
-    elseif (isset($submittedValues[$filterName . '_op'])) {
-      switch ($submittedValues[$filterName . '_op']) {
+    elseif (isset($submittedValues['op'])) {
+      switch ($submittedValues['op']) {
         case 'IN':
-          if (isset($submittedValues[$filterName . '_value']) && $submittedValues[$filterName . '_value']) {
+          if (isset($submittedValues['value']) && $submittedValues['value']) {
             $filterParams = [
               'op' => 'IN',
-              'value' => $submittedValues[$filterName . '_value'],
+              'value' => $submittedValues['value'],
             ];
             $this->setFilter($filterParams);
             $isFilterSet = TRUE;
           }
           break;
         case 'NOT IN':
-          if (isset($submittedValues[$filterName . '_value']) && $submittedValues[$filterName . '_value']) {
+          if (isset($submittedValues['value']) && $submittedValues['value']) {
             $filterParams = [
               'op' => 'NOT IN',
-              'value' => $submittedValues[$filterName . '_value'],
+              'value' => $submittedValues['value'],
             ];
             $this->setFilter($filterParams);
             $isFilterSet = TRUE;
@@ -183,50 +270,50 @@ abstract class AbstractFilterHandler {
         case '<':
         case '>=':
         case '<=':
-          if (isset($submittedValues[$filterName . '_value']) && $submittedValues[$filterName . '_value']) {
+          if (isset($submittedValues['value']) && $submittedValues['value']) {
             $filterParams = [
-              'op' => $submittedValues[$filterName . '_op'],
-              'value' => $submittedValues[$filterName . '_value'],
+              'op' => $submittedValues['op'],
+              'value' => $submittedValues['value'],
             ];
             $this->setFilter($filterParams);
             $isFilterSet = TRUE;
           }
           break;
         case 'has':
-          if (isset($submittedValues[$filterName . '_value']) && $submittedValues[$filterName . '_value']) {
+          if (isset($submittedValues['value']) && $submittedValues['value']) {
             $filterParams = [
               'op' => 'LIKE',
-              'value' => '%' . $submittedValues[$filterName . '_value'] . '%',
+              'value' => '%' . $submittedValues['value'] . '%',
             ];
             $this->setFilter($filterParams);
             $isFilterSet = TRUE;
           }
           break;
         case 'nhas':
-          if (isset($submittedValues[$filterName . '_value']) && $submittedValues[$filterName . '_value']) {
+          if (isset($submittedValues['value']) && $submittedValues['value']) {
             $filterParams = [
               'op' => 'NOT LIKE',
-              'value' => '%' . $submittedValues[$filterName . '_value'] . '%',
+              'value' => '%' . $submittedValues['value'] . '%',
             ];
             $this->setFilter($filterParams);
             $isFilterSet = TRUE;
           }
           break;
         case 'sw':
-          if (isset($submittedValues[$filterName . '_value']) && $submittedValues[$filterName . '_value']) {
+          if (isset($submittedValues['value']) && $submittedValues['value']) {
             $filterParams = [
               'op' => 'LIKE',
-              'value' => $submittedValues[$filterName . '_value'] . '%',
+              'value' => $submittedValues['value'] . '%',
             ];
             $this->setFilter($filterParams);
             $isFilterSet = TRUE;
           }
           break;
         case 'ew':
-          if (isset($submittedValues[$filterName . '_value']) && $submittedValues[$filterName . '_value']) {
+          if (isset($submittedValues['value']) && $submittedValues['value']) {
             $filterParams = [
               'op' => 'LIKE',
-              'value' => '%' . $submittedValues[$filterName . '_value'],
+              'value' => '%' . $submittedValues['value'],
             ];
             $this->setFilter($filterParams);
             $isFilterSet = TRUE;
@@ -240,20 +327,64 @@ abstract class AbstractFilterHandler {
   }
 
   /**
+   * Process the submitted values to a filter value
+   * Which could then be processed by applyFilter function
+   *
+   * @param $submittedValues
+   * @return array
+   */
+  public function processSubmittedValues($submittedValues) {
+    $return = array();
+    $filterSpec = $this->getFieldSpecification();
+    $alias = $filterSpec->alias;
+    if (isset($submittedValues[$alias.'_op'])) {
+      $return['op'] = $submittedValues[$alias . '_op'];
+    }
+    if (isset($submittedValues[$alias.'_value'])) {
+      $return['value'] = $submittedValues[$alias . '_value'];
+    }
+    if (isset($submittedValues[$alias.'_relative'])) {
+      $return['relative'] = $submittedValues[$alias . '_relative'];
+    }
+    if (isset($submittedValues[$alias.'_from'])) {
+      $return['from'] = $submittedValues[$alias . '_from'];
+    }
+    if (isset($submittedValues[$alias.'_to'])) {
+      $return['to'] = $submittedValues[$alias . '_to'];
+    }
+    if (isset($submittedValues[$alias.'_from_time'])) {
+      $return['from_time'] = $submittedValues[$alias.'_from_time'];
+    }
+    if (isset($submittedValues[$alias.'_to_time'])) {
+      $return['to_time'] = $submittedValues[$alias.'_to_time'];
+    }
+    if (isset($submittedValues[$alias.'_min'])) {
+      $return['min'] = $submittedValues[$alias.'_min'];
+    }
+    if (isset($submittedValues[$alias.'_max'])) {
+      $return['max'] = $submittedValues[$alias.'_max'];
+    }
+    return $return;
+  }
+
+  /**
    * Add the elements to the filter form.
    *
    * @param \CRM_Core_Form $form
+   * @param array $defaultFilterValue
    * @return array
    *   Return variables belonging to this filter.
    */
-  public function addToFilterForm(\CRM_Core_Form $form) {
+  public function addToFilterForm(\CRM_Core_Form $form, $defaultFilterValue) {
     static $count = 1;
     $types = \CRM_Utils_Type::getValidTypes();
     $fieldSpec = $this->getFieldSpecification();
     $operations = $this->getOperatorOptions($fieldSpec);
     $type = \CRM_Utils_Type::T_STRING;
+    $defaults = array();
 
     $title = $fieldSpec->title;
+    $alias = $fieldSpec->alias;
     if ($this->isRequired()) {
       $title .= ' <span class="crm-marker">*</span>';
     }
@@ -262,40 +393,87 @@ abstract class AbstractFilterHandler {
       $type = $types[$fieldSpec->type];
     }
     if ($fieldSpec->getOptions()) {
-      $form->addElement('select', "{$fieldSpec->alias}_op", E::ts('Operator:'), $operations);
-      $form->addElement('select', "{$fieldSpec->alias}_value", NULL, $fieldSpec->getOptions(), [
+      $form->addElement('select', "{$alias}_op", E::ts('Operator:'), $operations);
+      $form->addElement('select', "{$alias}_value", NULL, $fieldSpec->getOptions(), [
         'style' => 'min-width:250px',
         'class' => 'crm-select2 huge',
         'multiple' => TRUE,
         'placeholder' => E::ts('- select -'),
       ]);
+      if (isset($defaultFilterValue['op'])) {
+        $defaults[$alias . '_op'] = $defaultFilterValue['op'];
+      }
+      if (isset($defaultFilterValue['value'])) {
+        $defaults[$alias.'_value'] = $defaultFilterValue['value'];
+      }
     }
     else {
       switch ($type) {
         case \CRM_Utils_Type::T_DATE:
         case \CRM_Utils_Type::T_TIMESTAMP:
-          \CRM_Core_Form_Date::buildDateRange($form, $fieldSpec->alias, $count, '_from', '_to', E::ts('From:'), $this->isRequired(), $operations);
+          \CRM_Core_Form_Date::buildDateRange($form, $alias, $count, '_from', '_to', E::ts('From:'), $this->isRequired(), $operations);
+          if (isset($defaultFilterValue['op'])) {
+            $defaults[$alias . '_op'] = $defaultFilterValue['op'];
+          }
+          if (isset($defaultFilterValue['value'])) {
+            $defaults[$alias.'_value'] = $defaultFilterValue['value'];
+          }
+          if (isset($defaultFilterValue['relative'])) {
+            $defaults[$alias.'_relative'] = $defaultFilterValue['relative'];
+          }
+          if (isset($defaultFilterValue['from'])) {
+            $defaults[$alias.'_from'] = $defaultFilterValue['from'];
+          }
+          if (isset($defaultFilterValue['to'])) {
+            $defaults[$alias.'_to'] = $defaultFilterValue['to'];
+          }
+          if (isset($defaultFilterValue['from_time'])) {
+            $defaults[$alias.'_from_time'] = $defaultFilterValue['from_time'];
+          }
+          if (isset($defaultFilterValue['to_time'])) {
+            $defaults[$alias.'_to_time'] = $defaultFilterValue['to_time'];
+          }
+
           $count ++;
           break;
         case \CRM_Utils_Type::T_INT:
         case \CRM_Utils_Type::T_FLOAT:
           // and a min value input box
-          $form->add('text', "{$fieldSpec->alias}_min", E::ts('Min'));
+          $form->add('text', "{$alias}_min", E::ts('Min'));
           // and a max value input box
-          $form->add('text', "{$fieldSpec->alias}_max", E::ts('Max'));
+          $form->add('text', "{$alias}_max", E::ts('Max'));
+
+        if (isset($defaultFilterValue['min'])) {
+          $defaults[$alias.'_min'] = $defaultFilterValue['min'];
+        }
+        if (isset($defaultFilterValue['max'])) {
+          $defaults[$alias.'_max'] = $defaultFilterValue['max'];
+        }
+
         default:
           // default type is string
-          $form->addElement('select', "{$fieldSpec->alias}_op", E::ts('Operator:'), $operations,
-            ['onchange' => "return showHideMaxMinVal( '$fieldSpec->alias', this.value );"]
+          $form->addElement('select', "{$alias}_op", E::ts('Operator:'), $operations,
+            ['onchange' => "return showHideMaxMinVal( '$alias', this.value );"]
           );
           // we need text box for value input
-          $form->add('text', "{$fieldSpec->alias}_value", NULL, ['class' => 'huge']);
+          $form->add('text', "{$alias}_value", NULL, ['class' => 'huge']);
+          if (isset($defaultFilterValue['op'])) {
+            $defaults[$alias . '_op'] = $defaultFilterValue['op'];
+          }
+          if (isset($defaultFilterValue['value'])) {
+            $defaults[$alias.'_value'] = $defaultFilterValue['value'];
+          }
           break;
       }
     }
 
     $filter['type'] = $fieldSpec->type;
     $filter['title'] = $title;
+
+
+    if (count($defaults)) {
+      $form->setDefaults($defaults);
+    }
 
     return $filter;
   }

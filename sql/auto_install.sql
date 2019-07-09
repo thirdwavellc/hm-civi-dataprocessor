@@ -139,7 +139,9 @@ CREATE TABLE `civicrm_data_processor_filter` (
      `title` varchar(255) NOT NULL   ,
      `type` varchar(255) NOT NULL   ,
      `is_required` tinyint NULL   ,
-     `configuration` text NULL    
+     `is_exposed` tinyint NOT NULL  DEFAULT 1 ,
+     `configuration` text NULL   ,
+     `filter_value` text NULL    
 ,
         PRIMARY KEY (`id`)
  

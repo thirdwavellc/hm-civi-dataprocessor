@@ -45,11 +45,16 @@ class CRM_Dataprocessor_Form_Filter extends CRM_Core_Form {
     if ($this->id) {
       $this->filter = civicrm_api3('DataProcessorFilter', 'getsingle', array('id' => $this->id));
       $this->assign('filter', $this->filter);
-      $this->filterTypeClass = $factory->getFilterByName($this->filter['type']);
-      $this->assign('has_configuration', $this->filterTypeClass->hasConfiguration());
+    }
+    if (!$this->filter) {
+      $this->filter['data_processor_id'] = $this->dataProcessorId;
+      $this->filter['type'] = 'simple_sql_filter';
     }
 
     $type = CRM_Utils_Request::retrieve('type', 'String');
+    if (!$type && $this->filter && isset($this->filter['type'])) {
+      $type = $this->filter['type'];
+    }
     if ($type) {
       $this->filterTypeClass = $factory->getFilterByName($type);
       $this->assign('has_configuration', $this->filterTypeClass->hasConfiguration());
@@ -73,6 +78,7 @@ class CRM_Dataprocessor_Form_Filter extends CRM_Core_Form {
     } else {
       $this->add('text', 'name', E::ts('Name'), array('size' => CRM_Utils_Type::HUGE), FALSE);
       $this->add('text', 'title', E::ts('Title'), array('size' => CRM_Utils_Type::HUGE), TRUE);
+      $this->add('checkbox', 'is_exposed', E::ts('Filter is exposed to the user'));
 
       $factory = dataprocessor_get_factory();
       $this->add('select', 'type', E::ts('Select Filter'), $factory->getFilters(), true, array('style' => 'min-width:250px',
@@ -113,6 +119,11 @@ class CRM_Dataprocessor_Form_Filter extends CRM_Core_Form {
     if (isset($this->filter['name'])) {
       $defaults['name'] = $this->filter['name'];
     }
+    if ($this->_action == CRM_Core_Action::ADD) {
+      $defaults['is_exposed'] = 1;
+    } elseif (isset($this->filter['is_exposed'])) {
+      $defaults['is_exposed'] = $this->filter['is_exposed'];
+    }
     return $defaults;
   }
 
@@ -142,6 +153,7 @@ class CRM_Dataprocessor_Form_Filter extends CRM_Core_Form {
     $params['title'] = $values['title'];
     $params['type'] = $values['type'];
     $params['is_required'] = isset($values['is_required']) && $values['is_required'] ? 1 : 0;
+    $params['is_exposed'] = isset($values['is_exposed']) && $values['is_exposed'] ? 1 : 0;
     if ($this->dataProcessorId) {
       $params['data_processor_id'] = $this->dataProcessorId;
     }
