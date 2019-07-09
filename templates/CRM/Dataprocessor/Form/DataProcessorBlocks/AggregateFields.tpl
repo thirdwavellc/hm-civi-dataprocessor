@@ -9,8 +9,8 @@
         {foreach from=$aggregateFields item=field key=alias}
             <tr>
                 <td>{$field}</td>
-                <td>
-                    <a href="{crmURL p="civicrm/dataprocessor/form/aggregate_field" q="reset=1&action=delete&id=`$data_processor_id`&alias=`$alias`"}">{ts}Remove{/ts}</a>
+                <td class="right nowrap" style="width: 100px;">
+                    <a class="crm-hover-button" href="{crmURL p="civicrm/dataprocessor/form/aggregate_field" q="reset=1&action=delete&id=`$data_processor_id`&alias=`$alias`"}">{ts}Remove{/ts}</a>
                 </td>
             </tr>
         {/foreach}

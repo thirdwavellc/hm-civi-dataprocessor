@@ -10,10 +10,13 @@
         {foreach from=$fields item=field}
             <tr>
                 <td>{$field.title} <br /><span class="description">{$field.name}</span></td>
-                <td style="width: 20%">{if ($field.weight && !is_numeric($field.weight))}{$field.weight}{/if}</td>
-                <td style="width: 20%">
-                    <a href="{crmURL p="civicrm/dataprocessor/form/field" q="reset=1&action=update&data_processor_id=`$field.data_processor_id`&id=`$field.id`"}">{ts}Edit{/ts}</a>
-                    <a href="{crmURL p="civicrm/dataprocessor/form/field" q="reset=1&action=delete&data_processor_id=`$field.data_processor_id`&id=`$field.id`"}">{ts}Remove{/ts}</a>
+                <td style="width: 60px">{if ($field.weight && !is_numeric($field.weight))}{$field.weight}{/if}</td>
+                <td class="right nowrap" style="width: 100px;">
+                        <span class="btn-slide crm-hover-button">{ts}Configure{/ts}
+                        <ul class="panel">
+                            <li><a class="crm-hover-button" href="{crmURL p="civicrm/dataprocessor/form/field" q="reset=1&action=update&data_processor_id=`$field.data_processor_id`&id=`$field.id`"}">{ts}Edit{/ts}</a></li>
+                            <li><a class="crm-hover-button" href="{crmURL p="civicrm/dataprocessor/form/field" q="reset=1&action=delete&data_processor_id=`$field.data_processor_id`&id=`$field.id`"}">{ts}Remove{/ts}</a></li>
+                        </ul>
                 </td>
             </tr>
         {/foreach}

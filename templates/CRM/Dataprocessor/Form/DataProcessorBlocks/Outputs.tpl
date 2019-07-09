@@ -10,15 +10,17 @@
         {foreach from=$outputs item=output}
             <tr>
                 <td>{$output.type_name}</td>
-                <td style="width:20%"></td>
-                <td style="width:20%">
-                    <a href="{crmURL p="civicrm/dataprocessor/form/output" q="reset=1&action=update&data_processor_id=`$output.data_processor_id`&id=`$output.id`"}">{ts}Edit{/ts}</a>
-                    <a href="{crmURL p="civicrm/dataprocessor/form/output" q="reset=1&action=delete&data_processor_id=`$output.data_processor_id`&id=`$output.id`"}">{ts}Remove{/ts}</a>
-                    <br/>
-
-                    {if isset($output.navigation_url) }
-                        <a href="{$output.navigation_url}">{ts}Execute{/ts}</a>
-                    {/if}
+                <td style="width:60px;"></td>
+                <td class="right nowrap" style="width: 100px;">
+                        <span class="btn-slide crm-hover-button">{ts}Configure{/ts}
+                        <ul class="panel">
+                            <li><a class="crm-hover-button" href="{crmURL p="civicrm/dataprocessor/form/output" q="reset=1&action=update&data_processor_id=`$output.data_processor_id`&id=`$output.id`"}">{ts}Edit{/ts}</a></li>
+                            <li><a class="crm-hover-button" href="{crmURL p="civicrm/dataprocessor/form/output" q="reset=1&action=delete&data_processor_id=`$output.data_processor_id`&id=`$output.id`"}">{ts}Remove{/ts}</a></li>
+                            {if isset($output.navigation_url) }
+                                <li><a class="crm-hover-button" href="{$output.navigation_url}">{ts}Execute{/ts}</a></li>
+                            {/if}
+                        </ul>
+                        </span>
                 </td>
             </tr>
         {/foreach}

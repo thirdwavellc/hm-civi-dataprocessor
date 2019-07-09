@@ -20,8 +20,8 @@
                     <td>
                         {if ($filter.is_exposed)}{ts}Yes{/ts}{else}{ts}No{/ts}{/if}
                     </td>
-                    <td style="width: 20%">{if ($filter.weight && !is_numeric($filter.weight))}{$filter.weight}{/if}</td>
-                    <td class="right nowrap">
+                    <td style="width: 60px">{if ($filter.weight && !is_numeric($filter.weight))}{$filter.weight}{/if}</td>
+                    <td class="right nowrap" style="width: 100px;">
                         <span class="btn-slide crm-hover-button">{ts}Configure{/ts}
                         <ul class="panel">
                             <li><a class="crm-hover-button" href="{crmURL p="civicrm/dataprocessor/form/filter" q="reset=1&action=update&data_processor_id=`$filter.data_processor_id`&id=`$filter.id`"}">{ts}Type &amp; configuration{/ts}</a></li>

@@ -12,10 +12,14 @@
                 <td>{$source.title} <br />
                     <span class="description">{$source.type_name}</span>
                 </td>
-                <td style="width: 20%">{if ($source.weight && !is_numeric($source.weight))}{$source.weight}{/if}</td>
-                <td style="width: 20%">
-                    <a href="{crmURL p="civicrm/dataprocessor/form/source" q="reset=1&action=update&data_processor_id=`$source.data_processor_id`&id=`$source.id`"}">{ts}Edit{/ts}</a>
-                    <a href="{crmURL p="civicrm/dataprocessor/form/source" q="reset=1&action=delete&data_processor_id=`$source.data_processor_id`&id=`$source.id`"}">{ts}Remove{/ts}</a>
+                <td style="width: 60px;">{if ($source.weight && !is_numeric($source.weight))}{$source.weight}{/if}</td>
+                <td class="right nowrap" style="width: 100px;">
+                        <span class="btn-slide crm-hover-button">{ts}Configure{/ts}
+                        <ul class="panel">
+                            <li><a class="crm-hover-button" href="{crmURL p="civicrm/dataprocessor/form/source" q="reset=1&action=update&data_processor_id=`$source.data_processor_id`&id=`$source.id`"}">{ts}Edit{/ts}</a></li>
+                            <li><a class="crm-hover-button" href="{crmURL p="civicrm/dataprocessor/form/source" q="reset=1&action=delete&data_processor_id=`$source.data_processor_id`&id=`$source.id`"}">{ts}Remove{/ts}</a></li>
+                        </ul>
+                        </span>
                 </td>
             </tr>
         {/foreach}
