@@ -14,10 +14,10 @@
                 <td class="right nowrap" style="width: 100px;">
                         <span class="btn-slide crm-hover-button">{ts}Configure{/ts}
                         <ul class="panel">
-                            <li><a class="crm-hover-button" href="{crmURL p="civicrm/dataprocessor/form/output" q="reset=1&action=update&data_processor_id=`$output.data_processor_id`&id=`$output.id`"}">{ts}Edit{/ts}</a></li>
-                            <li><a class="crm-hover-button" href="{crmURL p="civicrm/dataprocessor/form/output" q="reset=1&action=delete&data_processor_id=`$output.data_processor_id`&id=`$output.id`"}">{ts}Remove{/ts}</a></li>
+                            <li><a class="action-item crm-hover-button" href="{crmURL p="civicrm/dataprocessor/form/output" q="reset=1&action=update&data_processor_id=`$output.data_processor_id`&id=`$output.id`"}">{ts}Edit{/ts}</a></li>
+                            <li><a class="action-item crm-hover-button" href="{crmURL p="civicrm/dataprocessor/form/output" q="reset=1&action=delete&data_processor_id=`$output.data_processor_id`&id=`$output.id`"}">{ts}Remove{/ts}</a></li>
                             {if isset($output.navigation_url) }
-                                <li><a class="crm-hover-button" href="{$output.navigation_url}">{ts}Execute{/ts}</a></li>
+                                <li><a class="action-item crm-hover-button" href="{$output.navigation_url}">{ts}Execute{/ts}</a></li>
                             {/if}
                         </ul>
                         </span>

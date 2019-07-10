@@ -24,9 +24,9 @@
                     <td class="right nowrap" style="width: 100px;">
                         <span class="btn-slide crm-hover-button">{ts}Configure{/ts}
                         <ul class="panel">
-                            <li><a class="crm-hover-button" href="{crmURL p="civicrm/dataprocessor/form/filter" q="reset=1&action=update&data_processor_id=`$filter.data_processor_id`&id=`$filter.id`"}">{ts}Type &amp; configuration{/ts}</a></li>
-                            <li><a class="crm-hover-button" href="{crmURL p="civicrm/dataprocessor/form/filter_value" q="reset&action=update&data_processor_id=`$filter.data_processor_id`&id=`$filter.id`"}">{ts}Filter setting{/ts}</a></li>
-                            <li><a class="crm-hover-button" href="{crmURL p="civicrm/dataprocessor/form/filter" q="reset=1&action=delete&data_processor_id=`$filter.data_processor_id`&id=`$filter.id`"}">{ts}Remove{/ts}</a></li>
+                            <li><a class="action-item crm-hover-button" href="{crmURL p="civicrm/dataprocessor/form/filter" q="reset=1&action=update&data_processor_id=`$filter.data_processor_id`&id=`$filter.id`"}">{ts}Type &amp; configuration{/ts}</a></li>
+                            <li><a class="action-item crm-hover-button" href="{crmURL p="civicrm/dataprocessor/form/filter_value" q="reset&action=update&data_processor_id=`$filter.data_processor_id`&id=`$filter.id`"}">{ts}Filter setting{/ts}</a></li>
+                            <li><a class="action-item crm-hover-button" href="{crmURL p="civicrm/dataprocessor/form/filter" q="reset=1&action=delete&data_processor_id=`$filter.data_processor_id`&id=`$filter.id`"}">{ts}Remove{/ts}</a></li>
                         </ul>
                         </span>
                     </td>
