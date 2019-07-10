@@ -55,7 +55,7 @@ class CRM_Dataprocessor_Form_DataProcessor extends CRM_Core_Form {
         CRM_Utils_System::redirect($session->readUserContext());
         break;
       case CRM_Core_Action::EXPORT:
-        $file_download_name = 'configuration.json';
+        $file_download_name = $this->dataProcessor['name'].'.json';
         $mime_type = 'application/json';
         $buffer = json_encode(CRM_Dataprocessor_Utils_Importer::export($this->dataProcessorId), JSON_PRETTY_PRINT);
       	CRM_Utils_System::download(

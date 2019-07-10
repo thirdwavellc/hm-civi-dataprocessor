@@ -63,7 +63,7 @@
     <name>is_exposed</name>
     <title>Is exposed</title>
     <type>boolean</type>
-    <required>true</required>
+    <required>false</required>
     <default>1</default>
   </field>
   <field>
