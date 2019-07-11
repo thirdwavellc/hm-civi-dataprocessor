@@ -3,6 +3,7 @@
   <file>dataprocessor</file>
   <name>Data Processor</name>
   <description>With the data processor you can build complex queries easily in the user interface and display them as a table, api.</description>
+  <comments>Thanks to Sarvesh, Matt Wire, Rich Lott and Vangelis Pantazis for contributing to the data processor extension.</comments>
   <license>AGPL-3.0</license>
   <maintainer>
     <author>Jaap Jansma</author>
