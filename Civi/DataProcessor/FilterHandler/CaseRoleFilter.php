@@ -167,10 +167,12 @@ class CaseRoleFilter extends AbstractFieldFilterHandler {
    * Add the elements to the filter form.
    *
    * @param \CRM_Core_Form $form
+   * @param array $defaultFilterValue
+   * 
    * @return array
    *   Return variables belonging to this filter.
    */
-  public function addToFilterForm(\CRM_Core_Form $form) {
+  public function addToFilterForm(\CRM_Core_Form $form, $defaultFilterValue) {
     $fieldSpec = $this->getFieldSpecification();
     $operations = $this->getOperatorOptions($fieldSpec);
 
