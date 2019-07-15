@@ -27,6 +27,11 @@ class SimpleWhereClause implements WhereClauseInterface {
         case '!=':
           $operator = 'NOT IN';
           break;
+
+        case 'IS NULL':
+          $operator = 'IS NULL';
+          break;
+
       }
     }
 
@@ -34,6 +39,12 @@ class SimpleWhereClause implements WhereClauseInterface {
     $this->table_alias = $table_alias;
     $this->field = $field;
     $this->operator = $operator;
+
+    if ($operator == 'IS NULL') {
+      $this->value = NULL;
+      return;
+    }
+
     if (is_array($value)) {
       $esacpedValues = array();
       foreach($value as $val) {
@@ -61,6 +72,7 @@ class SimpleWhereClause implements WhereClauseInterface {
         case 'Memo':
           $this->value = "'" . \CRM_Utils_Type::escape($value, $valueType) . "'";
           break;
+
         default:
           $this->value = \CRM_Utils_Type::escape($value, $valueType);
           break;
