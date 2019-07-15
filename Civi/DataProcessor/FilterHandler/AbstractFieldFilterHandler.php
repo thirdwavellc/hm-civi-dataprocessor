@@ -9,6 +9,7 @@ namespace Civi\DataProcessor\FilterHandler;
 use Civi\DataProcessor\DataFlow\SqlDataFlow;
 use Civi\DataProcessor\Exception\DataSourceNotFoundException;
 use Civi\DataProcessor\Exception\FieldNotFoundException;
+use CRM_Dataprocessor_ExtensionUtil as E;
 
 abstract class AbstractFieldFilterHandler extends AbstractFilterHandler {
 
