@@ -249,7 +249,7 @@ abstract class CRM_DataprocessorSearch_Form_AbstractSearch extends CRM_Dataproce
 
         $row['id'] = null;
         if (isset($record[$id_field])) {
-          $row['id'] = $record[$id_field]->formattedValue;
+          $row['id'] = $record[$id_field]->rawValue;
         }
         $row['checkbox'] = CRM_Core_Form::CB_PREFIX.$row['id'];
         $row['record'] = $record;
