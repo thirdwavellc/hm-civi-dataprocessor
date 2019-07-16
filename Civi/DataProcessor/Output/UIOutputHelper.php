@@ -52,7 +52,7 @@ class UIOutputHelper {
         $item = [
           'title' => $title,
           'page_callback' => $outputClass->getCallbackForUi(),
-          'access_arguments' => [$dao->permission],
+          'access_arguments' => [[$dao->permission], 'and'],
         ];
         $items[$url] = $item;
       }
