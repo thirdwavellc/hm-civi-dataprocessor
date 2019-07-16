@@ -162,6 +162,7 @@ class ContactFilter extends AbstractFieldFilterHandler {
     return array(
       'IN' => E::ts('Is one of'),
       'NOT IN' => E::ts('Is not one of'),
+      'null' => E::ts('Is empty'),
     );
   }
 

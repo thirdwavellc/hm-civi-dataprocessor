@@ -319,6 +319,18 @@ abstract class AbstractFilterHandler {
             $isFilterSet = TRUE;
           }
           break;
+
+        case 'null':
+          if (empty($submittedValues[$filterName . '_value'])) {
+            $filterParams = [
+              'op' => 'IS NULL',
+              'value' => '',
+            ];
+            $this->setFilter($filterParams);
+            $isFilterSet = TRUE;
+          }
+          break;
+
       }
     }
     if ($this->isRequired() && !$isFilterSet) {
@@ -483,6 +495,7 @@ abstract class AbstractFilterHandler {
       return array(
         'IN' => E::ts('Is one of'),
         'NOT IN' => E::ts('Is not one of'),
+        'null' => E::ts('Is empty'),
       );
     }
     $types = \CRM_Utils_Type::getValidTypes();
@@ -503,6 +516,7 @@ abstract class AbstractFilterHandler {
           '<' => E::ts('Is less than'),
           '>' => E::ts('Is greater than'),
           '!=' => E::ts('Is not equal to'),
+          'null' => E::ts('Is empty'),
         );
         break;
     }
@@ -513,6 +527,7 @@ abstract class AbstractFilterHandler {
       'sw' => E::ts('Starts with'),
       'ew' => E::ts('Ends with'),
       'nhas' => E::ts('Does not contain'),
+      'null' => E::ts('Is empty'),
     );
   }
 
