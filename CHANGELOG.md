@@ -1,5 +1,6 @@
 # Master version (in development)
 
+* Respect selected permissions for outputs 
 * Allow to specify "Is Empty" for various filters.
 * Allow to limit ContactFilter to only show contacts from specific groups.
 
