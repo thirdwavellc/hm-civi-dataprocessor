@@ -22,6 +22,7 @@
     <ver>5.7</ver>
     <ver>5.13</ver>
     <ver>5.14</ver>
+    <ver>5.15</ver>
   </compatibility>
   <classloader>
     <psr4 prefix="Civi\" path="Civi" />
