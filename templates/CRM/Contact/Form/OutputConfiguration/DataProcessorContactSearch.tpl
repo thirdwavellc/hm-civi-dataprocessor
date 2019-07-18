@@ -1,4 +1,5 @@
 {crmScope extensionKey='dataprocessor'}
+    {include file='CRM/Contact/Form/OutputConfiguration/DashletConfiguration.tpl'}
     <div class="crm-section">
         <div class="label">{$form.title.label}</div>
         <div class="content">{$form.title.html}</div>
@@ -29,4 +30,5 @@
         <div class="content">{$form.help_text.html}</div>
         <div class="clear"></div>
     </div>
+    
 {/crmScope}

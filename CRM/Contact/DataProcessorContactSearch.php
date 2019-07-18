@@ -35,7 +35,16 @@ class CRM_Contact_DataProcessorContactSearch implements UIOutputInterface {
       $fields[$field->alias] = $field->title;
     }
 
-    $form->add('text', 'title', E::ts('Title'), true);
+    $form->add('text', 'title', E::ts('Title'),NULL, true);
+    
+    // form elements for adding Dashlet
+    // $output['dashlet'] 1-> Yes 2->No
+
+    if(isset($output['dashlet']) && $output['dashlet']==1){
+      $form->add('text', 'dashlet_title', E::ts('Dashlet Title'), NULL, true);
+      $form->add('text', 'dashlet_name', E::ts('Dashlet Name (system name)'), NULL, true);
+      $form->add('select', 'dashlet_active', E::ts('Is Dashlet Active ?'), array(1=>'Yes', 0=> 'No'), true);
+    }
 
     $form->add('select','permission', E::ts('Permission'), \CRM_Core_Permission::basicPermissions(), true, array(
       'style' => 'min-width:250px',
@@ -61,8 +70,14 @@ class CRM_Contact_DataProcessorContactSearch implements UIOutputInterface {
 
     $defaults = array();
     if ($output) {
+      
       if (isset($output['permission'])) {
         $defaults['permission'] = $output['permission'];
+      }
+      if (isset($output['dashlet_name'])) {
+        $defaults['dashlet_name'] = $output['dashlet_name'];
+        $defaults['dashlet_title'] = $output['dashlet_title'];
+        $defaults['dashlet_active'] = $output['dashlet_active'];
       }
       if (isset($output['configuration']) && is_array($output['configuration'])) {
         if (isset($output['configuration']['contact_id_field'])) {
@@ -88,6 +103,7 @@ class CRM_Contact_DataProcessorContactSearch implements UIOutputInterface {
     if (empty($defaults['title'])) {
       $defaults['title'] = civicrm_api3('DataProcessor', 'getvalue', array('id' => $output['data_processor_id'], 'return' => 'title'));
     }
+    
     $form->setDefaults($defaults);
   }
 
@@ -116,6 +132,25 @@ class CRM_Contact_DataProcessorContactSearch implements UIOutputInterface {
     $configuration['navigation_parent_path'] = $submittedValues['navigation_parent_path'];
     $configuration['hide_id_field'] = $submittedValues['hide_id_field'];
     $configuration['help_text'] = $submittedValues['help_text'];
+    return $configuration;
+  }
+
+  /**
+   * Process the submitted values and create a configuration array
+   *
+   * @param $submittedValues
+   * @param array $output
+   * @return array
+   */
+  public function processDashletConfiguration($submittedValues) {
+
+    $configuration['domain_id'] = 1;
+    $configuration['name'] = $submittedValues['dashlet_name'];
+    $configuration['label'] = $submittedValues['dashlet_title'];
+    $configuration['permission'] = $submittedValues['permission'];
+    $configuration['is_active'] = $submittedValues['dashlet_active'];
+    $configuration['cache_minutes'] = 60;
+
     return $configuration;
   }
 

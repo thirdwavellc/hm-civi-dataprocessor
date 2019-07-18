@@ -20,6 +20,12 @@
             <div class="content">{$form.type.html}</div>
             <div class="clear"></div>
         </div>
+        <div class="crm-section">
+            <div class="label">{$form.dashlet.label}</div>
+            <div class="content">{$form.dashlet.html}</div>
+            <div class="clear"></div>
+        </div>
+
 
     <div id="type_configuration">
         {if ($configuration_template)}
@@ -39,6 +45,16 @@
           var id = {/literal}{if ($output)}{$output.id}{else}false{/if}{literal};
           var data_processor_id = {/literal}{$data_processor_id}{literal};
 
+          $('#dashlet').on('change', function() {
+            var type = $('#type').val();
+            var dashlet_check = $('#dashlet').val();
+            if(dashlet_check){
+                console.log(dashlet_check);
+                var dataUrl = CRM.url('civicrm/dataprocessor/form/output', {type: type, 'data_processor_id': data_processor_id, 'id': id,'dashlet':dashlet_check});
+                CRM.loadPage(dataUrl, {'target': '#type_configuration'});
+            }
+          });
+
           $('#type').on('change', function() {
             var type = $('#type').val();
             if (type) {
@@ -47,7 +63,9 @@
             }
           });
 
+
           $('#type').change();
+          $('#dashlet').change();
         });
         {/literal}
     </script>

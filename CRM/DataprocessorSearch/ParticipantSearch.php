@@ -27,6 +27,7 @@ class CRM_DataprocessorSearch_ParticipantSearch implements UIOutputInterface {
    * @param array $filter
    */
   public function buildConfigurationForm(\CRM_Core_Form $form, $output=array()) {
+
     $navigation = CRM_Dataprocessor_Utils_Navigation::singleton();
     $dataProcessor = civicrm_api3('DataProcessor', 'getsingle', array('id' => $output['data_processor_id']));
     $dataProcessorClass = \CRM_Dataprocessor_BAO_DataProcessor::dataProcessorToClass($dataProcessor);
@@ -36,7 +37,7 @@ class CRM_DataprocessorSearch_ParticipantSearch implements UIOutputInterface {
       $fields[$field->alias] = $field->title;
     }
 
-    $form->add('text', 'title', E::ts('Title'), true);
+    $form->add('text', 'title', E::ts('Title'), NULL,true);
 
     $form->add('select','permission', E::ts('Permission'), \CRM_Core_Permission::basicPermissions(), true, array(
       'style' => 'min-width:250px',
