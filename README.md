@@ -29,6 +29,7 @@ The extension is licensed under [AGPL-3.0](LICENSE.txt).
 * [Add your own data source for a CiviCRM Entity](docs/add_your_own_datasource.md)
 * Add your own data source for a CSV File
 * How to store a data processor in code in your extension
+* [Develop PHPUnit TestCase for the extension](docs/how_to_create_test.md)
 
 ## Installation
 
