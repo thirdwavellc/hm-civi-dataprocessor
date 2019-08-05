@@ -55,7 +55,7 @@ class CRM_DataprocessorSearch_Controller_CaseSearch extends CRM_Core_Controller 
     list($pageName, $action) = $actionName;
     // Hack to replace to userContext for redirecting after a Task has been completed.
     // We want the redirect
-    if (!$this->_pages[$pageName] instanceof CRM_DataprocessorSearch_Form_CaseySearch) {
+    if (!$this->_pages[$pageName] instanceof CRM_DataprocessorSearch_Form_CaseSearch) {
       $session = CRM_Core_Session::singleton();
       $qfKey = CRM_Utils_Request::retrieve('qfKey', 'String', $this);
       $urlPath = CRM_Utils_System::getUrlPath();
