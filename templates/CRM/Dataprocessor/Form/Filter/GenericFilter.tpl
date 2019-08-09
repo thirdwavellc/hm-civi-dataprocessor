@@ -6,7 +6,6 @@
 {if $filter.type == 'Date' || $filter.type == 'Timestamp'}
     <tr>
         <td class="label">{$filter.title}</td>
-        {$filterName}
         {include file="CRM/Dataprocessor/Form/Filter/DateRange.tpl" fieldName=$filter.alias from='_from' to='_to'}
     </tr>
 {elseif $form.$fieldOp.html}
