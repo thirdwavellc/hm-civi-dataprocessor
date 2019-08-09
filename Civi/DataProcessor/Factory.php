@@ -140,7 +140,8 @@ class Factory {
     $this->addOutputHandler('groups_of_contact', 'Civi\DataProcessor\FieldOutputHandler\GroupsOfContactFieldOutputHandler', E::ts('Display the groups of a contact'));
     $this->addOutputHandler('event_repeating_info', 'Civi\DataProcessor\FieldOutputHandler\EventRepeatingInfoFieldOutputHandler', E::ts('Display info about repeating event'));
     $this->addOutputHandler('event_participants', 'Civi\DataProcessor\FieldOutputHandler\EventParticipantsFieldOutputHandler', E::ts('List participants'));
-
+    $this->addOutputHandler('calculations_substract', 'Civi\DataProcessor\FieldOutputHandler\Calculations\SubtractFieldOutputHandler', E::ts('Calculation: Subtract'));
+    $this->addOutputHandler('calculations_total', 'Civi\DataProcessor\FieldOutputHandler\Calculations\TotalFieldOutputHandler', E::ts('Calculation: Total'));
   }
 
   /**

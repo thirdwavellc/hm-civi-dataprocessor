@@ -4,6 +4,7 @@
 * Allow to specify "Is Empty" for various filters.
 * Allow to limit ContactFilter to only show contacts from specific groups.
 * it is now also possible to output a data processor on CiviCRMs dahsboard.
+* Added field outputs for simple calculations (substract and total).
 
 # Version 1.0.2
 
