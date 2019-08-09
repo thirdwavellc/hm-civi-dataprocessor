@@ -184,6 +184,7 @@ class ContactInGroupFilter extends AbstractFieldFilterHandler {
     ));
 
     $filter['type'] = $fieldSpec->type;
+    $filter['alias'] = $fieldSpec->alias;
     $filter['title'] = $title;
 
     return $filter;

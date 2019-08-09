@@ -154,6 +154,7 @@ class ContactFilter extends AbstractFieldFilterHandler {
 
     $filter['type'] = $fieldSpec->type;
     $filter['title'] = $title;
+    $filter['alias'] = $fieldSpec->alias;
 
     return $filter;
   }
