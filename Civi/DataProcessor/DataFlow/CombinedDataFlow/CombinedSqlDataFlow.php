@@ -215,5 +215,24 @@ class CombinedSqlDataFlow extends SqlDataFlow implements MultipleSourceDataFlows
     return $this->primary_table_alias;
   }
 
+  /**
+   * @param \Civi\DataProcessor\DataFlow\SqlDataFlow\WhereClauseInterface $clause
+   *
+   * @return \Civi\DataProcessor\DataFlow\SqlDataFlow
+   */
+  public function removeWhereClause(SqlDataFlow\WhereClauseInterface $clause) {
+    foreach($this->whereClauses as  $i => $c) {
+      if ($c->getWhereClause() == $clause->getWhereClause()) {
+        unset($this->whereClauses[$i]);
+      }
+    }
+    foreach($this->sourceDataFlowDescriptions as $sourceDataFlowDescription) {
+      if ($sourceDataFlowDescription->getDataFlow() instanceof SqlDataFlow) {
+        $sourceDataFlowDescription->getDataFlow()->removeWhereClause($clause);
+      }
+    }
+    return $this;
+  }
+
 
 }
