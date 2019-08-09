@@ -1,12 +1,13 @@
-{assign var=fieldOp     value=$filterName|cat:"_op"}
-{assign var=filterVal   value=$filterName|cat:"_value"}
-{assign var=filterMin   value=$filterName|cat:"_min"}
-{assign var=filterMax   value=$filterName|cat:"_max"}
+{assign var=fieldOp     value=$filter.alias|cat:"_op"}
+{assign var=filterVal   value=$filter.alias|cat:"_value"}
+{assign var=filterMin   value=$filter.alias|cat:"_min"}
+{assign var=filterMax   value=$filter.alias|cat:"_max"}
 
 {if $filter.type == 'Date' || $filter.type == 'Timestamp'}
     <tr>
         <td class="label">{$filter.title}</td>
-        {include file="CRM/Dataprocessor/Form/Filter/DateRange.tpl" fieldName=$filterName from='_from' to='_to'}
+        {$filterName}
+        {include file="CRM/Dataprocessor/Form/Filter/DateRange.tpl" fieldName=$filter.alias from='_from' to='_to'}
     </tr>
 {elseif $form.$fieldOp.html}
     <tr>

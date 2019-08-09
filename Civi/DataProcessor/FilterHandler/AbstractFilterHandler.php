@@ -480,6 +480,7 @@ abstract class AbstractFilterHandler {
     }
 
     $filter['type'] = $fieldSpec->type;
+    $filter['alias'] = $fieldSpec->alias;
     $filter['title'] = $title;
 
 
