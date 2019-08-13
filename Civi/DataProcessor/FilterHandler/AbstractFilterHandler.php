@@ -521,13 +521,13 @@ abstract class AbstractFilterHandler {
    * @return string|null
    */
   protected function applyDateFilter($submittedValues) {
-    $filterName = $this->getFieldSpecification()->alias;
     $type = $this->getFieldSpecification()->type;
-    $relative = \CRM_Utils_Array::value("{$filterName}_relative", $submittedValues);
-    $from = \CRM_Utils_Array::value("{$filterName}_from", $submittedValues);
-    $to = \CRM_Utils_Array::value("{$filterName}_to", $submittedValues);
-    $fromTime = \CRM_Utils_Array::value("{$filterName}_from_time", $submittedValues);
-    $toTime = \CRM_Utils_Array::value("{$filterName}_to_time", $submittedValues);
+    $relative = \CRM_Utils_Array::value("relative", $submittedValues);
+    $from = \CRM_Utils_Array::value("from", $submittedValues);
+    $to = \CRM_Utils_Array::value("to", $submittedValues);
+    $fromTime = \CRM_Utils_Array::value("from_time", $submittedValues);
+    $toTime = \CRM_Utils_Array::value("to_time", $submittedValues);
+
 
     list($from, $to) = \CRM_Utils_Date::getFromTo($relative, $from, $to, $fromTime, $toTime);
     if ($from && $to) {
