@@ -1,3 +1,7 @@
+# Version 1.0.3
+
+* Fixed issue with date filters.
+
 # Version 1.0.2
 
 * Fixed bug #11 (Fatal error clone on non object)
