@@ -8,6 +8,15 @@ use CRM_Dataprocessor_ExtensionUtil as E;
 
 class CRM_DataprocessorSearch_Form_ActivitySearch extends CRM_DataprocessorSearch_Form_AbstractSearch {
 
+  /**
+   * The params that are sent to the query.
+   *
+   * @var array
+   */
+  protected $_queryParams;
+
+  protected $activity_ids;
+
 
   /**
    * Returns the name of the default Entity
@@ -97,6 +106,31 @@ class CRM_DataprocessorSearch_Form_ActivitySearch extends CRM_DataprocessorSearc
       $this->_taskList = CRM_Activity_Task::permissionedTaskTitles(CRM_Core_Permission::getPermission());
     }
     return $this->_taskList;
+  }
+
+  /**
+   * Return altered rows
+   *
+   * Save the ids into the queryParams value. So that when an action is done on the selected record
+   * or on all records, the queryParams will hold all the activity ids so that in the next step only the selected record, or the first
+   * 50 records are populated.
+   *
+   * @param array $rows
+   * @param array $ids
+   *
+   */
+  protected function alterRows(&$rows, $ids) {
+    $this->activity_ids = $ids;
+    $this->_queryParams[0] = array(
+      'activity_id',
+      '=',
+      array(
+        'IN' => $this->activity_ids,
+      ),
+      0,
+      0
+    );
+    $this->controller->set('queryParams', $this->_queryParams);
   }
 
 }

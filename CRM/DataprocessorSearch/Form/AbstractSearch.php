@@ -269,6 +269,8 @@ abstract class CRM_DataprocessorSearch_Form_AbstractSearch extends CRM_Dataproce
             'data' => $record,
           );
           $ids[] = $row['id'];
+        } else {
+          $ids[] = $row['id'];
         }
 
         $rows[] = $row;
