@@ -1,4 +1,4 @@
-# Version 1.0.4 (not yet released)
+# Version 1.0.4
 
 * Fixed issue with activity search and actions after the search when the actions are run on all records.
 
