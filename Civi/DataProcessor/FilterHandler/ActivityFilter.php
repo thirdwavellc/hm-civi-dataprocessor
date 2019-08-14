@@ -54,7 +54,7 @@ class ActivityFilter extends AbstractFieldFilterHandler {
   public function buildConfigurationForm(\CRM_Core_Form $form, $filter=array()) {
     $fieldSelect = \CRM_Dataprocessor_Utils_DataSourceFields::getAvailableFilterFieldsInDataSources($filter['data_processor_id']);
 
-    $form->add('select', 'field', E::ts('Activity ID Field'), $fieldSelect, true, array(
+    $form->add('select', 'field', E::ts('Contact ID Field'), $fieldSelect, true, array(
       'style' => 'min-width:250px',
       'class' => 'crm-select2 huge data-processor-field-for-name',
       'placeholder' => E::ts('- select -'),
@@ -164,6 +164,7 @@ class ActivityFilter extends AbstractFieldFilterHandler {
       $contact_id_list = array_values(array_unique($contact_id_list));
       $props['api'] = ['params' => ['contact_id' => ['IN' => $contact_id_list]]];
     }
+    $props['select'] = ['minimumInputLength' => 0];
     $form->addEntityRef( "{$alias}_value", '', $props);
     if (isset($defaultFilterValue['op'])) {
       $defaults[$alias . '_op'] = $defaultFilterValue['op'];
