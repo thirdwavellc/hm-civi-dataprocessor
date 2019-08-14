@@ -1,3 +1,7 @@
+# Version 1.0.4 (not yet released)
+
+* Fixed issue with activity search and actions after the search when the actions are run on all records.
+
 # Version 1.0.3
 
 * Fixed issue with date filters.
