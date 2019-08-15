@@ -36,3 +36,9 @@ The extension is licensed under [AGPL-3.0](LICENSE.txt).
 Install this extension by downloading it from https://lab.civicrm.org/extensions/dataprocessor/-/archive/master/dataprocessor-master.zip
 and then upload it to your civicrm server in the extension folder.
 And then press install in the Administer -->  System Settings --> Extensions screen.
+
+## Optional 
+
+To get more information about each fields in DataProcessor. A CiviTutorial has been created, to view tutorial install CiviTutorial Extension.
+
+To Install CiviTutorial in the Administer -->  System Settings --> Extensions screen. (Found in Add New)
