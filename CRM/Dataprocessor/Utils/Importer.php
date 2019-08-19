@@ -212,7 +212,9 @@ class CRM_Dataprocessor_Utils_Importer {
     foreach($extensions as $ext_file) {
       $data = json_decode($ext_file['data'], true);
       $return[$ext_file['file']] = self::import($data, $ext_file['file']);
-      $importedIds[] = $return[$ext_file['file']]['new_id'];
+      if ($return[$ext_file['file']]['new_id']) {
+        $importedIds[] = $return[$ext_file['file']]['new_id'];
+      }
     }
 
     // Remove all data processors which are in code or overridden but not imported

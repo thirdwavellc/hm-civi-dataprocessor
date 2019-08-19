@@ -419,7 +419,7 @@ class Api implements OutputInterface, API_ProviderInterface, EventSubscriberInte
   protected function checkForErrors($return) {
     $session = \CRM_Core_Session::singleton();
     $statuses = $session->getStatus(true);
-    if (is_array($statuses)) {
+    if (!is_array($statuses)) {
       return $return;
     }
     foreach($statuses as $status) {
