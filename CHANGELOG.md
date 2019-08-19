@@ -1,6 +1,7 @@
-# Version 1.0.5 (not yet released)
+# Version 1.0.5
 
 * Added error handling to importer
+* Added sort in Manage data processor screen
 
 # Version 1.0.4
 
