@@ -1,3 +1,7 @@
+# Version 1.0.5 (not yet released)
+
+* Added error handling to importer
+
 # Version 1.0.4
 
 * Fixed issue with activity search and actions after the search when the actions are run on all records.
