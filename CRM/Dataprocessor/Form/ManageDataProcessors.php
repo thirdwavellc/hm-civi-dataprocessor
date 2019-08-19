@@ -29,6 +29,7 @@ class CRM_Dataprocessor_Form_ManageDataProcessors extends CRM_Core_Form {
       $apiParams['is_active'] = 1;
     }
     $apiParams['options']['limit'] = 0;
+    $apiParams['options']['sort'] = 'title ASC';
     $dataProcessors = civicrm_api3('DataProcessor', 'get', $apiParams);
     $dataProcessors = $dataProcessors['values'];
 
