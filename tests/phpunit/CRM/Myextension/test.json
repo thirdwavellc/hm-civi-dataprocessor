@@ -1,0 +1,73 @@
+{
+    "name": "test",
+    "title": "Test",
+    "type": "default",
+    "configuration": [],
+    "aggregation": [],
+    "is_active": "1",
+    "description": "This is a test Data Processor",
+    "storage_configuration": [],
+    "data_sources": [
+        {
+            "weight": "1",
+            "name": "contact",
+            "title": "Contact",
+            "type": "contact",
+            "configuration": {
+                "filter": {
+                    "is_deleted": {
+                        "op": "=",
+                        "value": "0"
+                    }
+                }
+            },
+            "join_configuration": []
+        }
+    ],
+    "filters": [],
+    "fields": [
+        {
+            "weight": "1",
+            "name": "contact_id",
+            "title": "Contact ID",
+            "type": "raw",
+            "configuration": {
+                "field": "id",
+                "datasource": "contact"
+            }
+        },
+        {
+            "weight": "2",
+            "name": "first_name",
+            "title": "First Name",
+            "type": "raw",
+            "configuration": {
+                "field": "first_name",
+                "datasource": "contact"
+            }
+        },
+        {
+            "weight": "3",
+            "name": "gender",
+            "title": "Gender",
+            "type": "raw",
+            "configuration": {
+                "field": "gender_id",
+                "datasource": "contact"
+            }
+        }
+    ],
+    "outputs": [
+        {
+            "type": "contact_search",
+            "configuration": {
+                "title": "Test",
+                "contact_id_field": "contact_id",
+                "hide_id_field": "0",
+                "help_text": "",
+                "navigation_parent_path": "Search"
+            },
+            "permission": "access CiviCRM"
+        }
+    ]
+}
