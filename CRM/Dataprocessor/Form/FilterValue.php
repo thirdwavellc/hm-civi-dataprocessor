@@ -55,7 +55,6 @@ class CRM_Dataprocessor_Form_FilterValue extends CRM_Core_Form {
 
 
     $this->filter = civicrm_api3('DataProcessorFilter', 'getsingle', array('id' => $this->id));
-    $this->assign('filter', $this->filter);
     $this->filterTypeClass = $factory->getFilterByName($this->filter['type']);
     $this->filterTypeClass->setDataProcessor($this->dataProcessorClass);
     $this->filterTypeClass->initialize($this->filter);
@@ -68,7 +67,8 @@ class CRM_Dataprocessor_Form_FilterValue extends CRM_Core_Form {
     $this->add('hidden', 'data_processor_id');
     $this->add('hidden', 'id');
 
-    $this->filterTypeClass->addToFilterForm($this, $this->filter['filter_value']);
+    $filter = $this->filterTypeClass->addToFilterForm($this, $this->filter['filter_value']);
+    $this->assign('filter', $filter);
     $this->assign('filter_template', $this->filterTypeClass->getTemplateFileName());
 
     $this->addButtons(array(

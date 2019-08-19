@@ -49,7 +49,7 @@ class CRM_DataprocessorSearch_Search implements UIOutputInterface {
       'class' => 'crm-select2 huge',
       'placeholder' => E::ts('- select -'),
     ));
-    $form->add('select', 'hide_id_field', E::ts('Show ID field'), array(0=>'ID is Visible', 1=> 'Activity ID is hidden'));
+    $form->add('select', 'hide_id_field', E::ts('Show ID field'), array(0=>'ID is Visible', 1=> 'ID field is hidden'));
 
     $form->add('wysiwyg', 'help_text', E::ts('Help text for this search'), array('rows' => 6, 'cols' => 80));
 

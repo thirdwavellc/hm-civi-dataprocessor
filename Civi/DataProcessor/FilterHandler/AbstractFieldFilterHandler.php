@@ -9,6 +9,7 @@ namespace Civi\DataProcessor\FilterHandler;
 use Civi\DataProcessor\DataFlow\SqlDataFlow;
 use Civi\DataProcessor\Exception\DataSourceNotFoundException;
 use Civi\DataProcessor\Exception\FieldNotFoundException;
+use CRM_Dataprocessor_ExtensionUtil as E;
 
 abstract class AbstractFieldFilterHandler extends AbstractFilterHandler {
 
@@ -38,6 +39,13 @@ abstract class AbstractFieldFilterHandler extends AbstractFilterHandler {
     $this->dataSource = $this->data_processor->getDataSourceByName($datasource_name);
     if (!$this->dataSource) {
       throw new DataSourceNotFoundException(E::ts("Filter %1 requires data source '%2' which could not be found. Did you rename or deleted the data source?", array(1=>$this->title, 2=>$datasource_name)));
+    }
+    if (!$this->dataSource->getAvailableFilterFields()->getFieldSpecificationByName($field_name)) {
+      throw new FieldNotFoundException(E::ts("Filter %1 requires a field with the name '%2' in the data source '%3'. Did you change the data source type?", array(
+        1 => $this->title,
+        2 => $field_name,
+        3 => $datasource_name
+      )));
     }
     $this->fieldSpecification  =  clone $this->dataSource->getAvailableFilterFields()->getFieldSpecificationByName($field_name);
     if (!$this->fieldSpecification) {

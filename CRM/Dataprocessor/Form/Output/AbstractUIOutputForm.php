@@ -131,6 +131,9 @@ abstract class CRM_Dataprocessor_Form_Output_AbstractUIOutputForm extends CRM_Co
       foreach ($dataProcessor->getFilterHandlers() as $filter) {
         if ($filter->isExposed()) {
           $filterValues = $filter->processSubmittedValues($submittedValues);
+          if (empty($filterValues)) {
+            $filterValues = $filter->getDefaultFilterValues();
+          }
           $filter->applyFilterFromSubmittedFilterParams($filterValues);
         }
       }

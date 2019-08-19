@@ -11,6 +11,12 @@ use CRM_Dataprocessor_ExtensionUtil as E;
 
 class ContactFilter extends AbstractFieldFilterHandler {
 
+  /**
+   * @var array
+   *   Filter configuration
+   */
+  protected $configuration;
+
   public function __construct() {
     parent::__construct();
   }
@@ -54,12 +60,26 @@ class ContactFilter extends AbstractFieldFilterHandler {
       'placeholder' => E::ts('- select -'),
     ));
 
+    $groupsApi = civicrm_api3('Group', 'get', array('is_active' => 1, 'options' => array('limit' => 0)));
+    $groups = array();
+    foreach($groupsApi['values'] as $group) {
+      $groups[$group['id']] = $group['title'];
+    }
+    $form->add('select', 'limit_groups', E::ts('Limit to Contacts in group(s)'), $groups, false, array(
+      'style' => 'min-width:250px',
+      'class' => 'crm-select2 huge',
+      'placeholder' => E::ts('- Show all groups -'),
+      'multiple' => true,
+    ));
 
     if (isset($filter['configuration'])) {
       $configuration = $filter['configuration'];
       $defaults = array();
       if (isset($configuration['field']) && isset($configuration['datasource'])) {
         $defaults['field'] = $configuration['datasource'] . '::' . $configuration['field'];
+      }
+      if (isset($configuration['limit_groups'])) {
+        $defaults['limit_groups'] = $configuration['limit_groups'];
       }
       $form->setDefaults($defaults);
     }
@@ -86,6 +106,7 @@ class ContactFilter extends AbstractFieldFilterHandler {
     list($datasource, $field) = explode('::', $submittedValues['field'], 2);
     $configuration['field'] = $field;
     $configuration['datasource'] = $datasource;
+    $configuration['limit_groups'] = isset($submittedValues['limit_groups']) ? $submittedValues['limit_groups'] : false;
     return $configuration;
   }
 
@@ -109,12 +130,17 @@ class ContactFilter extends AbstractFieldFilterHandler {
     }
 
     $form->addElement('select', "{$alias}_op", E::ts('Operator:'), $operations);
-    $form->addEntityRef( "{$alias}_value", NULL, array(
+
+    $props = array(
       'placeholder' => E::ts('Select a contact'),
       'entity' => 'Contact',
       'create' => false,
       'multiple' => true,
-    ));
+    );
+    if (!empty($this->configuration['limit_groups'])) {
+      $props['api'] = ['params' => ['group' => ['IN' => $this->configuration['limit_groups']]]];
+    }
+    $form->addEntityRef( "{$alias}_value", '', $props);
 
     if (isset($defaultFilterValue['op'])) {
       $defaults[$alias . '_op'] = $defaultFilterValue['op'];
@@ -128,6 +154,7 @@ class ContactFilter extends AbstractFieldFilterHandler {
 
     $filter['type'] = $fieldSpec->type;
     $filter['title'] = $title;
+    $filter['alias'] = $fieldSpec->alias;
 
     return $filter;
   }
@@ -136,6 +163,7 @@ class ContactFilter extends AbstractFieldFilterHandler {
     return array(
       'IN' => E::ts('Is one of'),
       'NOT IN' => E::ts('Is not one of'),
+      'null' => E::ts('Is empty'),
     );
   }
 

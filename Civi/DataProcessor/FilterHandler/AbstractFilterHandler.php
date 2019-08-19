@@ -319,6 +319,18 @@ abstract class AbstractFilterHandler {
             $isFilterSet = TRUE;
           }
           break;
+
+        case 'null':
+          if (empty($submittedValues['value'])) {
+            $filterParams = [
+              'op' => 'IS NULL',
+              'value' => '',
+            ];
+            $this->setFilter($filterParams);
+            $isFilterSet = TRUE;
+          }
+          break;
+
       }
     }
     if ($this->isRequired() && !$isFilterSet) {
@@ -468,6 +480,7 @@ abstract class AbstractFilterHandler {
     }
 
     $filter['type'] = $fieldSpec->type;
+    $filter['alias'] = $fieldSpec->alias;
     $filter['title'] = $title;
 
 
@@ -483,6 +496,7 @@ abstract class AbstractFilterHandler {
       return array(
         'IN' => E::ts('Is one of'),
         'NOT IN' => E::ts('Is not one of'),
+        'null' => E::ts('Is empty'),
       );
     }
     $types = \CRM_Utils_Type::getValidTypes();
@@ -503,6 +517,7 @@ abstract class AbstractFilterHandler {
           '<' => E::ts('Is less than'),
           '>' => E::ts('Is greater than'),
           '!=' => E::ts('Is not equal to'),
+          'null' => E::ts('Is empty'),
         );
         break;
     }
@@ -513,6 +528,7 @@ abstract class AbstractFilterHandler {
       'sw' => E::ts('Starts with'),
       'ew' => E::ts('Ends with'),
       'nhas' => E::ts('Does not contain'),
+      'null' => E::ts('Is empty'),
     );
   }
 
@@ -521,15 +537,15 @@ abstract class AbstractFilterHandler {
    * @return string|null
    */
   protected function applyDateFilter($submittedValues) {
-    $filterName = $this->getFieldSpecification()->alias;
     $type = $this->getFieldSpecification()->type;
-    $relative = \CRM_Utils_Array::value("{$filterName}_relative", $submittedValues);
-    $from = \CRM_Utils_Array::value("{$filterName}_from", $submittedValues);
-    $to = \CRM_Utils_Array::value("{$filterName}_to", $submittedValues);
-    $fromTime = \CRM_Utils_Array::value("{$filterName}_from_time", $submittedValues);
-    $toTime = \CRM_Utils_Array::value("{$filterName}_to_time", $submittedValues);
+    $relative = \CRM_Utils_Array::value("relative", $submittedValues);
+    $from = \CRM_Utils_Array::value("from", $submittedValues);
+    $to = \CRM_Utils_Array::value("to", $submittedValues);
+    $fromTime = \CRM_Utils_Array::value("from_time", $submittedValues);
+    $toTime = \CRM_Utils_Array::value("to_time", $submittedValues);
 
     list($from, $to) = \CRM_Utils_Date::getFromTo($relative, $from, $to, $fromTime, $toTime);
+
     if ($from && $to) {
       $from = ($type == "Date") ? substr($from, 0, 8) : $from;
       $to = ($type == "Date") ? substr($to, 0, 8) : $to;

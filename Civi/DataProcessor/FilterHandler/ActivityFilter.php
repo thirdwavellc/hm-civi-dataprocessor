@@ -6,16 +6,16 @@
 
 namespace Civi\DataProcessor\FilterHandler;
 
-use Civi\DataProcessor\DataFlow\SqlDataFlow;
 use Civi\DataProcessor\Exception\InvalidConfigurationException;
 use CRM_Dataprocessor_ExtensionUtil as E;
 
-class CaseRoleFilter extends AbstractFieldFilterHandler {
+class ActivityFilter extends AbstractFieldFilterHandler {
 
   /**
    * @var array
+   *   Filter configuration
    */
-  protected $relationship_type_ids = array();
+  protected $configuration;
 
   public function __construct() {
     parent::__construct();
@@ -33,59 +33,6 @@ class CaseRoleFilter extends AbstractFieldFilterHandler {
       throw new InvalidConfigurationException(E::ts("Filter %1 requires a field to filter on. None given.", array(1=>$this->title)));
     }
     $this->initializeField($this->configuration['datasource'], $this->configuration['field']);
-
-    if (isset($this->configuration['relationship_types']) && is_array($this->configuration['relationship_types'])) {
-      $this->relationship_type_ids = array();
-      foreach($this->configuration['relationship_types'] as $rel_type) {
-        try {
-          $this->relationship_type_ids[] = civicrm_api3('RelationshipType', 'getvalue', [
-            'return' => 'id',
-            'name_a_b' => $rel_type
-          ]);
-        } catch (\CiviCRM_API3_Exception $e) {
-          // Do nothing
-        }
-      };
-    }
-  }
-
-
-  /**
-   * @param array $filter
-   *   The filter settings
-   * @return mixed
-   */
-  public function setFilter($filter) {
-    $this->resetFilter();
-
-    $dataFlow  = $this->dataSource->ensureField($this->fieldSpecification->name);
-    $cids = $filter['value'];
-    if (!is_array($cids)) {
-      $cids = array($cids);
-    }
-    $relationshipTableAlias = 'civicrm_relationship_'.$this->fieldSpecification->alias;
-    $relationshipFilters = array(
-      new SqlDataFlow\SimpleWhereClause($relationshipTableAlias, 'is_active', '=', '1'),
-      new SqlDataFlow\SimpleWhereClause($relationshipTableAlias, 'case_id', 'IS NOT NULL', 0),
-      new SqlDataFlow\SimpleWhereClause($relationshipTableAlias, 'contact_id_b', 'IN', $cids),
-    );
-    if (count($this->relationship_type_ids)) {
-      $relationshipFilters[] = new SqlDataFlow\SimpleWhereClause($relationshipTableAlias, 'relationship_type_id', 'IN', $this->relationship_type_ids, 'Integer');
-    }
-
-    if ($dataFlow && $dataFlow instanceof SqlDataFlow) {
-      $this->whereClause = new SqlDataFlow\InTableWhereClause(
-        'case_id',
-        'civicrm_relationship',
-        $relationshipTableAlias,
-        $relationshipFilters,
-        $dataFlow->getName(),
-        $this->fieldSpecification->name,
-        $filter['op']
-      );
-
-      $dataFlow->addWhereClause($this->whereClause);
-    }
   }
 
   /**
@@ -106,22 +53,24 @@ class CaseRoleFilter extends AbstractFieldFilterHandler {
    */
   public function buildConfigurationForm(\CRM_Core_Form $form, $filter=array()) {
     $fieldSelect = \CRM_Dataprocessor_Utils_DataSourceFields::getAvailableFilterFieldsInDataSources($filter['data_processor_id']);
-    $relationshipTypeApi = civicrm_api3('RelationshipType', 'get', array('is_active' => 1, 'options' => array('limit' => 0)));
-    $relationshipTypes = array();
-    foreach($relationshipTypeApi['values'] as $relationship_type) {
-      $relationshipTypes[$relationship_type['name_a_b']] = $relationship_type['label_a_b'];
-    }
 
-    $form->add('select', 'case_id_field', E::ts('Case ID Field'), $fieldSelect, true, array(
+    $form->add('select', 'field', E::ts('Contact ID Field'), $fieldSelect, true, array(
       'style' => 'min-width:250px',
       'class' => 'crm-select2 huge data-processor-field-for-name',
       'placeholder' => E::ts('- select -'),
     ));
 
-    $form->add('select', 'relationship_types', E::ts('Restrict to roles'), $relationshipTypes, false, array(
+    $optionValueApi = civicrm_api3('OptionValue', 'get', array('option_group_id' => "activity_type", 'options' => array('limit' => 0)));
+
+    $activityType = array();
+    foreach($optionValueApi['values'] as $option) {
+      $activityType[$option['id']] = $option['label'];
+    }
+
+    $form->add('select', 'limit_activity_types', E::ts('Limit to Contacts of activity types'), $activityType, false, array(
       'style' => 'min-width:250px',
       'class' => 'crm-select2 huge',
-      'placeholder' => E::ts('- Filter on all roles -'),
+      'placeholder' => E::ts('- Show all activity types -'),
       'multiple' => true,
     ));
 
@@ -129,10 +78,10 @@ class CaseRoleFilter extends AbstractFieldFilterHandler {
       $configuration = $filter['configuration'];
       $defaults = array();
       if (isset($configuration['field']) && isset($configuration['datasource'])) {
-        $defaults['case_id_field'] = $configuration['datasource'] . '::' . $configuration['field'];
+        $defaults['field'] = $configuration['datasource'] . '::' . $configuration['field'];
       }
-      if (isset($configuration['relationship_types'])) {
-        $defaults['relationship_types'] = $configuration['relationship_types'];
+      if (isset($configuration['limit_activity_types'])) {
+        $defaults['limit_activity_types'] = $configuration['limit_activity_types'];
       }
       $form->setDefaults($defaults);
     }
@@ -145,7 +94,7 @@ class CaseRoleFilter extends AbstractFieldFilterHandler {
    * @return false|string
    */
   public function getConfigurationTemplateFileName() {
-    return "CRM/Dataprocessor/Form/Filter/Configuration/CaseRoleFilter.tpl";
+    return "CRM/Dataprocessor/Form/Filter/Configuration/ActivityFilter.tpl";
   }
 
 
@@ -156,10 +105,10 @@ class CaseRoleFilter extends AbstractFieldFilterHandler {
    * @return array
    */
   public function processConfiguration($submittedValues) {
-    list($datasource, $field) = explode('::', $submittedValues['case_id_field'], 2);
+    list($datasource, $field) = explode('::', $submittedValues['field'], 2);
     $configuration['field'] = $field;
     $configuration['datasource'] = $datasource;
-    $configuration['relationship_types'] = isset($submittedValues['relationship_types']) ? $submittedValues['relationship_types'] : array();
+    $configuration['limit_activity_types'] = isset($submittedValues['limit_activity_types']) ? $submittedValues['limit_activity_types'] : false;
     return $configuration;
   }
 
@@ -168,29 +117,66 @@ class CaseRoleFilter extends AbstractFieldFilterHandler {
    *
    * @param \CRM_Core_Form $form
    * @param array $defaultFilterValue
-   * 
    * @return array
    *   Return variables belonging to this filter.
    */
   public function addToFilterForm(\CRM_Core_Form $form, $defaultFilterValue) {
     $fieldSpec = $this->getFieldSpecification();
     $operations = $this->getOperatorOptions($fieldSpec);
+    $defaults = array();
 
     $title = $fieldSpec->title;
+    $alias = $fieldSpec->alias;
     if ($this->isRequired()) {
       $title .= ' <span class="crm-marker">*</span>';
     }
 
-    $form->addElement('select', "{$fieldSpec->alias}_op", E::ts('Operator:'), $operations);
-    $form->addEntityRef( "{$fieldSpec->alias}_value", NULL, array(
-      'placeholder' => E::ts('Select a contact'),
+    $form->addElement('select', "{$alias}_op", E::ts('Operator:'), $operations);
+
+    $props = array(
+      'placeholder' => E::ts('Select a Contact'),
       'entity' => 'Contact',
       'create' => false,
       'multiple' => true,
-    ));
+    );
+    if (!empty($this->configuration['limit_activity_types'])) {
+      $optionValueApi = civicrm_api3('OptionValue', 'get', array('option_group_id' => "activity_type", 'options' => array('limit' => 0)));
+
+      $activityType = array();
+      foreach($optionValueApi['values'] as $option) {
+        $activityType[$option['id']] = $option['label'];
+      }
+      $param_activity_type = array();
+
+      foreach($this->configuration['limit_activity_types'] as $type_id){
+        array_push($param_activity_type, $activityType[$type_id]);
+      }
+
+      $result = civicrm_api3('ActivityContact', 'get', [
+        'activity_id.activity_type_id'  => ['IN' => $param_activity_type],
+        'options' => ['limit' => 0],
+      ]);
+
+      $contact_id_list = array();
+      foreach ($result['values'] as $contact) {
+        array_push($contact_id_list, $contact['contact_id']);
+      }
+      $contact_id_list = array_values(array_unique($contact_id_list));
+      $props['api'] = ['params' => ['contact_id' => ['IN' => $contact_id_list]]];
+    }
+    $props['select'] = ['minimumInputLength' => 0];
+    $form->addEntityRef( "{$alias}_value", '', $props);
+    if (isset($defaultFilterValue['op'])) {
+      $defaults[$alias . '_op'] = $defaultFilterValue['op'];
+    }
+    if (isset($defaultFilterValue['value'])) {
+      $defaults[$alias.'_value'] = $defaultFilterValue['value'];
+    }
+    if (count($defaults)) {
+      $form->setDefaults($defaults);
+    }
 
     $filter['type'] = $fieldSpec->type;
-    $filter['alias'] = $fieldSpec->alias;
     $filter['title'] = $title;
 
     return $filter;
@@ -200,6 +186,7 @@ class CaseRoleFilter extends AbstractFieldFilterHandler {
     return array(
       'IN' => E::ts('Is one of'),
       'NOT IN' => E::ts('Is not one of'),
+      'null' => E::ts('Is empty'),
     );
   }
 

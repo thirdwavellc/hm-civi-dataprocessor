@@ -5,8 +5,8 @@
     <div class="clear"></div>
 </div>
 <div class="crm-section">
-    <div class="label">{$form.limit_groups.label}</div>
-    <div class="content">{$form.limit_groups.html}</div>
+    <div class="label">{$form.limit_activity_types.label}</div>
+    <div class="content">{$form.limit_activity_types.html}</div>
     <div class="clear"></div>
 </div>
 {/crmScope}

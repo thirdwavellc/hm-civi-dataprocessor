@@ -132,7 +132,7 @@ class ContactLinkFieldOutputHandler extends AbstractFieldOutputHandler implement
       'cid' => $contactId,
     ));
     $link = '<a href="'.$url.'">'.$contactname.'</a>';
-    $formattedValue = new FieldOutput($contactname);
+    $formattedValue = new FieldOutput($contactId);
     $formattedValue->formattedValue = $link;
     return $formattedValue;
   }
