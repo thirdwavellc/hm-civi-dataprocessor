@@ -71,41 +71,56 @@ class CRM_Dataprocessor_Utils_Importer {
     }
 
     CRM_Dataprocessor_BAO_DataProcessor::setDataProcessorToImportingState($data['name']);
+    try {
+      switch ($status) {
+        case CRM_Dataprocessor_Status::STATUS_IN_DATABASE:
+          // Update to overriden
+          if (!$overWriteInDatabase) {
+            civicrm_api3('DataProcessor', 'create', [
+              'id' => $data_processor_id,
+              'status' => CRM_Dataprocessor_Status::STATUS_OVERRIDDEN,
+              'source_file' => $filename,
+            ]);
+            $new_id = $data_processor_id;
+            $new_status = CRM_Dataprocessor_Status::STATUS_OVERRIDDEN;
+          }
+          else {
+            $new_id = self::importDataProcessor($data, $filename, $data_processor_id, CRM_Dataprocessor_Status::STATUS_IN_DATABASE);
+            $new_status = CRM_Dataprocessor_Status::STATUS_IN_DATABASE;
+          }
+          break;
+        case CRM_Dataprocessor_Status::STATUS_OVERRIDDEN:
+          if (!$overWriteInDatabase) {
+            $new_id = $data_processor_id;
+            $new_status = CRM_Dataprocessor_Status::STATUS_OVERRIDDEN;
+          }
+          else {
+            $new_id = self::importDataProcessor($data, $filename, $data_processor_id, CRM_Dataprocessor_Status::STATUS_OVERRIDDEN);
+            $new_status = CRM_Dataprocessor_Status::STATUS_OVERRIDDEN;
+          }
+          break;
+        default:
+          if (!$overWriteInDatabase) {
+            $new_id = self::importDataProcessor($data, $filename, $data_processor_id, CRM_Dataprocessor_Status::STATUS_IN_CODE);
+            $new_status = CRM_Dataprocessor_Status::STATUS_IN_CODE;
+          }
+          else {
+            $new_id = self::importDataProcessor($data, $filename, $data_processor_id, CRM_Dataprocessor_Status::STATUS_OVERRIDDEN);
+            $new_status = CRM_Dataprocessor_Status::STATUS_OVERRIDDEN;
+          }
+          break;
+      }
+    } catch (\Exception $e) {
+      $return = array(
+        'original_id' => $data_processor_id,
+        'new_id' => $new_id,
+        'original_status' => $status,
+        'new_status' => $new_status,
+        'file' => $filename,
+        'error' => $e->getMessage(),
+      );
 
-    switch ($status) {
-      case CRM_Dataprocessor_Status::STATUS_IN_DATABASE:
-        // Update to overriden
-        if (!$overWriteInDatabase) {
-          civicrm_api3('DataProcessor', 'create', array(
-            'id' => $data_processor_id,
-            'status' => CRM_Dataprocessor_Status::STATUS_OVERRIDDEN,
-            'source_file' => $filename,
-          ));
-          $new_id = $data_processor_id;
-          $new_status = CRM_Dataprocessor_Status::STATUS_OVERRIDDEN;
-        } else {
-          $new_id = self::importDataProcessor($data, $filename, $data_processor_id, CRM_Dataprocessor_Status::STATUS_IN_DATABASE);
-          $new_status = CRM_Dataprocessor_Status::STATUS_IN_DATABASE;
-        }
-        break;
-      case CRM_Dataprocessor_Status::STATUS_OVERRIDDEN:
-        if (!$overWriteInDatabase) {
-          $new_id = $data_processor_id;
-          $new_status = CRM_Dataprocessor_Status::STATUS_OVERRIDDEN;
-        } else {
-          $new_id = self::importDataProcessor($data, $filename, $data_processor_id, CRM_Dataprocessor_Status::STATUS_OVERRIDDEN);
-          $new_status = CRM_Dataprocessor_Status::STATUS_OVERRIDDEN;
-        }
-        break;
-      default:
-        if (!$overWriteInDatabase) {
-          $new_id = self::importDataProcessor($data, $filename, $data_processor_id, CRM_Dataprocessor_Status::STATUS_IN_CODE);
-          $new_status = CRM_Dataprocessor_Status::STATUS_IN_CODE;
-        } else {
-          $new_id = self::importDataProcessor($data, $filename, $data_processor_id, CRM_Dataprocessor_Status::STATUS_OVERRIDDEN);
-          $new_status = CRM_Dataprocessor_Status::STATUS_OVERRIDDEN;
-        }
-        break;
+      return $return;
     }
 
     $return = array(
@@ -203,7 +218,7 @@ class CRM_Dataprocessor_Utils_Importer {
     // Remove all data processors which are in code or overridden but not imported
     $dao = CRM_Core_DAO::executeQuery("SELECT id, name FROM civicrm_data_processor WHERE id NOT IN (".implode($importedIds, ",").") AND status IN (".CRM_Dataprocessor_Status::STATUS_IN_CODE.", ".CRM_Dataprocessor_Status::STATUS_OVERRIDDEN.")");
     while ($dao->fetch()) {
-      CRM_Dataprocessor_BAO_DataProcessor::deleteWithId($dao->id);
+      civicrm_api3('DataProcessor', 'delete', array('id' => $dao->id));
       $return['deleted data processors'][] = $dao->id.": ".$dao->name;
     }
     return $return;
