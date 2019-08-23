@@ -16,10 +16,19 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 use \CRM_Dataprocessor_ExtensionUtil as E;
 
-class Api implements OutputInterface, API_ProviderInterface, EventSubscriberInterface{
+class Api implements OutputInterface, API_ProviderInterface, EventSubscriberInterface {
+
+  /**
+   * @var \CRM_Utils_Cache_Interface
+   */
+  protected $cache;
 
   public function __construct() {
-
+    $this->cache = \CRM_Utils_Cache::create([
+      'name' => 'dataprocessor_api',
+      'type' => ['*memory*', 'SqlGroup', 'ArrayCache'],
+      'prefetch' => true,
+    ]);
   }
 
   /**
@@ -174,6 +183,13 @@ class Api implements OutputInterface, API_ProviderInterface, EventSubscriberInte
   }
 
   protected function getFields($entity, $params) {
+    $cacheKey = strtolower($entity);
+    if (isset($params['action'])) {
+      $cacheKey .= '_'.$params['action'];
+    }
+    if ($cache = $this->cache->get($cacheKey)) {
+      return $cache;
+    }
     $types = \CRM_Utils_Type::getValidTypes();
     $types['Memo'] = \CRM_Utils_Type::T_TEXT;
     $fields = array();
@@ -250,6 +266,7 @@ class Api implements OutputInterface, API_ProviderInterface, EventSubscriberInte
         $fields[$fieldSpec->alias] = array_merge($fields[$fieldSpec->alias], $field);
       }
     }
+    $this->cache->set($cacheKey, $fields);
     return $fields;
   }
 
