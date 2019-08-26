@@ -56,6 +56,11 @@ class CRM_Dataprocessor_BAO_DataProcessor extends CRM_Dataprocessor_DAO_DataProc
    * @throws \Exception
    */
   public static function dataProcessorToClass($dataProcessor) {
+    $cache_key = 'dataprocessor_'.$dataProcessor['id'];
+    $cache = CRM_Dataprocessor_Utils_Cache::singleton();
+    if ($dataProcessorClass = $cache->get($cache_key)) {
+      return $dataProcessorClass;
+    }
     $factory = dataprocessor_get_factory();
     $dataProcessorClass = $factory->getDataProcessorTypeByName($dataProcessor['type']);
     $sources = civicrm_api3('DataProcessorSource', 'get', array('data_processor_id' => $dataProcessor['id'], 'options' => array('limit' => 0)));
@@ -105,6 +110,7 @@ class CRM_Dataprocessor_BAO_DataProcessor extends CRM_Dataprocessor_DAO_DataProc
         }
       }
     }
+    $cache->set($cache_key, $dataProcessorClass);
     return $dataProcessorClass;
   }
 
