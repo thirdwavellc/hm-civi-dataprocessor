@@ -78,6 +78,7 @@ class RawFieldOutputHandler extends AbstractFieldOutputHandler implements Output
     $this->outputFieldSpec = clone $this->inputFieldSpec;
     $this->outputFieldSpec->alias = $alias;
     $this->outputFieldSpec->title = $title;
+    $this->outputFieldSpec->type = $this->getType();
   }
 
   /**
