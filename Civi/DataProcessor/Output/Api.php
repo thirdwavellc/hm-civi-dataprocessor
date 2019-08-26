@@ -185,7 +185,7 @@ class Api implements OutputInterface, API_ProviderInterface, EventSubscriberInte
   protected function getFields($entity, $params) {
     $cacheKey = strtolower($entity);
     if (isset($params['action'])) {
-      $cacheKey .= '_'.$params['action'];
+      $cacheKey .= '_'.strtolower($params['action']);
     }
     if ($cache = $this->cache->get($cacheKey)) {
       return $cache;
