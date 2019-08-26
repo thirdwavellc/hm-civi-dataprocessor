@@ -183,7 +183,7 @@ class Api implements OutputInterface, API_ProviderInterface, EventSubscriberInte
   }
 
   protected function getFields($entity, $params) {
-    $cacheKey = strtolower($entity);
+    $cacheKey = 'getfields_'.strtolower($entity);
     if (isset($params['action'])) {
       $cacheKey .= '_'.strtolower($params['action']);
     }
@@ -343,7 +343,12 @@ class Api implements OutputInterface, API_ProviderInterface, EventSubscriberInte
     if (strtolower($dao->api_count_action) == $apiRequest['action']) {
       $isCountAction = TRUE;
     }
-    $dataProcessor = civicrm_api3('DataProcessor', 'getsingle', array('id' => $dao->data_processor_id));
+
+    $cache_key = 'data_processor_id_'.$dao->data_processor_id;
+    if (! ($dataProcessor = $this->cache->get($cache_key)) ){
+      $dataProcessor = civicrm_api3('DataProcessor', 'getsingle', ['id' => $dao->data_processor_id]);
+      $this->cache->set($cache_key, $dataProcessor);
+    }
     $dataProcessorClass = \CRM_Dataprocessor_BAO_DataProcessor::dataProcessorToClass($dataProcessor);
 
     $params = $apiRequest['params'];
