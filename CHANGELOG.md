@@ -6,6 +6,10 @@
 * it is now also possible to output a data processor on CiviCRMs dahsboard.
 * Added field outputs for simple calculations (substract and total).
 
+# Version 1.0.7
+
+* Build a cache clear when a data processor configuration is changed.
+
 # Version 1.0.6
 
 * Performance improvement by caching the data processor and the api calls.
@@ -22,7 +26,6 @@
 # Version 1.0.3
 
 * Fixed issue with date filters.
->>>>>>> origin/performance
 
 # Version 1.0.2
 

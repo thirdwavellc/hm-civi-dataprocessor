@@ -32,6 +32,14 @@ class Api implements OutputInterface, API_ProviderInterface, EventSubscriberInte
   }
 
   /**
+   * Flushes the caches
+   */
+  public static function clearCache() {
+    $api = new Api();
+    $api->cache->clear();
+  }
+
+  /**
    * Returns true when this filter has additional configuration
    *
    * @return bool

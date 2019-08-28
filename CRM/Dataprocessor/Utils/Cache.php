@@ -25,6 +25,18 @@ class CRM_Dataprocessor_Utils_Cache {
   }
 
   /**
+   * Clear all data processor caches.
+   *
+   * This is a helper function which contains a clear cache for all caches.
+   *
+   */
+  public static function clearAllDataProcessorCaches() {
+      $cache = CRM_Dataprocessor_Utils_Cache::singleton();
+      $cache->cache->clear();
+      Civi\DataProcessor\Output\Api::clearCache();
+  }
+
+  /**
    * @return \CRM_DataProcessor_Utils_Cache
    */
   public static function singleton() {

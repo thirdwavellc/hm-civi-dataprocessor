@@ -36,6 +36,7 @@ function civicrm_api3_data_processor_create($params) {
   }
   $return = _civicrm_api3_basic_create(_civicrm_api3_get_BAO(__FUNCTION__), $params);
   CRM_Dataprocessor_BAO_DataProcessor::updateAndChekStatus($return['id']);
+  CRM_Dataprocessor_Utils_Cache::clearAllDataProcessorCaches();
   return $return;
 }
 
