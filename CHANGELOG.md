@@ -8,6 +8,7 @@
 
 # Version 1.0.7
 
+* Changed Event Participants Field Output Handler to return a string.
 * Build a cache clear when a data processor configuration is changed.
 
 # Version 1.0.6
