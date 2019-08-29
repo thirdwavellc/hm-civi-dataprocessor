@@ -104,7 +104,7 @@ class EventParticipantsFieldOutputHandler extends AbstractFieldOutputHandler imp
    */
   public function formatField($rawRecord, $formattedRecord) {
     $event_id = $rawRecord[$this->inputFieldSpec->alias];
-    $output = new JsonFieldOutput();
+    $output = new FieldOutput();
     if ($event_id) {
       $participantsSql = "
         SELECT `c`.`display_name`, `c`.`id` as `contact_id`, `p`.`id` as `participant_id` 
@@ -123,16 +123,10 @@ class EventParticipantsFieldOutputHandler extends AbstractFieldOutputHandler imp
       $jsonData = array();
       $dao = \CRM_Core_DAO::executeQuery($participantsSql, $participantsSqlParams);
       while($dao->fetch()) {
-        $participants[] = $dao->display_name;
-        $jsonData[] = array(
-          'contact_id' => $dao->contact_id,
-          'participant_id' => $dao->participant_id,
-          'display_name' => $dao->display_name
-        );
+        $participants[$dao->contact_id] = $dao->display_name;
       }
       $output->rawValue = implode(', ', $participants);
       $output->formattedValue = implode(', ', $participants);
-      $output->setData($jsonData);
     }
     return $output;
   }
