@@ -104,9 +104,12 @@ class CRM_Dataprocessor_Utils_Importer {
             $new_id = self::importDataProcessor($data, $filename, $data_processor_id, CRM_Dataprocessor_Status::STATUS_IN_CODE);
             $new_status = CRM_Dataprocessor_Status::STATUS_IN_CODE;
           }
-          else {
+          elseif ($filename) {
             $new_id = self::importDataProcessor($data, $filename, $data_processor_id, CRM_Dataprocessor_Status::STATUS_OVERRIDDEN);
             $new_status = CRM_Dataprocessor_Status::STATUS_OVERRIDDEN;
+          } else {
+            $new_id = self::importDataProcessor($data, $filename, $data_processor_id, CRM_Dataprocessor_Status::STATUS_IN_DATABASE);
+            $new_status = CRM_Dataprocessor_Status::STATUS_IN_DATABASE;
           }
           break;
       }
