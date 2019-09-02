@@ -106,7 +106,7 @@ abstract class AbstractFilterHandler {
     $this->doInitialization();
 
     if (!empty($this->defaultFilterValues)) {
-      $this->setFilter($this->defaultFilterValues);
+      $this->applyFilterFromSubmittedFilterParams($this->defaultFilterValues);
     }
     $this->is_initialized = true;
   }
