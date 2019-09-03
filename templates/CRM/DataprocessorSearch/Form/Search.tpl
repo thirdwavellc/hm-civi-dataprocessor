@@ -51,7 +51,7 @@
                             <td>{$form.$cbName.html}</td>
                             {foreach from=$columnHeaders key=headerName item=headerTitle}
                                 {assign var=columnValue value=$record.$headerName}
-                                <td>{$columnValue->formattedValue}</td>
+                                <td>{$columnValue}</td>
                             {/foreach}
 
                             <td>

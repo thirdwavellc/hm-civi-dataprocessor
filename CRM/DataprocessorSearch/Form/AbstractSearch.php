@@ -4,6 +4,8 @@
  * @license AGPL-3.0
  */
 
+use Civi\DataProcessor\FieldOutputHandler\FieldOutput;
+use Civi\DataProcessor\FieldOutputHandler\Markupable;
 use CRM_Dataprocessor_ExtensionUtil as E;
 
 abstract class CRM_DataprocessorSearch_Form_AbstractSearch extends CRM_Dataprocessor_Form_Output_AbstractUIOutputForm {
@@ -252,7 +254,14 @@ abstract class CRM_DataprocessorSearch_Form_AbstractSearch extends CRM_Dataproce
           $row['id'] = $record[$id_field]->rawValue;
         }
         $row['checkbox'] = CRM_Core_Form::CB_PREFIX.$row['id'];
-        $row['record'] = $record;
+        $row['record'] = array();
+        foreach($record as $column => $value) {
+          if ($value instanceof Markupable) {
+            $row['record'][$column] = $value->getMarkupOut();
+          } elseif ($value instanceof FieldOutput) {
+            $row['record'][$column] = $value->formattedValue;
+          }
+        }
 
         $link = $this->link($row);
         if ($link) {
