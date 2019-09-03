@@ -224,10 +224,12 @@ abstract class CalculationFieldOutputHandler extends AbstractFieldOutputHandler 
     }
     $value = $this->doCalculation($values);
     $formattedValue = $value;
-    if (is_numeric($this->number_of_decimals)) {
+    if (is_numeric($this->number_of_decimals) && $value != null) {
       $formattedValue = number_format($value, $this->number_of_decimals, $this->decimal_sep, $this->thousand_sep);
     }
-    $formattedValue = $this->prefix.$formattedValue.$this->suffix;
+    if ($formattedValue != null) {
+      $formattedValue = $this->prefix . $formattedValue . $this->suffix;
+    }
     $output = new FieldOutput($value);
     $output->formattedValue = $formattedValue;
     return $output;
