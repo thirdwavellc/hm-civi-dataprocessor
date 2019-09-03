@@ -54,6 +54,9 @@ class CustomFieldSpecification extends FieldSpecification {
     if ($this->customField['html_type'] == 'Radio') {
       return false;
     }
+    if ($this->customField['html_type'] == 'Select') {
+      return false;
+    }
     return true;
   }
 
