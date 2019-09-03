@@ -84,6 +84,17 @@ class CRM_DataprocessorOutputExport_CSV implements ExportOutputInterface {
   }
 
   /**
+   * This function is called prior to removing an output
+   *
+   * @param array $output
+   * @return void
+   */
+  public function deleteOutput($output) {
+    // Do nothing
+  }
+
+
+  /**
    * Returns the mime type of the export file.
    *
    * @return string

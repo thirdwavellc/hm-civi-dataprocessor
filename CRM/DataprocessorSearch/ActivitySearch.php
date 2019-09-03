@@ -121,6 +121,16 @@ class CRM_DataprocessorSearch_ActivitySearch implements UIOutputInterface {
   }
 
   /**
+   * This function is called prior to removing an output
+   *
+   * @param array $output
+   * @return void
+   */
+  public function deleteOutput($output) {
+    // Do nothing
+  }
+
+  /**
    * Returns the url for the page/form this output will show to the user
    *
    * @param array $output

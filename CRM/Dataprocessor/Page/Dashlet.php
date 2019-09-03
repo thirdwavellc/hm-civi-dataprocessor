@@ -7,16 +7,16 @@ use CRM_Dataprocessor_ExtensionUtil as E;
  *
  */
 class CRM_Dataprocessor_Page_Dashlet extends CRM_Core_Page {
-  
+
   /**
    * @var int
    */
   private $outputId;
 
   /**
-   * @var int
+   * @var String
    */
-  private $dataProcessorId;
+  private $dataProcessorName;
 
   /**
    * @var array
@@ -35,13 +35,11 @@ class CRM_Dataprocessor_Page_Dashlet extends CRM_Core_Page {
    */
 
   protected function preProcess() {
-    $this->outputId = CRM_Utils_Request::retrieve('outputId', 'Integer');
-    $this->dataProcessorId = CRM_Utils_Request::retrieve('dataProcessorId', 'Integer');
+    $this->dataProcessorName = CRM_Utils_Request::retrieve('data_processor', 'String');
 
-    $this->dataProcessor = civicrm_api3('DataProcessor', 'getsingle', array('id' => $this->dataProcessorId));
+    $this->dataProcessor = civicrm_api3('DataProcessor', 'getsingle', array('name' => $this->dataProcessorName));
     $this->dataProcessorClass = CRM_Dataprocessor_BAO_DataProcessor::dataProcessorToClass($this->dataProcessor);
-    $this->assign('dataProcessorId', $this->dataProcessorId);
-    $this->assign('outputId', $this->outputId);
+    $this->assign('dataProcessorName', $this->dataProcessorName);
   }
 
   /**
@@ -69,4 +67,5 @@ class CRM_Dataprocessor_Page_Dashlet extends CRM_Core_Page {
     }
     $this->assign('columnHeaders', $columnHeaders);
   }
+
 }

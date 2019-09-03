@@ -1,5 +1,5 @@
 <div>
-	<table class="case-selector">
+	<table class="dataprocessor_{$dataProcessorName}">
 	<thead>
 	  <tr>
 	  	{foreach from=$columnHeaders key=headerName item=headerTitle}
@@ -15,13 +15,13 @@
 {literal}
 <script type="text/javascript">
 (function($) {
-$('table.case-selector').DataTable({
+$('table.dataprocessor_{/literal}{$dataProcessorName}{literal}').DataTable({
 		"pageLength":5,
 		"order":[],
 		"lengthMenu": [[5, 10, 20], [5, 10, 20]],
-		"searching": true,
+		"searching": false,
         "ajax": {
-          "url": {/literal}'{crmURL p="civicrm/ajax/getDashlet" q="dataProcessorId=$dataProcessorId&outputId=$outputId"}'{literal},
+          "url": {/literal}'{crmURL p="civicrm/ajax/getDashlet" q="dataProcessorName=$dataProcessorName"}'{literal},
         }
       });
 })(CRM.$);

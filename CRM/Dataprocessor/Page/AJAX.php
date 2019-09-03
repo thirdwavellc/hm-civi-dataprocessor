@@ -32,6 +32,9 @@
  *
  */
 
+use Civi\DataProcessor\FieldOutputHandler\FieldOutput;
+use Civi\DataProcessor\FieldOutputHandler\Markupable;
+
 /**
  * This class contains all contact related functions that are called using AJAX (jQuery)
  */
@@ -39,31 +42,33 @@ class CRM_Dataprocessor_Page_AJAX {
 
   public static function getDashlet() {
 
-  	$outputId = CRM_Utils_Request::retrieve('outputId', 'Integer');
-  	$dataProcessorId = CRM_Utils_Request::retrieve('dataProcessorId', 'Integer');
-  	$dataProcessor = civicrm_api3('DataProcessor', 'getsingle', array('id' => $dataProcessorId));
+  	$dataProcessorName = CRM_Utils_Request::retrieve('dataProcessorName', 'String');
+  	$dataProcessor = civicrm_api3('DataProcessor', 'getsingle', array('name' => $dataProcessorName));
   	$dataProcessorClass = CRM_Dataprocessor_BAO_DataProcessor::dataProcessorToClass($dataProcessor);
 
   	$results = [];
 
   	try {
       while($record = $dataProcessorClass->getDataFlow()->nextRecord()) {
-			$row = array();
-			$row['record'] = $record;
-			$result = array();
-			foreach($record as $key => $value) {
-				$result[$key] = $value->formattedValue;
-			}
-
-			$results[] = $result;
+        $row = [];
+        $row['record'] = $record;
+        $result = [];
+        foreach ($record as $key => $value) {
+          if ($value instanceof Markupable) {
+            $result[$key] = $value->getMarkupOut();
+          }
+          elseif ($value instanceof FieldOutput) {
+            $result[$key] = $value->formattedValue;
+          }
         }
-    }
-     catch (\Civi\DataProcessor\DataFlow\EndOfFlowException $e) {
+        $results[] = $result;
+      }
+    } catch (\Civi\DataProcessor\DataFlow\EndOfFlowException $e) {
       // Do nothing
-    }  	
+    }
 
     $return_output['data'] = $results;
-    
+
     CRM_Utils_JSON::output($return_output);
 
   }

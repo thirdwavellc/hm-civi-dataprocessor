@@ -105,6 +105,16 @@ class Api implements OutputInterface, API_ProviderInterface, EventSubscriberInte
   }
 
   /**
+   * This function is called prior to removing an output
+   *
+   * @param array $output
+   * @return void
+   */
+  public function deleteOutput($output) {
+    // Do nothing
+  }
+
+  /**
    * @return array
    */
   public static function getSubscribedEvents() {

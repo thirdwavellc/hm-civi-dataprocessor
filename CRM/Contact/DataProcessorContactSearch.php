@@ -36,7 +36,7 @@ class CRM_Contact_DataProcessorContactSearch implements UIOutputInterface {
     }
 
     $form->add('text', 'title', E::ts('Title'),NULL, true);
-    
+
     // form elements for adding Dashlet
     // $output['dashlet'] 1-> Yes 2->No
 
@@ -70,7 +70,7 @@ class CRM_Contact_DataProcessorContactSearch implements UIOutputInterface {
 
     $defaults = array();
     if ($output) {
-      
+
       if (isset($output['permission'])) {
         $defaults['permission'] = $output['permission'];
       }
@@ -103,7 +103,7 @@ class CRM_Contact_DataProcessorContactSearch implements UIOutputInterface {
     if (empty($defaults['title'])) {
       $defaults['title'] = civicrm_api3('DataProcessor', 'getvalue', array('id' => $output['data_processor_id'], 'return' => 'title'));
     }
-    
+
     $form->setDefaults($defaults);
   }
 
@@ -136,22 +136,13 @@ class CRM_Contact_DataProcessorContactSearch implements UIOutputInterface {
   }
 
   /**
-   * Process the submitted values and create a configuration array
+   * This function is called prior to removing an output
    *
-   * @param $submittedValues
    * @param array $output
-   * @return array
+   * @return void
    */
-  public function processDashletConfiguration($submittedValues) {
-
-    $configuration['domain_id'] = 1;
-    $configuration['name'] = $submittedValues['dashlet_name'];
-    $configuration['label'] = $submittedValues['dashlet_title'];
-    $configuration['permission'] = $submittedValues['permission'];
-    $configuration['is_active'] = $submittedValues['dashlet_active'];
-    $configuration['cache_minutes'] = 60;
-
-    return $configuration;
+  public function deleteOutput($output) {
+    // Do nothing
   }
 
   /**
