@@ -9,7 +9,7 @@
                 <table>
                     <tr>
                         <th>{ts}Name{/ts}</th>
-                        <th>{ts}Operator{/ts}</th>
+                        {if (empty($smallCriteriaForm))}<th>{ts}Operator{/ts}</th>{/if}
                         <th>{ts}Value{/ts}</th>
                     </tr>
                     {foreach from=$filters key=filterName item=filter}

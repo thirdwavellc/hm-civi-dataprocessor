@@ -4,11 +4,9 @@
  * @license AGPL-3.0
  */
 
-namespace Civi\DataProcessor\Output;
-
 use \CRM_Dataprocessor_ExtensionUtil as E;
 
-class Dashlet implements OutputInterface {
+class CRM_DataprocessorDashlet_Dashlet implements Civi\DataProcessor\Output\OutputInterface {
 
   /**
    * Returns true when this output has additional configuration
@@ -61,7 +59,7 @@ class Dashlet implements OutputInterface {
    * @return false|string
    */
   public function getConfigurationTemplateFileName() {
-    return "CRM/Dataprocessor/Form/Output/Dashlet.tpl";
+    return "CRM/DataprocessorDashlet/Form/OutputConfiguration/Dashlet.tpl";
   }
 
   /**
@@ -76,8 +74,8 @@ class Dashlet implements OutputInterface {
   public function processConfiguration($submittedValues, &$output) {
     $dataProcessor = civicrm_api3('DataProcessor', 'getsingle', array('id' => $output['data_processor_id']));
     $dashletName = 'dataprocessor_'.$dataProcessor['name'];
-    $dashletUrl = \CRM_Utils_System::url('civicrm/dataprocessor/form/dashlet', array('data_processor' => $dataProcessor['name']));
-    $fullScreenUrl = \CRM_Utils_System::url('civicrm/dataprocessor/form/dashlet', array('data_processor' => $dataProcessor['name'], 'context' => 'dashletFullscreen'));
+    $dashletUrl = \CRM_Utils_System::url('civicrm/dataprocessor/page/dashlet', array('data_processor' => $dataProcessor['name']));
+    $fullScreenUrl = \CRM_Utils_System::url('civicrm/dataprocessor/page/dashlet', array('data_processor' => $dataProcessor['name'], 'context' => 'dashletFullscreen'));
     $dashletParams['url'] = $dashletUrl;
     $dashletParams['fullscreen_url'] = $fullScreenUrl;
     $dashletParams['name'] = $dashletName;

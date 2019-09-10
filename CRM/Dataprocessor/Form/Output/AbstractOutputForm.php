@@ -32,7 +32,7 @@ abstract class CRM_Dataprocessor_Form_Output_AbstractOutputForm extends CRM_Core
 
     if ($this->id) {
       $this->output = civicrm_api3('DataProcessorOutput', 'getsingle', array('id' => $this->id));
-      $this->assign('output', $output[$this->id]);
+      $this->assign('output', $this->output);
     }
 
     $title = E::ts('Data Processor  Output  Configuration');

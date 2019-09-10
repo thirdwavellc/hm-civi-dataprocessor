@@ -250,10 +250,12 @@ abstract class CRM_DataprocessorSearch_Form_AbstractSearch extends CRM_Dataproce
         $row = array();
 
         $row['id'] = null;
-        if (isset($record[$id_field])) {
+        if ($id_field && isset($record[$id_field])) {
           $row['id'] = $record[$id_field]->rawValue;
         }
-        $row['checkbox'] = CRM_Core_Form::CB_PREFIX.$row['id'];
+        if ($id_field) {
+          $row['checkbox'] = CRM_Core_Form::CB_PREFIX . $row['id'];
+        }
         $row['record'] = array();
         foreach($record as $column => $value) {
           if ($value instanceof Markupable) {

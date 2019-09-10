@@ -6,7 +6,7 @@ use CRM_Dataprocessor_ExtensionUtil as E;
  * Main page for Data Processor Output dashlet
  *
  */
-class CRM_Dataprocessor_Page_Dashlet extends CRM_Core_Page {
+class CRM_DataprocessorDashlet_Page_Dashlet extends CRM_Core_Page {
 
   /**
    * @var int

@@ -64,8 +64,14 @@
     <access_arguments>administer CiviCRM</access_arguments>
   </item>
   <item>
+    <path>civicrm/dataprocessor/page/dashlet</path>
+    <page_callback>CRM_DataprocessorDashlet_Page_Dashlet</page_callback>
+    <title>DataProcessor</title>
+    <access_arguments>access CiviCRM</access_arguments>
+  </item>
+  <item>
     <path>civicrm/dataprocessor/form/dashlet</path>
-    <page_callback>CRM_Dataprocessor_Page_Dashlet</page_callback>
+    <page_callback>CRM_DataprocessorDashlet_Form_Dashlet</page_callback>
     <title>DataProcessor</title>
     <access_arguments>access CiviCRM</access_arguments>
   </item>
@@ -75,9 +81,4 @@
     <access_arguments>access uploaded files</access_arguments>
     <page_callback>CRM_DataprocessorOutputExport_Page_Download</page_callback>
   </item>
-  <item>
-     <path>civicrm/ajax/getDashlet</path>
-     <page_callback>CRM_Dataprocessor_Page_AJAX::getDashlet</page_callback>
-     <access_arguments>access CiviCRM</access_arguments>
-</item>
 </menu>

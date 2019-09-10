@@ -25,11 +25,11 @@
             {include file="CRM/common/pager.tpl" location="top"}
 
             <div class="crm-search-results">
-                <a href="#" class="crm-selection-reset crm-hover-button"><i class="crm-i fa-times-circle-o"></i> {ts}Reset all selections{/ts}</a>
+                {if $id_field}<a href="#" class="crm-selection-reset crm-hover-button"><i class="crm-i fa-times-circle-o"></i> {ts}Reset all selections{/ts}</a>{/if}
                 <table class="selector row-highlight">
                     <thead class="sticky">
                     <tr>
-                        <th scope="col" title="Select Rows">{$form.toggleSelect.html}</th>
+                        {if $id_field}<th scope="col" title="Select Rows">{$form.toggleSelect.html}</th>{/if}
                         {foreach from=$columnHeaders key=headerName item=headerTitle}
                             <th scope="col">
                                 {if ($sort->_response.$headerName)}
@@ -48,7 +48,7 @@
                             {assign var=cbName value=$row.checkbox}
                             {assign var=id value=$row.id}
                             {assign var=record value=$row.record}
-                            <td>{$form.$cbName.html}</td>
+                            {if $id_field}<td>{$form.$cbName.html}</td>{/if}
                             {foreach from=$columnHeaders key=headerName item=headerTitle}
                                 {assign var=columnValue value=$record.$headerName}
                                 <td>{$columnValue}</td>
