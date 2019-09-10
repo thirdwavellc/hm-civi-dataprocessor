@@ -8,12 +8,13 @@
     <span class="crm-absolute-date-range">
     <span class="crm-absolute-date-from">
       {assign var=fromName   value=$fieldName|cat:$from}
-        {$form.$fromName.label}
+        {$form.$fromName.label}{if $filter.size == 'compact'}<br />{/if}
         {include file="CRM/common/jcalendar.tpl" elementName=$fromName}
     </span>
+    {if $filter.size == 'compact'}<br />{/if}
     <span class="crm-absolute-date-to">
       {assign var=toName   value=$fieldName|cat:$to}
-        {$form.$toName.label}
+        {$form.$toName.label}{if $filter.size == 'compact'}<br />{/if}
         {include file="CRM/common/jcalendar.tpl" elementName=$toName}
     </span>
   </span>

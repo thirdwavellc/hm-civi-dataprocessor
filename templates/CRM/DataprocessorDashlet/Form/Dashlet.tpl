@@ -1,1 +1,1 @@
-{include file="CRM/DataprocessorSearch/Form/Search.tpl" smallCriteriaForm=true}
+{include file="CRM/DataprocessorSearch/Form/Search.tpl"}

@@ -151,11 +151,21 @@ abstract class CRM_Dataprocessor_Form_Output_AbstractUIOutputForm extends CRM_Co
         if (!$fieldSpec || !$filterHandler->isExposed()) {
           continue;
         }
-        $filterElements[$fieldSpec->alias]['filter'] = $filterHandler->addToFilterForm($this, $filterHandler->getDefaultFilterValues());
+        $filterElements[$fieldSpec->alias]['filter'] = $filterHandler->addToFilterForm($this, $filterHandler->getDefaultFilterValues(), $this->getCriteriaElementSize());
         $filterElements[$fieldSpec->alias]['template'] = $filterHandler->getTemplateFileName();
       }
       $this->assign('filters', $filterElements);
     }
+  }
+
+  /**
+   * Returns the size of the crireria form element.
+   * There are two sizes full and compact.
+   *
+   * @return string
+   */
+  protected function getCriteriaElementSize() {
+    return 'full';
   }
 
 }

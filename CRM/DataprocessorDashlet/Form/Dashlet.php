@@ -102,5 +102,15 @@ class CRM_DataprocessorDashlet_Form_Dashlet extends CRM_DataprocessorSearch_Form
     // Don't add exports
   }
 
+  /**
+   * Returns the size of the crireria form element.
+   * There are two sizes full and compact.
+   *
+   * @return string
+   */
+  protected function getCriteriaElementSize() {
+    return 'compact';
+  }
+
 
 }
