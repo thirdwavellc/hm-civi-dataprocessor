@@ -12,6 +12,19 @@ class CRM_DataprocessorDashlet_Form_Dashlet extends CRM_DataprocessorSearch_Form
     $this->setDefaults(array('data_processor' => $this->getDataProcessorName()));
   }
 
+  /**
+   * Returns the default row limit.
+   *
+   * @return int
+   */
+  protected function getDefaultLimit() {
+    $defaultLimit = 10;
+    if (!empty($this->dataProcessorOutput['configuration']['default_limit'])) {
+      $defaultLimit = $this->dataProcessorOutput['configuration']['default_limit'];
+    }
+    return $defaultLimit;
+  }
+
 
   /**
    * Returns the name of the ID field in the dataset.

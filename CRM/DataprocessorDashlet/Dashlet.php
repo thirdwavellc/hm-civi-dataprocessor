@@ -31,6 +31,8 @@ class CRM_DataprocessorDashlet_Dashlet implements Civi\DataProcessor\Output\Outp
       'class' => 'crm-select2 huge',
       'placeholder' => E::ts('- select -'),
     ));
+    $form->add('text', 'default_limit', E::ts('Default Limit'));
+    $form->add('wysiwyg', 'help_text', E::ts('Help text for this search'), array('rows' => 6, 'cols' => 80));
 
     $defaults = array();
     if ($output) {
@@ -41,6 +43,12 @@ class CRM_DataprocessorDashlet_Dashlet implements Civi\DataProcessor\Output\Outp
         if (isset($output['configuration']['title'])) {
           $defaults['title'] = $output['configuration']['title'];
         }
+        if (isset($output['configuration']['default_limit'])) {
+          $defaults['default_limit'] = $output['configuration']['default_limit'];
+        }
+        if (isset($output['configuration']['help_text'])) {
+          $defaults['help_text'] = $output['configuration']['help_text'];
+        }
       }
     }
     if (!isset($defaults['permission'])) {
@@ -48,6 +56,9 @@ class CRM_DataprocessorDashlet_Dashlet implements Civi\DataProcessor\Output\Outp
     }
     if (empty($defaults['title'])) {
       $defaults['title'] = civicrm_api3('DataProcessor', 'getvalue', array('id' => $output['data_processor_id'], 'return' => 'title'));
+    }
+    if (empty($defaults['default_limit'])) {
+      $defaults['default_limit'] = 10;
     }
     $form->setDefaults($defaults);
   }
@@ -97,6 +108,8 @@ class CRM_DataprocessorDashlet_Dashlet implements Civi\DataProcessor\Output\Outp
 
     $output['permission'] = $submittedValues['permission'];
     $configuration['title'] = $submittedValues['title'];
+    $configuration['default_limit'] = $submittedValues['default_limit'];
+    $configuration['help_text'] = $submittedValues['help_text'];
     return $configuration;
   }
 

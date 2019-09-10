@@ -175,12 +175,21 @@ abstract class CRM_DataprocessorSearch_Form_AbstractSearch extends CRM_Dataproce
         $this->runExport($export_id);
       }
 
-      $limit = CRM_Utils_Request::retrieve('crmRowCount', 'Positive', $this, FALSE, CRM_Utils_Pager::ROWCOUNT);
+      $limit = CRM_Utils_Request::retrieve('crmRowCount', 'Positive', $this, FALSE, $this->getDefaultLimit());
       $pageId = CRM_Utils_Request::retrieve('crmPID', 'Positive', $this, FALSE, 1);
       $this->buildRows($pageId, $limit);
       $this->addExportOutputs();
     }
 
+  }
+
+  /**
+   * Returns the default row limit.
+   *
+   * @return int
+   */
+  protected function getDefaultLimit() {
+    return CRM_Utils_Pager::ROWCOUNT;
   }
 
   protected function runExport($export_id) {
@@ -340,7 +349,7 @@ abstract class CRM_DataprocessorSearch_Form_AbstractSearch extends CRM_Dataproce
     $params['total'] = 0;
     $params['status'] =E::ts('%%StatusMessage%%');
     $params['csvString'] = NULL;
-    $params['rowCount'] =  CRM_Utils_Pager::ROWCOUNT;
+    $params['rowCount'] =  $this->getDefaultLimit();
     $params['buttonTop'] = 'PagerTopButton';
     $params['buttonBottom'] = 'PagerBottomButton';
     return $params;
