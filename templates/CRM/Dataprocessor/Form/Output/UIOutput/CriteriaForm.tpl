@@ -1,7 +1,8 @@
+{crmScope extensionKey='dataprocessor'}
 <div class="crm-form-block crm-search-form-block">
     <div class="crm-accordion-wrapper crm-advanced_search_form-accordion {if (!empty($rows))}collapsed{/if}">
         <div class="crm-accordion-header crm-master-accordion-header">
-            {ts}Edit Search Criteria{/ts}
+            {if isset($criteriaFormTitle)}{$criteriaFormTitle}{else}{ts}Edit Search Criteria{/ts}{/if}
         </div>
         <!-- /.crm-accordion-header -->
         <div class="crm-accordion-body">
@@ -53,3 +54,4 @@
 
 </script>
 {/literal}
+{/crmScope}

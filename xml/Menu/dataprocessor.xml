@@ -64,6 +64,12 @@
     <access_arguments>administer CiviCRM</access_arguments>
   </item>
   <item>
+    <path>civicrm/dataprocessor/page/contactsummary</path>
+    <page_callback>CRM_Contact_Page_DataProcessorContactSummaryTab</page_callback>
+    <title>DataProcessor</title>
+    <access_arguments>access CiviCRM</access_arguments>
+  </item>
+  <item>
     <path>civicrm/dataprocessor/page/dashlet</path>
     <page_callback>CRM_DataprocessorDashlet_Page_Dashlet</page_callback>
     <title>DataProcessor</title>

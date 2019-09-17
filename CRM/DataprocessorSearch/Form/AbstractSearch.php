@@ -6,6 +6,7 @@
 
 use Civi\DataProcessor\FieldOutputHandler\FieldOutput;
 use Civi\DataProcessor\FieldOutputHandler\Markupable;
+use Civi\DataProcessor\ProcessorType\AbstractProcessorType;
 use CRM_Dataprocessor_ExtensionUtil as E;
 
 abstract class CRM_DataprocessorSearch_Form_AbstractSearch extends CRM_Dataprocessor_Form_Output_AbstractUIOutputForm {
@@ -245,6 +246,8 @@ abstract class CRM_DataprocessorSearch_Form_AbstractSearch extends CRM_Dataproce
       $this->dataProcessorClass->getDataFlow()->addSort($sortField['name'], $sortDirection);
     }
 
+    $this->alterDataProcessor($this->dataProcessorClass);
+
     $pagerParams = $this->getPagerParams();
     $pagerParams['total'] = $this->dataProcessorClass->getDataFlow()->recordCount();
     $pagerParams['pageID'] = $pageId;
@@ -280,7 +283,9 @@ abstract class CRM_DataprocessorSearch_Form_AbstractSearch extends CRM_Dataproce
           $row['link_text'] = $this->linkText($row);
         }
 
-        $this->addElement('checkbox', $row['checkbox'], NULL, NULL, ['class' => 'select-row']);
+        if (isset($row['checkbox'])) {
+          $this->addElement('checkbox', $row['checkbox'], NULL, NULL, ['class' => 'select-row']);
+        }
 
         if ($row['id'] && $this->usePrevNextCache()) {
           $prevnextData[] = array(
@@ -459,6 +464,20 @@ abstract class CRM_DataprocessorSearch_Form_AbstractSearch extends CRM_Dataproce
   public function getTitle() {
     $this->loadDataProcessor();
     return $this->dataProcessorOutput['configuration']['title'];
+  }
+
+  /**
+   * Alter the data processor.
+   *
+   * Use this function in child classes to add for example additional filters.
+   *
+   * E.g. The contact summary tab uses this to add additional filtering on the contact id of
+   * the displayed contact.
+   *
+   * @param \Civi\DataProcessor\ProcessorType\AbstractProcessorType $dataProcessorClass
+   */
+  protected function alterDataProcessor(AbstractProcessorType $dataProcessorClass) {
+
   }
 
 }

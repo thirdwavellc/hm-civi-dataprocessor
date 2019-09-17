@@ -32,7 +32,7 @@ class CRM_DataprocessorDashlet_Dashlet implements Civi\DataProcessor\Output\Outp
       'placeholder' => E::ts('- select -'),
     ));
     $form->add('text', 'default_limit', E::ts('Default Limit'));
-    $form->add('wysiwyg', 'help_text', E::ts('Help text for this search'), array('rows' => 6, 'cols' => 80));
+    $form->add('wysiwyg', 'help_text', E::ts('Help text for this dashlet'), array('rows' => 6, 'cols' => 80));
 
     $defaults = array();
     if ($output) {

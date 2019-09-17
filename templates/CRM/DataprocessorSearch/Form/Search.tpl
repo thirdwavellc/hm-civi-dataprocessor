@@ -1,3 +1,4 @@
+{crmScope extensionKey='dataprocessor'}
 {include file="CRM/Dataprocessor/Form/Output/UIOutput/CriteriaForm.tpl"}
 
 {if (isset($output.configuration.help_text) && $output.configuration.help_text)}
@@ -72,4 +73,11 @@
     </div>
 
     {include file="CRM/DataprocessorSearch/Form/ResultsJavascript.tpl"}
+{elseif isset($no_result_text)}
+<div class="crm-content-block">
+  <div class="crm-results-block">
+    {$no_result_text}
+  </div>
+</div>
 {/if}
+{/crmScope}

@@ -119,6 +119,7 @@ class Factory {
     $this->addDataSource('membership_status', 'Civi\DataProcessor\Source\Member\MembershipStatusSource', E::ts('Membership Status'));
     $this->addDataSource('csv', 'Civi\DataProcessor\Source\CSV', E::ts('CSV File'));
     $this->addOutput('api', 'Civi\DataProcessor\Output\Api', E::ts('API'));
+    $this->addOutput('contact_summary_tab', 'CRM_Contact_DataProcessorContactSummaryTab', E::ts('Tab on contact summary'));
     $this->addOutput('dashlet', 'CRM_DataprocessorDashlet_Dashlet', E::ts('Dashlet'));
     $this->addOutput('search', 'CRM_DataprocessorSearch_Search', E::ts('Search'));
     $this->addOutput('contact_search', 'CRM_Contact_DataProcessorContactSearch', E::ts('Contact Search'));
