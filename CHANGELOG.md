@@ -6,6 +6,8 @@
 * Output a data processor as a dashboard.
 * Output a data processor as a tab on the contact summary screen.
 * Added field outputs for simple calculations (substract and total).
+* Added escaped output to search screens.
+* Replaced the value separator in the raw field with a comma.
 
 # Version 1.0.7
 

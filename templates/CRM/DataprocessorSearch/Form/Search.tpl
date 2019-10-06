@@ -52,7 +52,7 @@
                             {if $id_field}<td>{$form.$cbName.html}</td>{/if}
                             {foreach from=$columnHeaders key=headerName item=headerTitle}
                                 {assign var=columnValue value=$record.$headerName}
-                                <td>{$columnValue}</td>
+                                <td>{$columnValue|escape:'html'}</td>
                             {/foreach}
 
                             <td>

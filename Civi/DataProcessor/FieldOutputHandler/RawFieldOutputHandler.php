@@ -90,7 +90,14 @@ class RawFieldOutputHandler extends AbstractFieldOutputHandler implements Output
    * @return \Civi\DataProcessor\FieldOutputHandler\FieldOutput
    */
   public function formatField($rawRecord, $formattedRecord) {
-    return new FieldOutput($rawRecord[$this->inputFieldSpec->alias]);
+    $formattedValue = $rawRecord[$this->inputFieldSpec->alias];
+    if (strpos($formattedValue, \CRM_Core_DAO::VALUE_SEPARATOR) !== false) {
+      $formattedValue = explode(\CRM_Core_DAO::VALUE_SEPARATOR, substr($formattedValue, 1, -1));
+      $formattedValue = implode(",", $formattedValue);
+    }
+    $output = new FieldOutput($rawRecord[$this->inputFieldSpec->alias]);
+    $output->formattedValue = $formattedValue;
+    return $output;
   }
 
   /**
