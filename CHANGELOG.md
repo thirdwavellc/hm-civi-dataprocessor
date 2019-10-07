@@ -10,6 +10,7 @@
 * Replaced the value separator in the raw field with a comma.
 * Added filter to search text in multiple fields.
 * Added filter for searching contacts with a certain tag.
+* Added filter for searching contacts with a certain type.
 
 # Version 1.0.7
 
