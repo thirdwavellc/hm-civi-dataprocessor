@@ -528,7 +528,7 @@ abstract class AbstractFilterHandler {
           if (isset($defaultFilterValue['op']) && $defaultFilterValue['op']) {
             $defaults[$alias . '_op'] = $defaultFilterValue['op'];
           } else {
-            $defaults[$alias . '_op'] = key($operations);
+            $defaults[$alias . '_op'] = 'has'; // Contains
           }
           if (isset($defaultFilterValue['value'])) {
             $defaults[$alias.'_value'] = $defaultFilterValue['value'];

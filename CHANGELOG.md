@@ -8,6 +8,7 @@
 * Added field outputs for simple calculations (substract and total).
 * Added escaped output to search screens.
 * Replaced the value separator in the raw field with a comma.
+* Added filter to search text in multiple fields.
 
 # Version 1.0.7
 
