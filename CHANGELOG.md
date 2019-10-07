@@ -11,6 +11,7 @@
 * Added filter to search text in multiple fields.
 * Added filter for searching contacts with a certain tag.
 * Added filter for searching contacts with a certain type.
+* Added filter to respect the ACL. So that a user only sees the contacts he is allowed to see.
 
 # Version 1.0.7
 

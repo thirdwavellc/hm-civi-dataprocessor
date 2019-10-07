@@ -134,6 +134,7 @@ class Factory {
     $this->addFilter('contact_in_group_filter', 'Civi\DataProcessor\FilterHandler\ContactInGroupFilter', E::ts('Contact in Group filter'));
     $this->addFilter('contact_with_tag_filter', 'Civi\DataProcessor\FilterHandler\ContactWithTagFilter', E::ts('Contact has Tag filter'));
     $this->addFilter('contact_type_filter', 'Civi\DataProcessor\FilterHandler\ContactTypeFilter', E::ts('Contact Type filter'));
+    $this->addFilter('permission_to_view_contact', 'Civi\DataProcessor\FilterHandler\PermissionToViewContactFilter', E::ts('Permission to view contact'));
     $this->addFilter('case_role_filter', 'Civi\DataProcessor\FilterHandler\CaseRoleFilter', E::ts('Case Role filter'));
     $this->addFilter('in_api_filter', 'Civi\DataProcessor\FilterHandler\InApiFilter', E::ts('API filter'));
     $this->addjoinType('simple_join', 'Civi\DataProcessor\DataFlow\MultipleDataFlows\SimpleJoin', E::ts('Select fields to join on'));

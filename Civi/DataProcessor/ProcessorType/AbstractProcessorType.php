@@ -177,4 +177,15 @@ abstract class AbstractProcessorType {
     return $this->dataflow;
   }
 
+  /**
+   * Sets the default filter values for all filters.
+   *
+   * @throws \Exception
+   */
+  public function setDefaultFilterValues() {
+    foreach($this->filterHandlers as $filterHandler) {
+      $filterHandler->setDefaultFilterValues();
+    }
+  }
+
 }

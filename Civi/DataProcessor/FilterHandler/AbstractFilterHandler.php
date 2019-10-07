@@ -105,10 +105,19 @@ abstract class AbstractFilterHandler {
 
     $this->doInitialization();
 
+    $this->setDefaultFilterValues();
+    $this->is_initialized = true;
+  }
+
+  /**
+   * Sets the default filter.
+   *
+   * @throws \Exception
+   */
+  public function setDefaultFilterValues() {
     if (!empty($this->defaultFilterValues)) {
       $this->applyFilterFromSubmittedFilterParams($this->defaultFilterValues);
     }
-    $this->is_initialized = true;
   }
 
   /**

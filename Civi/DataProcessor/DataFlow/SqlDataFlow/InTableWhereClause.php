@@ -54,7 +54,9 @@ class InTableWhereClause implements WhereClauseInterface {
   public function getWhereClause() {
     $clauses = array("1");
     foreach($this->filters as $clause) {
-      $clauses[] = $clause->getWhereClause();
+      if ($clause->getWhereClause()) {
+        $clauses[] = $clause->getWhereClause();
+      }
     }
     $whereClause = implode(" AND ", $clauses);
 
