@@ -439,11 +439,11 @@ abstract class AbstractFilterHandler {
         'multiple' => FALSE,
         'placeholder' => E::ts('- select -'),
       ]);
-      $form->add('select', "{$alias}_value", NULL, $fieldSpec->getOptions(), [
+      $form->add('select', "{$alias}_value", null, $fieldSpec->getOptions(), false, [
         'style' => $minWidth,
         'class' => 'crm-select2 '.$sizeClass,
         'multiple' => TRUE,
-        'placeholder' => E::ts('- select -'),
+        'placeholder' => E::ts('- Select -'),
       ]);
       if (isset($defaultFilterValue['op'])) {
         $defaults[$alias . '_op'] = $defaultFilterValue['op'];
