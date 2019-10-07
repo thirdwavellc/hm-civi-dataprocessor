@@ -1,3 +1,4 @@
+{crmScope extensionKey='dataprocessor'}
 {assign var=fieldOp     value=$filter.alias|cat:"_op"}
 {assign var=filterVal   value=$filter.alias|cat:"_value"}
 {assign var=filterMin   value=$filter.alias|cat:"_min"}
@@ -11,10 +12,15 @@
 {elseif $form.$fieldOp.html}
     <tr>
         <td class="label">{$filter.title}</td>
-        <td>{$form.$fieldOp.html}</td>
+        <td>
+          <span class="filter-processor-element {$filter.alias}">{$form.$fieldOp.html}</span>
+          <span class="filter-processor-show-close {$filter.alias}">&nbsp;</span>
+        </td>
         <td>
             <span id="{$filterVal}_cell">{$form.$filterVal.label}&nbsp;{$form.$filterVal.html}</span>
             <span id="{$filterMin}_max_cell">{$form.$filterMin.label}&nbsp;{$form.$filterMin.html}&nbsp;&nbsp;{$form.$filterMax.label}&nbsp;{$form.$filterMax.html}</span>
         </td>
     </tr>
 {/if}
+
+{/crmScope}

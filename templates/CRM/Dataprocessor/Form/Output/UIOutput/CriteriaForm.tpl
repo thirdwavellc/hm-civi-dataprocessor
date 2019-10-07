@@ -14,7 +14,7 @@
                         <th>{ts}Value{/ts}</th>
                     </tr>
                     {foreach from=$filters key=filterName item=filter}
-                        {include file=$filter.template filterName=filter.alias filter=$filter.filter}
+                        {include file=$filter.template filterName=$filter.alias filter=$filter.filter}
                     {/foreach}
                 </table>
                 <div class="crm-submit-buttons">{include file="CRM/common/formButtons.tpl" location="botton"}</div>
@@ -33,6 +33,7 @@
             {literal}var val = document.getElementById("{/literal}{$fieldOp}{literal}").value;{/literal}
     {/if}
     {literal}showHideMaxMinVal( "{/literal}{$filterName}{literal}", val );{/literal}
+    {literal}initializeOperator( "{/literal}{$filterName}{literal}");{/literal}
     {/foreach}
 
     {literal}
@@ -50,6 +51,19 @@
         cj('#' + fldVal ).show();
         cj('#' + fldMinMax ).hide();
       }
+    }
+
+    function initializeOperator(filterName) {
+      var currentOp = cj('.filter-processor-element.'+filterName+' select option:selected');
+      cj('.filter-processor-element.'+filterName).addClass('hiddenElement');
+      cj('.filter-processor-show-close.'+filterName).html(currentOp.html() + '&nbsp;<i class="crm-i fa-pencil">&nbsp;</i>');
+      cj('.filter-processor-show-close.'+filterName).attr('title', '{/literal}{ts}Change{/ts}{literal}');
+      cj('.filter-processor-show-close.'+filterName).addClass('crm-editable-enabled');
+      cj('.filter-processor-show-close.'+filterName).click(function () {
+        cj('.filter-processor-element.'+filterName).removeClass('hiddenElement');
+        cj('.filter-processor-show-close.'+filterName).removeClass('crm-editable-enabled');
+        cj('.filter-processor-show-close.'+filterName).addClass('hiddenElement');
+      });
     }
 
 </script>
