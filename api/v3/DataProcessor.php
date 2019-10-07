@@ -145,6 +145,20 @@ function civicrm_api3_data_processor_check_name($params) {
 }
 
 /**
+ * DataProcessor.import API specification
+ *
+ * @param $params
+ */
+function _civicrm_api3_data_processor_import_spec($params) {
+  $params['extension'] = [
+    'name' => 'extension',
+    'title' => E::ts('Extension'),
+    'api.required' => FALSE,
+  ];
+  return $params;
+}
+
+/**
  * DataProcessor.Import API
  *
  * @param array $params
@@ -155,7 +169,11 @@ function civicrm_api3_data_processor_check_name($params) {
  */
 function civicrm_api3_data_processor_import($params) {
   $returnValues = array();
-  $returnValues['import'] = CRM_Dataprocessor_Utils_Importer::importFromExtensions();
+  $extension = null;
+  if (isset($params['extension'])) {
+    $extension = $params['extension'];
+  }
+  $returnValues['import'] = CRM_Dataprocessor_Utils_Importer::importFromExtensions($extension);
   $returnValues['is_error'] = 0;
   return $returnValues;
 }

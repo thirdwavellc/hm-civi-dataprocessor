@@ -208,10 +208,10 @@ class CRM_Dataprocessor_Utils_Importer {
    *
    * This scans the extension directory data-processors/ for json files.
    */
-  public static function importFromExtensions() {
+  public static function importFromExtensions($extension=null) {
     $return = array();
     $importedIds = array();
-    $extensions = self::getExtensionFileListWithDataProcessors();
+    $extensions = self::getExtensionFileListWithDataProcessors($extension);
     foreach($extensions as $ext_file) {
       $data = json_decode($ext_file['data'], true);
       $return[$ext_file['file']] = self::import($data, $ext_file['file']);
@@ -238,11 +238,14 @@ class CRM_Dataprocessor_Utils_Importer {
    *
    * @return array
    */
-  private static function getExtensionFileListWithDataProcessors() {
+  private static function getExtensionFileListWithDataProcessors($extension=null) {
     $return = array();
     $extensions = civicrm_api3('Extension', 'get', array('options' => array('limit' => 0)));
     foreach($extensions['values'] as $ext) {
       if ($ext['status'] != 'installed') {
+        continue;
+      }
+      if ($extension && $extension != $ext['key']) {
         continue;
       }
 
