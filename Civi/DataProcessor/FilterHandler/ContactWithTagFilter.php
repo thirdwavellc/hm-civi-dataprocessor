@@ -10,12 +10,7 @@ use Civi\DataProcessor\DataFlow\SqlDataFlow;
 use Civi\DataProcessor\Exception\InvalidConfigurationException;
 use CRM_Dataprocessor_ExtensionUtil as E;
 
-class ContactInGroupFilter extends AbstractFieldFilterHandler {
-
-  /**
-   * @var array
-   */
-  protected $parent_group_id = false;
+class ContactWithTagFilter extends AbstractFieldFilterHandler {
 
   /**
    * Initialize the filter
@@ -29,17 +24,6 @@ class ContactInGroupFilter extends AbstractFieldFilterHandler {
       throw new InvalidConfigurationException(E::ts("Filter %1 requires a field to filter on. None given.", array(1=>$this->title)));
     }
     $this->initializeField($this->configuration['datasource'], $this->configuration['field']);
-
-    if (isset($this->configuration['parent_group']) && $this->configuration['parent_group']) {
-      try {
-        $this->parent_group_id = civicrm_api3('Group', 'getvalue', [
-          'return' => 'id',
-          'name' => $this->configuration['parent_group']
-        ]);
-      } catch (\CiviCRM_API3_Exception $e) {
-        // Do nothing
-      }
-    }
   }
 
   /**
@@ -50,22 +34,22 @@ class ContactInGroupFilter extends AbstractFieldFilterHandler {
   public function setFilter($filter) {
     $this->resetFilter();
     $dataFlow  = $this->dataSource->ensureField($this->fieldSpecification->name);
-    $group_ids = $filter['value'];
-    if (!is_array($group_ids)) {
-      $group_ids = array($group_ids);
+    $tag_ids = $filter['value'];
+    if (!is_array($tag_ids)) {
+      $tag_ids = array($tag_ids);
     }
-    $groupTableAlias = 'civicrm_group_contact_'.$this->fieldSpecification->alias;
-    $groupFilters = array(
-      new SqlDataFlow\SimpleWhereClause($groupTableAlias, 'status', '=', 'Added'),
-      new SqlDataFlow\SimpleWhereClause($groupTableAlias, 'group_id', 'IN', $group_ids),
+    $tagTableAlias = 'civicrm_entity_tag_'.$this->fieldSpecification->alias;
+    $tagFilters = array(
+      new SqlDataFlow\SimpleWhereClause($tagTableAlias, 'entity_table', '=', 'civicrm_contact'),
+      new SqlDataFlow\SimpleWhereClause($tagTableAlias, 'tag_id', 'IN', $tag_ids),
     );
 
     if ($dataFlow && $dataFlow instanceof SqlDataFlow) {
       $this->whereClause = new SqlDataFlow\InTableWhereClause(
-        'contact_id',
-        'civicrm_group_contact',
-        $groupTableAlias,
-        $groupFilters,
+        'entity_id',
+        'civicrm_entity_tag',
+        $tagTableAlias,
+        $tagFilters,
         $dataFlow->getName(),
         $this->fieldSpecification->name,
         $filter['op']
@@ -93,23 +77,10 @@ class ContactInGroupFilter extends AbstractFieldFilterHandler {
    */
   public function buildConfigurationForm(\CRM_Core_Form $form, $filter=array()) {
     $fieldSelect = \CRM_Dataprocessor_Utils_DataSourceFields::getAvailableFilterFieldsInDataSources($filter['data_processor_id']);
-    $groupsApi = civicrm_api3('Group', 'get', array('is_active' => 1, 'options' => array('limit' => 0)));
-    $groups = array();
-    foreach($groupsApi['values'] as $group) {
-      $groups[$group['name']] = $group['title'];
-    }
-
     $form->add('select', 'contact_id_field', E::ts('Contact ID Field'), $fieldSelect, true, array(
       'style' => 'min-width:250px',
       'class' => 'crm-select2 huge data-processor-field-for-name',
       'placeholder' => E::ts('- select -'),
-    ));
-
-    $form->add('select', 'parent_group', E::ts('Show only subgroup(s) of'), $groups, false, array(
-      'style' => 'min-width:250px',
-      'class' => 'crm-select2 huge',
-      'placeholder' => E::ts('- Show all groups -'),
-      'multiple' => false,
     ));
 
     if (isset($filter['configuration'])) {
@@ -117,9 +88,6 @@ class ContactInGroupFilter extends AbstractFieldFilterHandler {
       $defaults = array();
       if (isset($configuration['field']) && isset($configuration['datasource'])) {
         $defaults['contact_id_field'] = $configuration['datasource'] . '::' . $configuration['field'];
-      }
-      if (isset($configuration['parent_group'])) {
-        $defaults['parent_group'] = $configuration['parent_group'];
       }
       $form->setDefaults($defaults);
     }
@@ -132,7 +100,7 @@ class ContactInGroupFilter extends AbstractFieldFilterHandler {
    * @return false|string
    */
   public function getConfigurationTemplateFileName() {
-    return "CRM/Dataprocessor/Form/Filter/Configuration/ContactInGroupFilter.tpl";
+    return "CRM/Dataprocessor/Form/Filter/Configuration/ContactWithTagFilter.tpl";
   }
 
 
@@ -146,7 +114,6 @@ class ContactInGroupFilter extends AbstractFieldFilterHandler {
     list($datasource, $field) = explode('::', $submittedValues['contact_id_field'], 2);
     $configuration['field'] = $field;
     $configuration['datasource'] = $datasource;
-    $configuration['parent_group'] = isset($submittedValues['parent_group']) ? $submittedValues['parent_group'] : false;
     return $configuration;
   }
 
@@ -178,11 +145,8 @@ class ContactInGroupFilter extends AbstractFieldFilterHandler {
     }
 
     $api_params['is_active'] = 1;
-    if ($this->parent_group_id) {
-      $childGroupIds = \CRM_Contact_BAO_GroupNesting::getDescendentGroupIds([$this->parent_group_id], FALSE);
-      $api_params['id']['IN'] = $childGroupIds;
-    }
-
+    $api_params['used_for'] = 'civicrm_contact';
+    $api_params['is_tagset'] = 0;
     $form->add('select', "{$fieldSpec->alias}_op", E::ts('Operator:'), $operations, true, [
       'style' => $minWidth,
       'class' => 'crm-select2 '.$sizeClass,
@@ -190,8 +154,8 @@ class ContactInGroupFilter extends AbstractFieldFilterHandler {
       'placeholder' => E::ts('- select -'),
     ]);
     $form->addEntityRef( "{$fieldSpec->alias}_value", NULL, array(
-      'placeholder' => E::ts('Select a group'),
-      'entity' => 'Group',
+      'placeholder' => E::ts('Select a tag'),
+      'entity' => 'Tag',
       'api' => array('params' => $api_params),
       'create' => false,
       'multiple' => true,

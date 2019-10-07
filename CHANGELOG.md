@@ -9,6 +9,7 @@
 * Added escaped output to search screens.
 * Replaced the value separator in the raw field with a comma.
 * Added filter to search text in multiple fields.
+* Added filter for searching contacts with a certain tag.
 
 # Version 1.0.7
 
