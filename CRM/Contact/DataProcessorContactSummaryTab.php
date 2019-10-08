@@ -97,7 +97,6 @@ class CRM_Contact_DataProcessorContactSummaryTab implements UIOutputInterface {
   public function buildConfigurationForm(\CRM_Core_Form $form, $output = []) {
     $fieldSelect = \CRM_Dataprocessor_Utils_DataSourceFields::getAvailableFilterFieldsInDataSources($output['data_processor_id']);
 
-    $form->add('text', 'title', E::ts('Title'), true);
     $form->add('select','permission', E::ts('Permission'), \CRM_Core_Permission::basicPermissions(), true, array(
       'style' => 'min-width:250px',
       'class' => 'crm-select2 huge',
@@ -122,9 +121,6 @@ class CRM_Contact_DataProcessorContactSummaryTab implements UIOutputInterface {
         $defaults['permission'] = $output['permission'];
       }
       if (isset($output['configuration']) && is_array($output['configuration'])) {
-        if (isset($output['configuration']['title'])) {
-          $defaults['title'] = $output['configuration']['title'];
-        }
         if (isset($output['configuration']['help_text'])) {
           $defaults['help_text'] = $output['configuration']['help_text'];
         }
@@ -144,9 +140,6 @@ class CRM_Contact_DataProcessorContactSummaryTab implements UIOutputInterface {
     }
     if (!isset($defaults['permission'])) {
       $defaults['permission'] = 'access CiviCRM';
-    }
-    if (empty($defaults['title'])) {
-      $defaults['title'] = civicrm_api3('DataProcessor', 'getvalue', array('id' => $output['data_processor_id'], 'return' => 'title'));
     }
     if (!isset($defaults['no_result_text'])) {
       $defaults['no_result_text'] = E::ts('No records');
@@ -178,7 +171,6 @@ class CRM_Contact_DataProcessorContactSummaryTab implements UIOutputInterface {
    */
   public function processConfiguration($submittedValues, &$output) {
     $output['permission'] = $submittedValues['permission'];
-    $configuration['title'] = $submittedValues['title'];
     $configuration['contact_id_field'] = $submittedValues['contact_id_field'];
     $configuration['help_text'] = $submittedValues['help_text'];
     $configuration['no_result_text'] = $submittedValues['no_result_text'];
@@ -217,7 +209,7 @@ class CRM_Contact_DataProcessorContactSummaryTab implements UIOutputInterface {
    * @return string
    */
   public function getTitleForUiLink($output, $dataProcessor) {
-    return isset($output['configuration']['title']) ? $output['configuration']['title'] : $dataProcessor['title'];
+    return $dataProcessor['title'];
   }
 
   /**

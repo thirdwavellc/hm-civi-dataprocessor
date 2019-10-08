@@ -463,7 +463,7 @@ abstract class CRM_DataprocessorSearch_Form_AbstractSearch extends CRM_Dataproce
    */
   public function getTitle() {
     $this->loadDataProcessor();
-    return $this->dataProcessorOutput['configuration']['title'];
+    return $this->dataProcessor['title'];
   }
 
   /**

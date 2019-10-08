@@ -25,7 +25,6 @@ class CRM_DataprocessorDashlet_Dashlet implements Civi\DataProcessor\Output\Outp
    * @param array $output
    */
   public function buildConfigurationForm(\CRM_Core_Form $form, $output = []) {
-    $form->add('text', 'title', E::ts('Title'), true);
     $form->add('select','permission', E::ts('Permission'), \CRM_Core_Permission::basicPermissions(), true, array(
       'style' => 'min-width:250px',
       'class' => 'crm-select2 huge',
@@ -40,9 +39,6 @@ class CRM_DataprocessorDashlet_Dashlet implements Civi\DataProcessor\Output\Outp
         $defaults['permission'] = $output['permission'];
       }
       if (isset($output['configuration']) && is_array($output['configuration'])) {
-        if (isset($output['configuration']['title'])) {
-          $defaults['title'] = $output['configuration']['title'];
-        }
         if (isset($output['configuration']['default_limit'])) {
           $defaults['default_limit'] = $output['configuration']['default_limit'];
         }
@@ -53,9 +49,6 @@ class CRM_DataprocessorDashlet_Dashlet implements Civi\DataProcessor\Output\Outp
     }
     if (!isset($defaults['permission'])) {
       $defaults['permission'] = 'access CiviCRM';
-    }
-    if (empty($defaults['title'])) {
-      $defaults['title'] = civicrm_api3('DataProcessor', 'getvalue', array('id' => $output['data_processor_id'], 'return' => 'title'));
     }
     if (empty($defaults['default_limit'])) {
       $defaults['default_limit'] = 10;
@@ -90,7 +83,7 @@ class CRM_DataprocessorDashlet_Dashlet implements Civi\DataProcessor\Output\Outp
     $dashletParams['url'] = $dashletUrl;
     $dashletParams['fullscreen_url'] = $fullScreenUrl;
     $dashletParams['name'] = $dashletName;
-    $dashletParams['label'] = $submittedValues['title'];
+    $dashletParams['label'] = $dataProcessor['title'];
     $dashletParams['permission'] = $submittedValues['permission'];
     $dashletParams['is_active'] = 1;
     $dashletParams['cache_minutes'] = 60;
@@ -107,7 +100,6 @@ class CRM_DataprocessorDashlet_Dashlet implements Civi\DataProcessor\Output\Outp
     civicrm_api3('Dashboard', 'create', $dashletParams);
 
     $output['permission'] = $submittedValues['permission'];
-    $configuration['title'] = $submittedValues['title'];
     $configuration['default_limit'] = $submittedValues['default_limit'];
     $configuration['help_text'] = $submittedValues['help_text'];
     return $configuration;

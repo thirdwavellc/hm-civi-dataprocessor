@@ -43,9 +43,6 @@ class CRM_Dataprocessor_Form_Output extends CRM_Core_Form {
     $this->id = CRM_Utils_Request::retrieve('id', 'Integer');
     $this->assign('id', $this->id);
 
-    $dashlet = CRM_Utils_Request::retrieve('dashlet', 'Integer');
-    // dashlet 1->Yes 2->No
-
     if ($this->id) {
       $this->output = civicrm_api3('DataProcessorOutput', 'getsingle', array('id' => $this->id));
       $this->assign('output', $this->output);
@@ -61,10 +58,6 @@ class CRM_Dataprocessor_Form_Output extends CRM_Core_Form {
 
     if (!$this->output) {
       $this->output['data_processor_id'] = $this->dataProcessorId;
-    }
-    if($dashlet){
-      $this->dashlet = $dashlet;
-      $this->output['dashlet'] = $this->dashlet;
     }
 
     $title = E::ts('Data Processor Output');

@@ -121,7 +121,7 @@ class Factory {
     $this->addOutput('api', 'Civi\DataProcessor\Output\Api', E::ts('API'));
     $this->addOutput('contact_summary_tab', 'CRM_Contact_DataProcessorContactSummaryTab', E::ts('Tab on contact summary'));
     $this->addOutput('dashlet', 'CRM_DataprocessorDashlet_Dashlet', E::ts('Dashlet'));
-    $this->addOutput('search', 'CRM_DataprocessorSearch_Search', E::ts('Search'));
+    $this->addOutput('search', 'CRM_DataprocessorSearch_Search', E::ts('Search / Report'));
     $this->addOutput('contact_search', 'CRM_Contact_DataProcessorContactSearch', E::ts('Contact Search'));
     $this->addOutput('activity_search', 'CRM_DataprocessorSearch_ActivitySearch', E::ts('Activity Search'));
     $this->addOutput('case_search', 'CRM_DataprocessorSearch_CaseSearch', E::ts('Case Search'));

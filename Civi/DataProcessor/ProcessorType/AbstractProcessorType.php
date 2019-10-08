@@ -183,8 +183,10 @@ abstract class AbstractProcessorType {
    * @throws \Exception
    */
   public function setDefaultFilterValues() {
-    foreach($this->filterHandlers as $filterHandler) {
-      $filterHandler->setDefaultFilterValues();
+    if ($this->filterHandlers && is_array($this->filterHandlers)) {
+      foreach ($this->filterHandlers as $filterHandler) {
+        $filterHandler->setDefaultFilterValues();
+      }
     }
   }
 

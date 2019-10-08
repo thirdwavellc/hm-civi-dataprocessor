@@ -36,8 +36,6 @@ class CRM_DataprocessorSearch_ActivitySearch implements UIOutputInterface {
       $fields[$field->alias] = $field->title;
     }
 
-    $form->add('text', 'title', E::ts('Title'), true);
-
     $form->add('select','permission', E::ts('Permission'), \CRM_Core_Permission::basicPermissions(), true, array(
       'style' => 'min-width:250px',
       'class' => 'crm-select2 huge',
@@ -72,9 +70,6 @@ class CRM_DataprocessorSearch_ActivitySearch implements UIOutputInterface {
         if (isset($output['configuration']['navigation_id'])) {
           $defaults['navigation_parent_path'] = $navigation->getNavigationParentPathById($output['configuration']['navigation_id']);
         }
-        if (isset($output['configuration']['title'])) {
-          $defaults['title'] = $output['configuration']['title'];
-        }
         if (isset($output['configuration']['hide_id_field'])) {
           $defaults['hide_id_field'] = $output['configuration']['hide_id_field'];
         }
@@ -85,9 +80,6 @@ class CRM_DataprocessorSearch_ActivitySearch implements UIOutputInterface {
     }
     if (!isset($defaults['permission'])) {
       $defaults['permission'] = 'access CiviCRM';
-    }
-    if (empty($defaults['title'])) {
-      $defaults['title'] = civicrm_api3('DataProcessor', 'getvalue', array('id' => $output['data_processor_id'], 'return' => 'title'));
     }
     $form->setDefaults($defaults);
   }
@@ -112,7 +104,6 @@ class CRM_DataprocessorSearch_ActivitySearch implements UIOutputInterface {
    */
   public function processConfiguration($submittedValues, &$output) {
     $output['permission'] = $submittedValues['permission'];
-    $configuration['title'] = $submittedValues['title'];
     $configuration['activity_id_field'] = $submittedValues['activity_id_field'];
     $configuration['navigation_parent_path'] = $submittedValues['navigation_parent_path'];
     $configuration['hide_id_field'] = $submittedValues['hide_id_field'];
@@ -149,7 +140,7 @@ class CRM_DataprocessorSearch_ActivitySearch implements UIOutputInterface {
    * @return string
    */
   public function getTitleForUiLink($output, $dataProcessor) {
-    return isset($output['configuration']['title']) ? $output['configuration']['title'] : $dataProcessor['title'];
+    return $dataProcessor['title'];
   }
 
   /**
