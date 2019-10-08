@@ -13,6 +13,7 @@
 * Added filter for searching contacts with a certain type.
 * Added filter to respect the ACL. So that a user only sees the contacts he is allowed to see.
 * Removed the title attribute from the outputs as those don't make sense.
+* Added fields with aggregation.
 
 # Version 1.0.7
 

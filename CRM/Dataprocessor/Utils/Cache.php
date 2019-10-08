@@ -53,7 +53,11 @@ class CRM_Dataprocessor_Utils_Cache {
    * @return mixed
    */
   public function get($key, $default=NULL) {
-    return $this->cache->get($key, $default);
+    $environment = CRM_Core_BAO_Setting::getItem('', 'environment');
+    if ($environment == 'Production') {
+      return $this->cache->get($key, $default);
+    }
+    return $default;
   }
 
   /**

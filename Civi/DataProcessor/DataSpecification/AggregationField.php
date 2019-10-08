@@ -25,4 +25,6 @@ class AggregationField {
     $this->fieldSpecification = $fieldSpecification;
   }
 
+
+
 }

@@ -330,10 +330,10 @@ abstract class AbstractCivicrmEntitySource extends AbstractSource {
    */
   public function ensureFieldInSource(FieldSpecification $fieldSpecification) {
     try {
-      if ($this->getAvailableFields()
-        ->doesFieldExist($fieldSpecification->name)) {
-        if ($fieldSpecification instanceof CustomFieldSpecification) {
-          $customGroupDataFlow = $this->ensureCustomGroup($fieldSpecification->customGroupTableName, $fieldSpecification->customGroupName);
+      if ($this->getAvailableFields()->doesFieldExist($fieldSpecification->name)) {
+        $originalFieldSpecification = $this->getAvailableFields()->getFieldSpecificationByName($fieldSpecification->name);
+        if ($originalFieldSpecification instanceof CustomFieldSpecification) {
+          $customGroupDataFlow = $this->ensureCustomGroup($originalFieldSpecification->customGroupTableName, $originalFieldSpecification->customGroupName);
           if (!$customGroupDataFlow->getDataSpecification()
             ->doesFieldExist($fieldSpecification->alias)) {
             $customGroupDataFlow->getDataSpecification()
