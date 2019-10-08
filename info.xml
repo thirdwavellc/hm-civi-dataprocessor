@@ -11,7 +11,7 @@
   </maintainer>
   <urls>
     <url desc="Main Extension Page">https://lab.civicrm.org/extensions/dataprocessor</url>
-    <url desc="Documentation">https://lab.civicrm.org/extensions/dataprocessor/README.md</url>
+    <url desc="Documentation">https://lab.civicrm.org/extensions/dataprocessor/blob/master/README.md</url>
     <url desc="Licensing">http://www.gnu.org/licenses/agpl-3.0.html</url>
   </urls>
   <releaseDate>2019-07-15</releaseDate>
