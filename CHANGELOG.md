@@ -14,6 +14,7 @@
 * Added filter to respect the ACL. So that a user only sees the contacts he is allowed to see.
 * Removed the title attribute from the outputs as those don't make sense.
 * Added fields with aggregation.
+* Fixed issue with updating navigation after editing an output.
 
 # Version 1.0.7
 

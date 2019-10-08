@@ -46,9 +46,6 @@ class UIOutputHelper {
 
         $configuration = json_decode($dao->configuration, TRUE);
         $title = $dao->title;
-        if (isset($configuration['title'])) {
-          $title = $configuration['title'];
-        }
         $item = [
           'title' => $title,
           'page_callback' => $outputClass->getCallbackForUi(),
@@ -81,15 +78,18 @@ class UIOutputHelper {
         elseif (!isset($params['configuration']['navigation_parent_path'])) {
           self::removeOutputFromNavigation($output['configuration']);
         }
-        else {
-          // Merge the current output from the database with the updated values
-          $configuration = array_merge($output['configuration'], $params['configuration']);
-          $output = array_merge($output, $params);
-          $output['configuration'] = $configuration;
-          $dataProcessor = civicrm_api3('DataProcessor', 'getsingle', ['id' => $output['data_processor_id']]);
-          $configuration = self::createOrUpdateNavigationItem($output, $dataProcessor);
-          if ($configuration) {
-            $params['configuration'] = $configuration;
+        elseif (isset($params['configuration']['navigation_parent_path'])) {
+          if (!isset($output['configuration']['navigation_parent_path']) || $params['configuration']['navigation_parent_path'] != $output['configuration']['navigation_parent_path']) {
+            // Merge the current output from the database with the updated values
+            $configuration = array_merge($output['configuration'], $params['configuration']);
+            $configuration['navigation_parent_path'] = $params['configuration']['navigation_parent_path'];
+            $output = array_merge($output, $params);
+            $output['configuration'] = $configuration;
+            $dataProcessor = civicrm_api3('DataProcessor', 'getsingle', ['id' => $output['data_processor_id']]);
+            $configuration = self::createOrUpdateNavigationItem($output, $dataProcessor);
+            if ($configuration) {
+              $params['configuration'] = $configuration;
+            }
           }
         }
       }
@@ -206,7 +206,7 @@ class UIOutputHelper {
     $navigationParams['label'] = isset($configuration['title']) ? $configuration['title'] : $dataProcessor['title'];
     $navigationParams['name'] = $dataProcessor['name'];
 
-    if (!isset($navigationParams['parent_id']) && isset($configuration['navigation_parent_path'])) {
+    if (isset($configuration['navigation_parent_path'])) {
       $navigationParams['parent_id'] = $navigation->getNavigationIdByPath($configuration['navigation_parent_path']);
     }
     $navigationParams['is_active'] = $dataProcessor['is_active'];
