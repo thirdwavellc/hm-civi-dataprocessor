@@ -15,6 +15,8 @@ class CRM_Dataprocessor_Form_Output extends CRM_Core_Form {
 
   private $output;
 
+  private $usedTypes = array();
+
   /**
    * @var Civi\DataProcessor\Output\OutputInterface
    */
@@ -49,6 +51,7 @@ class CRM_Dataprocessor_Form_Output extends CRM_Core_Form {
       $this->outputTypeClass = $factory->getOutputByName($this->output['type']);
       $this->assign('has_configuration', $this->outputTypeClass->hasConfiguration());
     }
+    $this->loadUsedTypes();
 
     $type = CRM_Utils_Request::retrieve('type', 'String');
     if ($type) {
@@ -73,7 +76,9 @@ class CRM_Dataprocessor_Form_Output extends CRM_Core_Form {
         array('type' => 'cancel', 'name' => E::ts('Cancel'))));
     } else {
       $factory = dataprocessor_get_factory();
-      $types = array(' - select - ')  + $factory->getOutputs();
+      $types = $factory->getOutputs();
+      $types = array_filter($types, [$this, 'filterOutputType'], ARRAY_FILTER_USE_KEY);
+      $types = array(' - select - ')  + $types;
       $this->add('select', 'type', ts('Select output'), $types, true, array('class' => 'crm-select2'));
       if ($this->outputTypeClass && $this->outputTypeClass->hasConfiguration()) {
         $this->outputTypeClass->buildConfigurationForm($this, $this->output);
@@ -85,6 +90,40 @@ class CRM_Dataprocessor_Form_Output extends CRM_Core_Form {
         array('type' => 'cancel', 'name' => E::ts('Cancel'))));
     }
     parent::buildQuickForm();
+  }
+
+  /**
+   * Filter the already used types.
+   *
+   * @param $type
+   *
+   * @return bool
+   */
+  private function filterOutputType($type) {
+    if (isset($this->output['type']) && $this->output['type'] == $type) {
+      return true;
+    }
+    if (!in_array($type, $this->usedTypes)) {
+      return true;
+    }
+    return false;
+  }
+
+  /**
+   * Load all used types
+   * 
+   * @throws \CiviCRM_API3_Exception
+   */
+  private function loadUsedTypes() {
+    $params['data_processor_id'] = $this->dataProcessorId;
+    $params['options']['limit'] = 0;
+    $values = civicrm_api3('DataProcessorOutput', 'get', $params);
+    foreach($values['values'] as $value) {
+      if ($this->id && $this->id == $value['id']) {
+        continue;
+      }
+      $this->usedTypes[] = $value['type'];
+    }
   }
 
   function setDefaultValues() {
