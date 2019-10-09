@@ -44,7 +44,7 @@ class AggregateFunctionFieldOutputHandler extends AbstractSimpleFieldOutputHandl
    * @return String
    */
   protected function getType() {
-    return 'Float';
+    return $this->inputFieldSpec->type;
   }
 
   /**
@@ -61,6 +61,8 @@ class AggregateFunctionFieldOutputHandler extends AbstractSimpleFieldOutputHandl
     $formattedValue = $value;
     if (is_numeric($this->number_of_decimals) && $value != null) {
       $formattedValue = number_format($value, $this->number_of_decimals, $this->decimal_sep, $this->thousand_sep);
+    } elseif ($this->inputFieldSpec->type == 'Money') {
+      $formattedValue = \CRM_Utils_Money::format($value);
     }
     if ($formattedValue != null) {
       $formattedValue = $this->prefix . $formattedValue . $this->suffix;
@@ -215,7 +217,6 @@ class AggregateFunctionFieldOutputHandler extends AbstractSimpleFieldOutputHandl
       case 'Integer':
       case 'Float':
       case 'Money':
-      case 'String':
         return true;
         break;
     }
