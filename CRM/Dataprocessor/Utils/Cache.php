@@ -68,7 +68,11 @@ class CRM_Dataprocessor_Utils_Cache {
    * @return bool
    */
   public function set($key, $value, $ttl=NULL) {
-    return $this->cache->set($key, $value, $ttl);
+    $environment = CRM_Core_BAO_Setting::getItem('', 'environment');
+    if ($environment == 'Production') {
+      return $this->cache->set($key, $value, $ttl);
+    }
+    return true;
   }
 
 }

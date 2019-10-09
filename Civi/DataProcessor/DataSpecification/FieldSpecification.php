@@ -71,4 +71,16 @@ class FieldSpecification implements SqlFieldSpecification {
     return "`{$table_alias}`.`{$this->name}`";
   }
 
+  /**
+   * Returns the group by statement for this field.
+   * E.g. civicrm_contribution.financial_type_id
+   * or MONTH(civicrm_contribution.receive_date)
+   *
+   * @param String $table_alias
+   * @return String
+   */
+  public function getSqlGroupByStatement($table_alias) {
+    return "`{$table_alias}`.`{$this->name}`";
+  }
+
 }

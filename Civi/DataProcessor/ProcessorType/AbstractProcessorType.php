@@ -112,6 +112,9 @@ abstract class AbstractProcessorType {
    */
   public function addOutputFieldHandlers(AbstractFieldOutputHandler $outputFieldHandler) {
     $this->outputFieldHandlers[] = $outputFieldHandler;
+    if ($this->dataflow) {
+      $this->dataflow->setOutputFieldHandlers($this->outputFieldHandlers);
+    }
   }
 
   /**

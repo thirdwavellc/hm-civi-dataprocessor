@@ -156,30 +156,10 @@ abstract class AbstractSource implements SourceInterface {
   }
 
   /**
-   * Ensures an aggregation field in the data source
-   *
-   * @param \Civi\DataProcessor\DataSpecification\FieldSpecification $fieldSpecification
-   *
-   * @return \Civi\DataProcessor\Source\SourceInterface
-   * @throws \Exception
-   */
-  public function ensureAggregationFieldInSource(FieldSpecification $fieldSpecification) {
-    $this->dataFlow->getDataSpecification()->addFieldSpecification($fieldSpecification->name, $fieldSpecification);
-    return $this;
-  }
-
-  /**
    * @return \Civi\DataProcessor\DataSpecification\DataSpecification
    */
   public function getAvailableFilterFields() {
     return $this->getAvailableFields();
-  }
-
-  /**
-   * @return \Civi\DataProcessor\DataSpecification\AggregationField[]
-   */
-  public function getAvailableAggregationFields() {
-    return array();
   }
 
   /**

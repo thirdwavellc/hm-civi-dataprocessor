@@ -42,7 +42,13 @@ abstract class SqlDataFlow extends AbstractDataFlow {
    * @return string[]
    * @throws \Civi\DataProcessor\DataSpecification\FieldExistsException
    */
-  abstract public function getFieldsForGroupByStatement();
+  public function getFieldsForGroupByStatement() {
+    $fields = array();
+    foreach($this->aggregateFields as $field) {
+      $fields[] = $field->getSqlGroupByStatement($this->getName());
+    }
+    return $fields;
+  }
 
   /**
    * Returns the Table part in the from statement.

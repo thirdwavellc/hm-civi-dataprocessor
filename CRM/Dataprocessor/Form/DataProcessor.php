@@ -120,17 +120,7 @@ class CRM_Dataprocessor_Form_DataProcessor extends CRM_Core_Form {
   }
 
   protected function addAggregateFields() {
-    $aggregationFieldsFormatted = array();
-    foreach($this->dataProcessorClass->getDataSources() as $dataSource) {
-      foreach($dataSource->getAvailableAggregationFields() as $field) {
-        $aggregationFieldsFormatted[$field->fieldSpecification->alias] = $field->dataSource->getSourceTitle()." :: ".$field->fieldSpecification->title;
-      }
-    }
-    $aggregation = $this->dataProcessor['aggregation'];
-    $fields = array();
-    foreach($aggregation as $alias) {
-      $fields[$alias] = $aggregationFieldsFormatted[$alias];
-    }
+    $fields = $this->dataProcessor['aggregation'];
     $this->assign('aggregateFields', $fields);
   }
 

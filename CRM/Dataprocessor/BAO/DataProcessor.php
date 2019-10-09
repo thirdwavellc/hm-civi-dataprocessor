@@ -1,4 +1,6 @@
 <?php
+
+use Civi\DataProcessor\FieldOutputHandler\OutputHandlerAggregate;
 use CRM_Dataprocessor_ExtensionUtil as E;
 
 class CRM_Dataprocessor_BAO_DataProcessor extends CRM_Dataprocessor_DAO_DataProcessor {
@@ -74,17 +76,6 @@ class CRM_Dataprocessor_BAO_DataProcessor extends CRM_Dataprocessor_DAO_DataProc
       }
     }
 
-    $aggregationFields = array();
-    foreach($dataProcessorClass->getDataSources() as $source) {
-      $aggregationFields = array_merge($aggregationFields, $source->getAvailableAggregationFields());
-    }
-    foreach($dataProcessor['aggregation'] as $alias) {
-      $dataSource = $dataProcessorClass->getDataSourceByName($aggregationFields[$alias]->dataSource->getSourceName());
-      if ($dataSource) {
-        $dataSource->ensureAggregationFieldInSource($aggregationFields[$alias]->fieldSpecification);
-      }
-    }
-
     $filters = civicrm_api3('DataProcessorFilter', 'get', array('data_processor_id' => $dataProcessor['id'], 'options' => array('limit' => 0)));
     foreach($filters['values'] as $filter) {
       $filterHandler = $factory->getFilterByName($filter['type']);
@@ -107,6 +98,9 @@ class CRM_Dataprocessor_BAO_DataProcessor extends CRM_Dataprocessor_DAO_DataProc
         try {
           $outputHandler->initialize($field['name'], $field['title'], $field['configuration']);
           $dataProcessorClass->addOutputFieldHandlers($outputHandler);
+          if ($outputHandler instanceof OutputHandlerAggregate && $outputHandler->isAggregateField()) {
+            $dataProcessorClass->getDataFlow()->addAggregateField($outputHandler->getAggregateFieldSpec());
+          }
         } catch (\Exception $e) {
           CRM_Core_Session::setStatus($e->getMessage(), E::ts("Invalid field"), 'error');
         }
