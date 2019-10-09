@@ -79,7 +79,11 @@ class CRM_Dataprocessor_Form_Output extends CRM_Core_Form {
       $types = $factory->getOutputs();
       $types = array_filter($types, [$this, 'filterOutputType'], ARRAY_FILTER_USE_KEY);
       $types = array(' - select - ')  + $types;
-      $this->add('select', 'type', ts('Select output'), $types, true, array('class' => 'crm-select2'));
+      $this->add('select', 'type', ts('Select output'), $types, true, array(
+        'style' => 'min-width:250px',
+        'class' => 'crm-select2 huge',
+        'placeholder' => E::ts('- select -'),
+      ));
       if ($this->outputTypeClass && $this->outputTypeClass->hasConfiguration()) {
         $this->outputTypeClass->buildConfigurationForm($this, $this->output);
         $this->assign('configuration_template', $this->outputTypeClass->getConfigurationTemplateFileName());
@@ -111,7 +115,7 @@ class CRM_Dataprocessor_Form_Output extends CRM_Core_Form {
 
   /**
    * Load all used types
-   * 
+   *
    * @throws \CiviCRM_API3_Exception
    */
   private function loadUsedTypes() {
