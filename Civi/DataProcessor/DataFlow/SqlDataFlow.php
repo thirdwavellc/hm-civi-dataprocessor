@@ -8,6 +8,7 @@ namespace Civi\DataProcessor\DataFlow;
 
 use Civi\DataProcessor\DataFlow\Sort\SortSpecification;
 use Civi\DataProcessor\DataFlow\SqlDataFlow\WhereClauseInterface;
+use Civi\DataProcessor\DataFlow\Utils\Aggregator;
 use \Civi\DataProcessor\DataSpecification\DataSpecification;
 
 abstract class SqlDataFlow extends AbstractDataFlow {
@@ -288,6 +289,17 @@ abstract class SqlDataFlow extends AbstractDataFlow {
    */
   public function getDataObject() {
     return $this->dao;
+  }
+
+  /**
+   * @param $records
+   * @param string $fieldNameprefix
+   *
+   * @return array();
+   */
+  protected function aggregate($records, $fieldNameprefix="") {
+    // Aggregation is done in the database.
+    return $records;
   }
 
 }

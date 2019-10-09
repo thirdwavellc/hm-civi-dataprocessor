@@ -153,10 +153,7 @@ abstract class AbstractDataFlow {
       } catch (EndOfFlowException $e) {
         // Do nothing
       }
-      if (count($this->aggregateFields)) {
-        $aggregator = new Aggregator($_allRecords, $this->aggregateFields, $this->dataSpecification);
-        $_allRecords = $aggregator->aggregateRecords($fieldNameprefix);
-      }
+      $_allRecords = $this->aggregate($_allRecords, $fieldNameprefix);
       foreach($_allRecords as $record) {
         $this->_allRecords[] = $this->formatRecordOutput($record);
       }
@@ -277,6 +274,20 @@ abstract class AbstractDataFlow {
       }
     }
     return $compareValue;
+  }
+
+  /**
+   * @param $records
+   * @param string $fieldNameprefix
+   *
+   * @return array();
+   */
+  protected function aggregate($records, $fieldNameprefix="") {
+    if (count($this->aggregateFields)) {
+      $aggregator = new Aggregator($records, $this->aggregateFields, $this->dataSpecification);
+      $records = $aggregator->aggregateRecords($fieldNameprefix);
+    }
+    return $records;
   }
 
 
