@@ -96,8 +96,6 @@ class AbstractSimpleFieldOutputHandler extends AbstractFieldOutputHandler implem
     if (strpos($formattedValue, \CRM_Core_DAO::VALUE_SEPARATOR) !== false) {
       $formattedValue = explode(\CRM_Core_DAO::VALUE_SEPARATOR, substr($formattedValue, 1, -1));
       $formattedValue = implode(",", $formattedValue);
-    } elseif ($this->inputFieldSpec->type == 'Money') {
-      $formattedValue = \CRM_Utils_Money::format($rawRecord[$this->inputFieldSpec->alias]);
     }
     $output = new FieldOutput($rawRecord[$this->inputFieldSpec->alias]);
     $output->formattedValue = $formattedValue;
