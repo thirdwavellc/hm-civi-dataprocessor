@@ -7,6 +7,7 @@
 namespace Civi\DataProcessor\DataFlow;
 
 use \Civi\DataProcessor\DataFlow\MultipleDataFlows\DataFlowDescription;
+use Civi\DataProcessor\DataFlow\Utils\Aggregator;
 use \Civi\DataProcessor\DataSpecification\DataSpecification;
 use Civi\DataProcessor\DataSpecification\FieldSpecification;
 use \Civi\DataProcessor\FieldOutputHandler\AbstractFieldOutputHandler;
@@ -144,12 +145,20 @@ abstract class AbstractDataFlow {
   public function allRecords($fieldNameprefix = '') {
     if (!is_array($this->_allRecords)) {
       $this->_allRecords = [];
+      $_allRecords = [];
       try {
         while ($record = $this->retrieveNextRecord($fieldNameprefix)) {
-          $this->_allRecords[] = $this->formatRecordOutput($record);
+          $_allRecords[] = $record;
         }
       } catch (EndOfFlowException $e) {
         // Do nothing
+      }
+      if (count($this->aggregateFields)) {
+        $aggregator = new Aggregator($_allRecords, $this->aggregateFields, $this->dataSpecification);
+        $_allRecords = $aggregator->aggregateRecords($fieldNameprefix);
+      }
+      foreach($_allRecords as $record) {
+        $this->_allRecords[] = $this->formatRecordOutput($record);
       }
       usort($this->_allRecords, array($this, 'sort'));
     }

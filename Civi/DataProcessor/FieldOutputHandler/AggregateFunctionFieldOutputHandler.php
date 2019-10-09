@@ -215,6 +215,7 @@ class AggregateFunctionFieldOutputHandler extends AbstractSimpleFieldOutputHandl
       case 'Integer':
       case 'Float':
       case 'Money':
+      case 'String':
         return true;
         break;
     }
