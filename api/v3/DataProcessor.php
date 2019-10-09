@@ -97,11 +97,6 @@ function civicrm_api3_data_processor_get($params) {
     } else {
       $return['values'][$id]['configuration'] = array();
     }
-    if (isset($value['aggregation'])) {
-      $return['values'][$id]['aggregation'] = json_decode($value['aggregation'], TRUE);
-    } else {
-      $return['values'][$id]['aggregation'] = array();
-    }
     if (isset($value['storage_configuration'])) {
       $return['values'][$id]['storage_configuration'] = json_decode($value['storage_configuration'], TRUE);
     } else {

@@ -74,15 +74,12 @@ class CRM_Dataprocessor_Form_DataProcessor extends CRM_Core_Form {
       $this->addSources();
       $this->addFields();
       $this->addFilters();
-      $this->addAggregateFields();
       $this->addOutputs();
       $dataSourceAddUrl = CRM_Utils_System::url('civicrm/dataprocessor/form/source', 'reset=1&action=add&data_processor_id='.$this->dataProcessorId, TRUE);
-      $addAggregateFieldUrl = CRM_Utils_System::url('civicrm/dataprocessor/form/aggregate_field', 'reset=1&action=add&id='.$this->dataProcessorId, TRUE);
       $addFieldUrl = CRM_Utils_System::url('civicrm/dataprocessor/form/field', 'reset=1&action=add&data_processor_id='.$this->dataProcessorId, TRUE);
       $addFilterUrl = CRM_Utils_System::url('civicrm/dataprocessor/form/filter', 'reset=1&action=add&data_processor_id='.$this->dataProcessorId, TRUE);
       $outputAddUrl = CRM_Utils_System::url('civicrm/dataprocessor/form/output', 'reset=1&action=add&data_processor_id='.$this->dataProcessorId, TRUE);
       $this->assign('addDataSourceUrl', $dataSourceAddUrl);
-      $this->assign('addAggregateFieldUrl', $addAggregateFieldUrl);
       $this->assign('addFieldUrl', $addFieldUrl);
       $this->assign('addFilterUrl', $addFilterUrl);
       $this->assign('addOutputUrl', $outputAddUrl);
@@ -117,11 +114,6 @@ class CRM_Dataprocessor_Form_DataProcessor extends CRM_Core_Form {
     $filters = $filters['values'];
     CRM_Utils_Weight::addOrder($filters, 'CRM_Dataprocessor_DAO_DataProcessorFilter', 'id', $this->currentUrl, 'data_processor_id='.$this->dataProcessorId);
     $this->assign('filters', $filters);
-  }
-
-  protected function addAggregateFields() {
-    $fields = $this->dataProcessor['aggregation'];
-    $this->assign('aggregateFields', $fields);
   }
 
   protected function addOutputs() {
