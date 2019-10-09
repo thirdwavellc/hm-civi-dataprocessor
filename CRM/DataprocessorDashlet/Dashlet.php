@@ -32,6 +32,7 @@ class CRM_DataprocessorDashlet_Dashlet implements Civi\DataProcessor\Output\Outp
     ));
     $form->add('text', 'default_limit', E::ts('Default Limit'));
     $form->add('wysiwyg', 'help_text', E::ts('Help text for this dashlet'), array('rows' => 6, 'cols' => 80));
+    $form->add('checkbox', 'expanded_search', E::ts('Expand criteria form initially'));
 
     $defaults = array();
     if ($output) {
@@ -44,6 +45,9 @@ class CRM_DataprocessorDashlet_Dashlet implements Civi\DataProcessor\Output\Outp
         }
         if (isset($output['configuration']['help_text'])) {
           $defaults['help_text'] = $output['configuration']['help_text'];
+        }
+        if (isset($output['configuration']['expanded_search'])) {
+          $defaults['expanded_search'] = $output['configuration']['expanded_search'];
         }
       }
     }
@@ -102,6 +106,7 @@ class CRM_DataprocessorDashlet_Dashlet implements Civi\DataProcessor\Output\Outp
     $output['permission'] = $submittedValues['permission'];
     $configuration['default_limit'] = $submittedValues['default_limit'];
     $configuration['help_text'] = $submittedValues['help_text'];
+    $configuration['expanded_search'] = isset($submittedValues['expanded_search']) ? $submittedValues['expanded_search'] : false;
     return $configuration;
   }
 

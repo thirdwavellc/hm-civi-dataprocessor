@@ -163,7 +163,7 @@ abstract class CRM_DataprocessorSearch_Form_AbstractSearch extends CRM_Dataproce
     $this->assign("context", $this->_context);
     $this->assign('debug', $this->_debug);
 
-    if (!$this->hasRequiredFilters() || (!empty($this->_formValues) && count($this->validateFilters()) == 0)) {
+    if ($this->isCriteriaFormCollapsed()) {
       $sortFields = $this->addColumnHeaders();
       $this->sort = new CRM_Utils_Sort($sortFields);
       if (isset($this->_formValues[CRM_Utils_Sort::SORT_ID])) {
@@ -182,6 +182,23 @@ abstract class CRM_DataprocessorSearch_Form_AbstractSearch extends CRM_Dataproce
       $this->addExportOutputs();
     }
 
+  }
+
+  /**
+   * @return bool
+   */
+  protected function isCriteriaFormCollapsed() {
+    $initialExpanded = false;
+    if (isset($this->dataProcessorOutput['configuration']['expanded_search'])) {
+      $initialExpanded = $this->dataProcessorOutput['configuration']['expanded_search'];
+    }
+    if(!$this->hasRequiredFilters() && !$initialExpanded) {
+      return  true;
+    }
+    if ((!empty($this->_formValues) && count($this->validateFilters()) == 0)) {
+      return true;
+    }
+    return false;
   }
 
   /**

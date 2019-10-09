@@ -52,6 +52,7 @@ abstract class CRM_Dataprocessor_Form_Output_AbstractUIOutputForm extends CRM_Co
   public function preProcess() {
     parent::preProcess();
     $this->loadDataProcessor();
+    $this->assign('has_exposed_filters', $this->hasExposedFilters());
   }
 
   /**
@@ -97,6 +98,22 @@ abstract class CRM_Dataprocessor_Form_Output_AbstractUIOutputForm extends CRM_Co
     if ($this->dataProcessorClass->getFilterHandlers()) {
       foreach ($this->dataProcessorClass->getFilterHandlers() as $filter) {
         if ($filter->isRequired() && $filter->isExposed()) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Returns whether the search has required filters.
+   *
+   * @return bool
+   */
+  protected function hasExposedFilters() {
+    if ($this->dataProcessorClass->getFilterHandlers()) {
+      foreach ($this->dataProcessorClass->getFilterHandlers() as $filter) {
+        if ($filter->isExposed()) {
           return true;
         }
       }

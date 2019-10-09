@@ -16,7 +16,7 @@
             {* This section handles form elements for action task select and submit *}
             {if ($taskMetaData || (isset($other_outputs) && !empty($other_outputs)))}
             <div class="crm-search-tasks">
-                {if ($taskMetaData || true)}
+                {if ($taskMetaData)}
                 {include file="CRM/common/searchResultTasks.tpl"}
                 {/if}
                 {include file="CRM/DataprocessorSearch/Form/OtherOutputs.tpl"}
@@ -26,11 +26,11 @@
             {include file="CRM/common/pager.tpl" location="top"}
 
             <div class="crm-search-results">
-                {if $id_field}<a href="#" class="crm-selection-reset crm-hover-button"><i class="crm-i fa-times-circle-o"></i> {ts}Reset all selections{/ts}</a>{/if}
+                {if $id_field && $taskMetaData}<a href="#" class="crm-selection-reset crm-hover-button"><i class="crm-i fa-times-circle-o"></i> {ts}Reset all selections{/ts}</a>{/if}
                 <table class="selector row-highlight">
                     <thead class="sticky">
                     <tr>
-                        {if $id_field}<th scope="col" title="Select Rows">{$form.toggleSelect.html}</th>{/if}
+                        {if $id_field && $taskMetaData}<th scope="col" title="Select Rows">{$form.toggleSelect.html}</th>{/if}
                         {foreach from=$columnHeaders key=headerName item=headerTitle}
                             <th scope="col">
                                 {if ($sort->_response.$headerName)}
@@ -49,7 +49,7 @@
                             {assign var=cbName value=$row.checkbox}
                             {assign var=id value=$row.id}
                             {assign var=record value=$row.record}
-                            {if $id_field}<td>{$form.$cbName.html}</td>{/if}
+                            {if $id_field && $taskMetaData}<td>{$form.$cbName.html}</td>{/if}
                             {foreach from=$columnHeaders key=headerName item=headerTitle}
                                 {assign var=columnValue value=$record.$headerName}
                                 <td>{$columnValue|escape:'html'}</td>

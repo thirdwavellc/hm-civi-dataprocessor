@@ -49,6 +49,7 @@ class CRM_DataprocessorSearch_ActivitySearch implements UIOutputInterface {
     $form->add('select', 'hide_id_field', E::ts('Show Activity ID field'), array(0=>'Activity ID is Visible', 1=> 'Activity ID is hidden'));
 
     $form->add('wysiwyg', 'help_text', E::ts('Help text for this search'), array('rows' => 6, 'cols' => 80));
+    $form->add('checkbox', 'expanded_search', E::ts('Expand criteria form initially'));
 
     // navigation field
     $navigationOptions = $navigation->getNavigationOptions();
@@ -75,6 +76,9 @@ class CRM_DataprocessorSearch_ActivitySearch implements UIOutputInterface {
         }
         if (isset($output['configuration']['help_text'])) {
           $defaults['help_text'] = $output['configuration']['help_text'];
+        }
+        if (isset($output['configuration']['expanded_search'])) {
+          $defaults['expanded_search'] = $output['configuration']['expanded_search'];
         }
       }
     }
@@ -108,6 +112,7 @@ class CRM_DataprocessorSearch_ActivitySearch implements UIOutputInterface {
     $configuration['navigation_parent_path'] = $submittedValues['navigation_parent_path'];
     $configuration['hide_id_field'] = $submittedValues['hide_id_field'];
     $configuration['help_text'] = $submittedValues['help_text'];
+    $configuration['expanded_search'] = isset($submittedValues['expanded_search']) ? $submittedValues['expanded_search'] : false;
     return $configuration;
   }
 

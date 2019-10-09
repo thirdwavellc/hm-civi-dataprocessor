@@ -15,6 +15,11 @@
         <div class="clear"></div>
     </div>
     <div class="crm-section">
+      <div class="label">{$form.expanded_search.label}</div>
+      <div class="content">{$form.expanded_search.html}</div>
+      <div class="clear"></div>
+    </div>
+    <div class="crm-section">
         <div class="label">{$form.hide_id_field.label}</div>
         <div class="content">{$form.hide_id_field.html}</div>
         <div class="clear"></div>
