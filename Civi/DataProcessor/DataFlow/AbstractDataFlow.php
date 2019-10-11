@@ -12,6 +12,7 @@ use \Civi\DataProcessor\DataSpecification\DataSpecification;
 use Civi\DataProcessor\DataSpecification\FieldSpecification;
 use \Civi\DataProcessor\FieldOutputHandler\AbstractFieldOutputHandler;
 use Civi\DataProcessor\DataFlow\Sort\SortSpecification;
+use Civi\DataProcessor\FieldOutputHandler\OutputHandlerAggregate;
 
 abstract class AbstractDataFlow {
 
@@ -46,9 +47,9 @@ abstract class AbstractDataFlow {
   protected $dataSpecification;
 
   /**
-   * @var FieldSpecification[]
+   * @var \Civi\DataProcessor\FieldOutputHandler\OutputHandlerAggregate[]
    */
-  protected $aggregateFields = array();
+  protected $aggregateOutputHandlers = array();
 
   /**
    * @var SortSpecification[]
@@ -240,8 +241,11 @@ abstract class AbstractDataFlow {
     return array();
   }
 
-  public function addAggregateField(FieldSpecification $aggregateField) {
-    $this->aggregateFields[] = $aggregateField;
+  /**
+   * @param \Civi\DataProcessor\DataFlow\OutputHandlerAggregate $aggregateOutputHandler
+   */
+  public function addAggregateOutputHandler(OutputHandlerAggregate $aggregateOutputHandler) {
+    $this->aggregateOutputHandlers[] = $aggregateOutputHandler;
   }
 
   /**
@@ -283,8 +287,8 @@ abstract class AbstractDataFlow {
    * @return array();
    */
   protected function aggregate($records, $fieldNameprefix="") {
-    if (count($this->aggregateFields)) {
-      $aggregator = new Aggregator($records, $this->aggregateFields, $this->dataSpecification);
+    if (count($this->aggregateOutputHandlers)) {
+      $aggregator = new Aggregator($records, $this->aggregateOutputHandlers, $this->dataSpecification);
       $records = $aggregator->aggregateRecords($fieldNameprefix);
     }
     return $records;

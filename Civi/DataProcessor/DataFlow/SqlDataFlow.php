@@ -45,8 +45,8 @@ abstract class SqlDataFlow extends AbstractDataFlow {
    */
   public function getFieldsForGroupByStatement() {
     $fields = array();
-    foreach($this->aggregateFields as $field) {
-      $fields[] = $field->getSqlGroupByStatement($this->getName());
+    foreach($this->aggregateOutputHandlers as $outputHandler) {
+      $fields[] = $outputHandler->getAggregateFieldSpec()->getSqlGroupByStatement($this->getName());
     }
     return $fields;
   }

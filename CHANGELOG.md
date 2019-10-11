@@ -16,6 +16,7 @@
 * Refactored aggregation functionality and added aggregation function field.
 * Fixed issue with updating navigation after editing an output.
 * Added option to expand criteria forms on search forms.
+* Added a Date field.
 
 # Version 1.0.7
 

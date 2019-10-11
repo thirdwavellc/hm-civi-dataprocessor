@@ -73,19 +73,6 @@ class SqlTableDataFlow extends SqlDataFlow {
   }
 
   /**
-   * Returns an array with the fields for in the group by statement in the sql query.
-   *
-   * @return string[]
-   */
-  public function getFieldsForGroupByStatement() {
-    $fields = array();
-    foreach($this->aggregateFields as $field) {
-      $fields[] = "`{$this->table_alias}`.`{$field->name}`";
-    }
-    return $fields;
-  }
-
-  /**
    * @return string
    */
   public function getTable() {

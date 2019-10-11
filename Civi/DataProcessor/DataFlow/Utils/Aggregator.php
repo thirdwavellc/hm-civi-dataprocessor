@@ -7,7 +7,9 @@
 namespace Civi\DataProcessor\DataFlow\Utils;
 
 use Civi\DataProcessor\DataSpecification\Aggregatable;
+use Civi\DataProcessor\DataSpecification\DataSpecification;
 use Civi\DataProcessor\DataSpecification\FieldSpecification;
+use Civi\DataProcessor\FieldOutputHandler\OutputHandlerAggregate;
 
 class Aggregator {
 
@@ -17,18 +19,25 @@ class Aggregator {
   protected $records;
 
   /**
-   * @var FieldSpecification[]
+   * @var OutputHandlerAggregate[]
    */
-  protected $aggregateFields = array();
+  protected $aggregateOutputHandlers = array();
 
   /**
    * @var \Civi\DataProcessor\DataSpecification\DataSpecification
    */
   protected $dataSpecification = array();
 
-  public function __construct($records, $aggregateFields, $dataSpecification) {
+  /**
+   * Aggregator constructor.
+   *
+   * @param $records
+   * @param OutputHandlerAggregate[] $aggregateOutputHandlers
+   * @param \Civi\DataProcessor\DataSpecification\DataSpecification $dataSpecification
+   */
+  public function __construct($records, $aggregateOutputHandlers, DataSpecification $dataSpecification) {
     $this->records = $records;
-    $this->aggregateFields = $aggregateFields;
+    $this->aggregateOutputHandlers = $aggregateOutputHandlers;
     $this->dataSpecification = $dataSpecification;
   }
 
@@ -57,10 +66,11 @@ class Aggregator {
 
   protected function getAggregationKeyFromRecord($record, $fieldNameprefix="") {
     $key = '';
-    foreach($this->aggregateFields as $field) {
-      $alias = $field->alias;
+    foreach($this->aggregateOutputHandlers as $outputHandler) {
+      $alias = $outputHandler->getAggregateFieldSpec()->alias;
       if (isset($record[$fieldNameprefix.$alias])) {
-        $key .= $record[$fieldNameprefix.$alias].'_';
+        $value = $outputHandler->formatAggregationValue($record[$fieldNameprefix.$alias]);
+        $key .= $value.'_';
       } else {
         $key .= 'null_';
       }
