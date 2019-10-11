@@ -96,16 +96,15 @@
                                 {/foreach}
                             {/if}
                         </td>
-                        <td>
-                          <span>
-                            <a href="{crmURL p='civicrm/dataprocessor/form/edit' q="reset=1&action=update&id=`$data_processor.id`"}"
-                                     class="action-item crm-hover-button" title="{ts}Edit Data Processor{/ts}">{ts}Edit{/ts}</a>
-                            <a href="{crmURL p='civicrm/dataprocessor/form/edit' q="reset=1&action=export&id=`$data_processor.id`"}"
-                                     class="action-item crm-hover-button" title="{ts}Export Data Processor{/ts}">{ts}Export{/ts}</a>
-                            <a href="{crmURL p='civicrm/dataprocessor/form/edit' q="reset=1&action=delete&id=`$data_processor.id`"}"
-                                 class="action-item crm-hover-button" title="{ts}Delete Data Processor{/ts}">{ts}Delete{/ts}</a>
-                          </span>
-
+                      <td class="right nowrap" style="width: 100px;">
+                        <span class="btn-slide crm-hover-button">{ts}Actions{/ts}
+                        <ul class="panel">
+                          <li><a class="action-item crm-hover-button" href="{crmURL p='civicrm/dataprocessor/form/edit' q="reset=1&action=update&id=`$data_processor.id`"}"title="{ts}Edit Data Processor{/ts}">{ts}Edit{/ts}</a></li>
+                          <li><a class="action-item crm-hover-button" href="{crmURL p='civicrm/dataprocessor/form/clone' q="reset=1&action=add&id=`$data_processor.id`"}" title="{ts}Clone Data Processor{/ts}">{ts}Clone{/ts}</a></li>
+                          <li><a class="action-item crm-hover-button" href="{crmURL p='civicrm/dataprocessor/form/edit' q="reset=1&action=export&id=`$data_processor.id`"}" title="{ts}Export Data Processor{/ts}">{ts}Export{/ts}</a></li>
+                          <li><a class="action-item crm-hover-button" href="{crmURL p='civicrm/dataprocessor/form/edit' q="reset=1&action=delete&id=`$data_processor.id`"}" title="{ts}Delete Data Processor{/ts}">{ts}Delete{/ts}</a></li>
+                        </ul>
+                        </span>
                         </td>
                     </tr>
                 {/foreach}

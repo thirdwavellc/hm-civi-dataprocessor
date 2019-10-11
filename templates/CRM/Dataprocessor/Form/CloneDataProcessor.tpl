@@ -3,16 +3,7 @@
   {include file="CRM/common/formButtons.tpl" location="top"}
 </div>
 
-{if $action eq 8}
-  {* Are you sure to delete form *}
-  <h3>{ts}Delete Data Processor{/ts}</h3>
-  <div class="crm-block crm-form-block crm-data-processor_label-block">
-    <div class="crm-section">{ts 1=$rule.label}Are you sure to delete data processor '%1'?{/ts}</div>
-  </div>
-
-{else}
-
-<h3>{ts}Data Processor{/ts}</h3>
+<h3>{ts 1=$dataProcessor.title}Clone Data Processor '%1'{/ts}</h3>
 <div class="crm-block crm-form-block crm-data-processor_title-block">
   <div class="crm-section">
     <div class="label">{$form.title.label}</div>
@@ -20,7 +11,7 @@
       {$form.title.html}
       <span class="">
         {ts}System name:{/ts}&nbsp;
-        <span id="systemName" style="font-style: italic;">{if ($dataProcessor)}{$dataProcessor.name}{/if}</span>
+        <span id="systemName" style="font-style: italic;"></span>
         <a href="javascript:void(0);" onclick="jQuery('#nameSection').removeClass('hiddenElement'); jQuery(this).parent().addClass('hiddenElement'); return false;">
           {ts}Change{/ts}
         </a>
@@ -48,42 +39,24 @@
   </div>
 </div>
 
-  {if $data_processor_id}
-    <table>
-      <tr>
-        <td style="width: 50%;">
-          {include file="CRM/Dataprocessor/Form/DataProcessorBlocks/Sources.tpl"}
-          {include file="CRM/Dataprocessor/Form/DataProcessorBlocks/Outputs.tpl"}
-        </td>
-        <td style="width: 50%;">
-          {include file="CRM/Dataprocessor/Form/DataProcessorBlocks/Fields.tpl"}
-          {include file="CRM/Dataprocessor/Form/DataProcessorBlocks/Filters.tpl"}
-        </td>
-      </tr>
-    </table>
-  {/if}
-
-  <script type="text/javascript">
-    {literal}
-    CRM.$(function($) {
-      var id = {/literal}{if ($dataProcessor)}{$dataProcessor.id}{else}false{/if}{literal};
-
-      $('#title').on('blur', function() {
-        var title = $('#title').val();
-        if ($('#nameSection').hasClass('hiddenElement') && !id) {
-          CRM.api3('DataProcessor', 'check_name', {
-            'title': title
-          }).done(function (result) {
-            $('#systemName').html(result.name);
-            $('#name').val(result.name);
-          });
-        }
-      });
+<script type="text/javascript">
+  {literal}
+  CRM.$(function($) {
+    $('#title').on('blur', function() {
+      var title = $('#title').val();
+      if ($('#nameSection').hasClass('hiddenElement')) {
+        CRM.api3('DataProcessor', 'check_name', {
+          'title': title
+        }).done(function (result) {
+          $('#systemName').html(result.name);
+          $('#name').val(result.name);
+        });
+      }
     });
-    {/literal}
-  </script>
+  });
+  {/literal}
+</script>
 
-{/if}
 
 <div class="crm-submit-buttons">
   {include file="CRM/common/formButtons.tpl" location="bottom"}

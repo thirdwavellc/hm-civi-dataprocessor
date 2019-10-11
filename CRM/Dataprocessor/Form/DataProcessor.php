@@ -146,18 +146,22 @@ class CRM_Dataprocessor_Form_DataProcessor extends CRM_Core_Form {
       $this->add('checkbox', 'is_active', E::ts('Enabled'));
     }
     if ($this->_action == CRM_Core_Action::ADD) {
+      CRM_Utils_System::setTitle(E::ts('Add data processor'));
       $this->addButtons(array(
         array('type' => 'next', 'name' => E::ts('Next'), 'isDefault' => TRUE,),
         array('type' => 'cancel', 'name' => E::ts('Cancel'))));
     } elseif ($this->_action == CRM_Core_Action::DELETE) {
+      CRM_Utils_System::setTitle(E::ts('Delete data processor: %1', [1=>$this->dataProcessor['title']]));
       $this->addButtons(array(
         array('type' => 'next', 'name' => E::ts('Delete'), 'isDefault' => TRUE,),
         array('type' => 'cancel', 'name' => E::ts('Cancel'))));
     } elseif ($this->_action == CRM_Core_Action::EXPORT) {
+      CRM_Utils_System::setTitle(E::ts('Export data processor: %1', [1=>$this->dataProcessor['title']]));
       $this->addButtons(array(
         array('type' => 'cancel', 'name' => E::ts('Go back'), 'isDefault' => TRUE),
       ));
     } else {
+      CRM_Utils_System::setTitle(E::ts('Edit data processor: %1', [1=>$this->dataProcessor['title']]));
       $this->addButtons(array(
         array('type' => 'next', 'name' => E::ts('Save'), 'isDefault' => TRUE,),
         array('type' => 'cancel', 'name' => E::ts('Cancel'))));

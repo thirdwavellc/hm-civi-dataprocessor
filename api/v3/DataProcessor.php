@@ -28,6 +28,9 @@ function civicrm_api3_data_processor_create($params) {
   if (isset($params['id'])) {
     $id = $params['id'];
   }
+  if (!isset($params['id']) && !isset($params['status'])) {
+    $params['status'] = CRM_Dataprocessor_Status::STATUS_IN_DATABASE;
+  }
   if (isset($params['title'])) {
     $params['name'] = CRM_Dataprocessor_BAO_DataProcessor::checkName($params['title'], $id, $params['name']);
   }

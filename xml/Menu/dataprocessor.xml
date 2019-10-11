@@ -15,6 +15,13 @@
     <access_arguments>administer CiviCRM</access_arguments>
   </item>
   <item>
+    <path>civicrm/dataprocessor/form/clone</path>
+    <page_callback>CRM_Dataprocessor_Form_CloneDataProcessor</page_callback>
+    <title>Clone DataProcessor</title>
+    <access_arguments>access CiviCRM</access_arguments>
+    <access_arguments>administer CiviCRM</access_arguments>
+  </item>
+  <item>
     <path>civicrm/dataprocessor/form/import</path>
     <page_callback>CRM_Dataprocessor_Form_Import</page_callback>
     <title>Import DataProcessor</title>
