@@ -45,7 +45,7 @@ class UIOutputHelper {
         $url = $outputClass->getUrlToUi($output, $dataprocessor);
 
         $configuration = json_decode($dao->configuration, TRUE);
-        $title = $dao->title;
+        $title = $outputClass->getTitleForUiLink($output, $dataprocessor);
         $item = [
           'title' => $title,
           'page_callback' => $outputClass->getCallbackForUi(),
@@ -182,8 +182,10 @@ class UIOutputHelper {
     $outputClass = $factory->getOutputByName($output['type']);
     $configuration = $output['configuration'];
 
+    $title = $dataProcessor['title'];
     if ($outputClass && $outputClass instanceof \Civi\DataProcessor\Output\UIOutputInterface) {
       $url = $outputClass->getUrlToUi($output, $dataProcessor);
+      $title = $outputClass->getTitleForUiLink($output, $dataProcessor);
     }
 
     $navigation = \CRM_Dataprocessor_Utils_Navigation::singleton();
@@ -203,7 +205,7 @@ class UIOutputHelper {
 
     $navigationParams['domain_id'] = \CRM_Core_Config::domainID();
     $navigationParams['permission'] = array();
-    $navigationParams['label'] = isset($configuration['title']) ? $configuration['title'] : $dataProcessor['title'];
+    $navigationParams['label'] = $title;
     $navigationParams['name'] = $dataProcessor['name'];
 
     if (isset($configuration['navigation_parent_path'])) {
