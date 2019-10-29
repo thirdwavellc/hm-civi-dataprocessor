@@ -28,6 +28,11 @@ class ActivitySource extends AbstractCivicrmEntitySource {
    */
   protected $activityContactDataFlow;
 
+  /**
+   * @var SqlTableDataFlow
+   */
+  protected $activityCaseDataFlow;
+
   public function __construct() {
     parent::__construct();
 
@@ -38,6 +43,10 @@ class ActivitySource extends AbstractCivicrmEntitySource {
     // Create the activity contact data flow and data flow description
     $this->activityContactDataFlow = new SqlTableDataFlow('civicrm_activity_contact', $this->getSourceName().'_activity_contact');
     DataSpecificationUtils::addDAOFieldsToDataSpecification('CRM_Activity_DAO_ActivityContact', $this->activityContactDataFlow->getDataSpecification(), array('id'), '', 'activity_contact_', E::ts('Activity Contact :: '));
+
+    // Create the activity contact data flow and data flow description
+    $this->activityCaseDataFlow = new SqlTableDataFlow('civicrm_case_activity', $this->getSourceName().'_activity_case');
+    DataSpecificationUtils::addDAOFieldsToDataSpecification('CRM_Case_DAO_CaseActivity', $this->activityCaseDataFlow->getDataSpecification(), array('id', 'activity_id'), '', 'activity_case_', E::ts('Case :: '));
   }
 
   /**
@@ -93,14 +102,19 @@ class ActivitySource extends AbstractCivicrmEntitySource {
   protected function getEntityDataFlow() {
     $activityDataDescription = new DataFlowDescription($this->activityDataFlow);
 
-    $join = new SimpleJoin($this->activityDataFlow->getTableAlias(), 'id', $this->activityContactDataFlow->getTableAlias(), 'activity_id');
-    $join->setDataProcessor($this->dataProcessor);
-    $activityContactDataDescription = new DataFlowDescription($this->activityContactDataFlow, $join);
+    $contactJJoin = new SimpleJoin($this->activityDataFlow->getTableAlias(), 'id', $this->activityContactDataFlow->getTableAlias(), 'activity_id');
+    $contactJJoin->setDataProcessor($this->dataProcessor);
+    $activityContactDataDescription = new DataFlowDescription($this->activityContactDataFlow, $contactJJoin);
+
+    $caseJoin = new SimpleJoin($this->activityDataFlow->getTableAlias(), 'id', $this->activityCaseDataFlow->getTableAlias(), 'activity_id', 'LEFT');
+    $caseJoin->setDataProcessor($this->dataProcessor);
+    $activityCaseDataDescription = new DataFlowDescription($this->activityCaseDataFlow, $caseJoin);
 
     // Create the subquery data flow
     $entityDataFlow = new SubqueryDataFlow($this->getSourceName(), $this->getTable(), $this->getSourceName());
     $entityDataFlow->addSourceDataFlow($activityDataDescription);
     $entityDataFlow->addSourceDataFlow($activityContactDataDescription);
+    $entityDataFlow->addSourceDataFlow($activityCaseDataDescription);
 
     return $entityDataFlow;
   }
@@ -143,6 +157,7 @@ class ActivitySource extends AbstractCivicrmEntitySource {
 
     DataSpecificationUtils::addDAOFieldsToDataSpecification($daoClass, $dataSpecification, $fieldsToSkip, '', $aliasPrefix);
     DataSpecificationUtils::addDAOFieldsToDataSpecification('CRM_Activity_DAO_ActivityContact', $dataSpecification, array('id', 'activity_id'), 'activity_contact_', $aliasPrefix, E::ts('Activity contact :: '));
+    DataSpecificationUtils::addDAOFieldsToDataSpecification('CRM_Case_DAO_CaseActivity', $dataSpecification, array('id', 'activity_id'), 'activity_case_', $aliasPrefix);
   }
 
 }

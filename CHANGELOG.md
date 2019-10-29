@@ -18,6 +18,7 @@
 * Added option to expand criteria forms on search forms.
 * Added a Date field.
 * Added function to clone a data processor.
+* Added Case ID field on the activity source.
 
 # Version 1.0.7
 
