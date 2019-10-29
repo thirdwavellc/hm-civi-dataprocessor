@@ -56,25 +56,12 @@ abstract class CRM_Dataprocessor_Form_Output_AbstractUIOutputForm extends CRM_Co
   }
 
   /**
-   * Check whether the user has access to the output.
-   *
-   * @return bool
-   */
-  protected function checkPermission() {
-    if (isset($this->dataProcessorOutput['permission']) && $this->dataProcessorOutput['permission']) {
-      if (!CRM_Core_Permission::check(array($this->dataProcessorOutput['permission']))) {
-        return false;
-      }
-    }
-    return true;
-  }
-
-  /**
    * Retrieve the data processor and the output configuration
    *
    * @throws \Exception
    */
   protected function loadDataProcessor() {
+    $factory = dataprocessor_get_factory();
     if (!$this->dataProcessorId) {
       $dataProcessorName = $this->getDataProcessorName();
       $sql = "
@@ -97,7 +84,12 @@ abstract class CRM_Dataprocessor_Form_Output_AbstractUIOutputForm extends CRM_Co
       $this->dataProcessorOutput = civicrm_api3('DataProcessorOutput', 'getsingle', array('id' => $dao->output_id));
       $this->assign('output', $this->dataProcessorOutput);
 
-      if (!$this->checkPermission()) {
+      $outputClass = $factory->getOutputByName($this->dataProcessorOutput['type']);
+      if (!$outputClass instanceof \Civi\DataProcessor\Output\UIOutputInterface) {
+        throw new \Exception('Invalid output');
+      }
+
+      if (!$outputClass->checkUIPermission($this->dataProcessorOutput, $this->dataProcessor)) {
         CRM_Utils_System::permissionDenied();
         CRM_Utils_System::civiExit();
       } elseif (!$this->isConfigurationValid()) {

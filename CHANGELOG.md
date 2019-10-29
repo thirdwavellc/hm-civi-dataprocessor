@@ -5,6 +5,7 @@
 * Allow to limit ContactFilter to only show contacts from specific groups.
 * Output a data processor as a dashboard.
 * Output a data processor as a tab on the contact summary screen.
+* Output a data processor as a contribution search.
 * Added field outputs for simple calculations (substract and total).
 * Added escaped output to search screens.
 * Replaced the value separator in the raw field with a comma.
