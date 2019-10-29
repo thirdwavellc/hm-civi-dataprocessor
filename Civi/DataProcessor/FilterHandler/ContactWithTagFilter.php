@@ -33,12 +33,12 @@ class ContactWithTagFilter extends AbstractFieldFilterHandler {
    */
   public function setFilter($filter) {
     $this->resetFilter();
-    $dataFlow  = $this->dataSource->ensureField($this->fieldSpecification);
+    $dataFlow  = $this->dataSource->ensureField($this->inputFieldSpecification);
     $tag_ids = $filter['value'];
     if (!is_array($tag_ids)) {
       $tag_ids = array($tag_ids);
     }
-    $tagTableAlias = 'civicrm_entity_tag_'.$this->fieldSpecification->alias;
+    $tagTableAlias = 'civicrm_entity_tag_'.$this->inputFieldSpecification->alias;
     $tagFilters = array(
       new SqlDataFlow\SimpleWhereClause($tagTableAlias, 'entity_table', '=', 'civicrm_contact'),
       new SqlDataFlow\SimpleWhereClause($tagTableAlias, 'tag_id', 'IN', $tag_ids),
@@ -51,7 +51,7 @@ class ContactWithTagFilter extends AbstractFieldFilterHandler {
         $tagTableAlias,
         $tagFilters,
         $dataFlow->getName(),
-        $this->fieldSpecification->name,
+        $this->inputFieldSpecification->name,
         $filter['op']
       );
 

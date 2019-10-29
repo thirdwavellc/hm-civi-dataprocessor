@@ -57,14 +57,11 @@ class MultipleFieldFilter extends AbstractFilterHandler {
     if (!$dataSource) {
       throw new DataSourceNotFoundException(E::ts("Filter %1 requires data source '%2' which could not be found. Did you rename or deleted the data source?", array(1=>$this->title, 2=>$datasource_name)));
     }
-    if (!$dataSource->getAvailableFilterFields()->getFieldSpecificationByName($field_name)) {
-      throw new FieldNotFoundException(E::ts("Filter %1 requires a field with the name '%2' in the data source '%3'. Did you change the data source type?", array(
-        1 => $this->title,
-        2 => $field_name,
-        3 => $datasource_name
-      )));
+    $fieldSpecification = $dataSource->getAvailableFilterFields()->getFieldSpecificationByAlias($field_name);
+    if (!$fieldSpecification) {
+      $fieldSpecification = $dataSource->getAvailableFilterFields()
+        ->getFieldSpecificationByName($field_name);
     }
-    $fieldSpecification  =  clone $dataSource->getAvailableFilterFields()->getFieldSpecificationByName($field_name);
     if (!$fieldSpecification) {
       throw new FieldNotFoundException(E::ts("Filter %1 requires a field with the name '%2' in the data source '%3'. Did you change the data source type?", array(
         1 => $this->title,
@@ -185,7 +182,7 @@ class MultipleFieldFilter extends AbstractFilterHandler {
       }
       $dataFlow = $dataSource->ensureField($fieldSpec);
       if ($dataFlow && $dataFlow instanceof SqlDataFlow) {
-        $clauses[] = new SqlDataFlow\SimpleWhereClause($dataFlow->getName(), $field_name, $filterParams['op'], $filterParams['value'], $this->fieldSpecification->type);
+        $clauses[] = new SqlDataFlow\SimpleWhereClause($dataFlow->getName(), $fieldSpec->name, $filterParams['op'], $filterParams['value'], $this->fieldSpecification->type);
       }
     }
     if (count($clauses)) {

@@ -94,13 +94,13 @@ abstract class AbstractFieldFilterHandler extends AbstractFilterHandler {
    */
   public function setFilter($filter) {
     $this->resetFilter();
-    $dataFlow  = $this->dataSource->ensureField($this->fieldSpecification);
+    $dataFlow  = $this->dataSource->ensureField($this->inputFieldSpecification);
     if ($dataFlow && $dataFlow instanceof SqlDataFlow) {
       $value = $filter['value'];
       if (!is_array($value)) {
         $value = explode(",", $value);
       }
-      $this->whereClause = new SqlDataFlow\SimpleWhereClause($dataFlow->getName(), $this->fieldSpecification->name, $filter['op'], $value, $this->fieldSpecification->type);
+      $this->whereClause = new SqlDataFlow\SimpleWhereClause($dataFlow->getName(), $this->inputFieldSpecification->name, $filter['op'], $value, $this->inputFieldSpecification->type);
       $dataFlow->addWhereClause($this->whereClause);
     }
   }

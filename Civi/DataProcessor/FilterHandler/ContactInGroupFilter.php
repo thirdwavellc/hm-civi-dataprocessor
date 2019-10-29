@@ -49,12 +49,12 @@ class ContactInGroupFilter extends AbstractFieldFilterHandler {
    */
   public function setFilter($filter) {
     $this->resetFilter();
-    $dataFlow  = $this->dataSource->ensureField($this->fieldSpecification);
+    $dataFlow  = $this->dataSource->ensureField($this->inputFieldSpecification);
     $group_ids = $filter['value'];
     if (!is_array($group_ids)) {
       $group_ids = array($group_ids);
     }
-    $groupTableAlias = 'civicrm_group_contact_'.$this->fieldSpecification->alias;
+    $groupTableAlias = 'civicrm_group_contact_'.$this->inputFieldSpecification->alias;
     $groupFilters = array(
       new SqlDataFlow\SimpleWhereClause($groupTableAlias, 'status', '=', 'Added'),
       new SqlDataFlow\SimpleWhereClause($groupTableAlias, 'group_id', 'IN', $group_ids),
@@ -67,7 +67,7 @@ class ContactInGroupFilter extends AbstractFieldFilterHandler {
         $groupTableAlias,
         $groupFilters,
         $dataFlow->getName(),
-        $this->fieldSpecification->name,
+        $this->inputFieldSpecification->name,
         $filter['op']
       );
 
