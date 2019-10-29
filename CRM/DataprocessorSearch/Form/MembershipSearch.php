@@ -6,7 +6,7 @@
 
 use CRM_Dataprocessor_ExtensionUtil as E;
 
-class CRM_DataprocessorSearch_Form_ContributionSearch extends CRM_DataprocessorSearch_Form_AbstractSearch {
+class CRM_DataprocessorSearch_Form_MembershipSearch extends CRM_DataprocessorSearch_Form_AbstractSearch {
 
   /**
    * Returns the name of the default Entity
@@ -14,7 +14,7 @@ class CRM_DataprocessorSearch_Form_ContributionSearch extends CRM_DataprocessorS
    * @return string
    */
   public function getDefaultEntity() {
-    return 'Contribution';
+    return 'Membership';
   }
 
   /**
@@ -25,7 +25,7 @@ class CRM_DataprocessorSearch_Form_ContributionSearch extends CRM_DataprocessorS
    * @return false|string
    */
   protected function link($row) {
-    return CRM_Utils_System::url('civicrm/contact/view/contribution', 'reset=1&id='.$row['id'].'&cid='.$row['id'].'&action=view');
+    return CRM_Utils_System::url('civicrm/contact/view/membership', 'reset=1&id='.$row['id'].'&cid='.$row['id'].'&action=view');
   }
 
   /**
@@ -36,7 +36,7 @@ class CRM_DataprocessorSearch_Form_ContributionSearch extends CRM_DataprocessorS
    * @return false|string
    */
   protected function linkText($row) {
-    return E::ts('View contribution');
+    return E::ts('View membership');
   }
 
   /**
@@ -45,7 +45,7 @@ class CRM_DataprocessorSearch_Form_ContributionSearch extends CRM_DataprocessorS
    * @return bool
    */
   protected function isConfigurationValid() {
-    if (!isset($this->dataProcessorOutput['configuration']['contribution_id_field'])) {
+    if (!isset($this->dataProcessorOutput['configuration']['membership_id_field'])) {
       return false;
     }
     return true;
@@ -57,7 +57,7 @@ class CRM_DataprocessorSearch_Form_ContributionSearch extends CRM_DataprocessorS
    * @return String
    */
   protected function getDataProcessorName() {
-    $dataProcessorName = str_replace('civicrm/dataprocessor_contribution_search/', '', CRM_Utils_System::getUrlPath());
+    $dataProcessorName = str_replace('civicrm/dataprocessor_membership_search/', '', CRM_Utils_System::getUrlPath());
     return $dataProcessorName;
   }
 
@@ -67,7 +67,7 @@ class CRM_DataprocessorSearch_Form_ContributionSearch extends CRM_DataprocessorS
    * @return string
    */
   protected function getOutputName() {
-    return 'contribution_search';
+    return 'membership_search';
   }
 
   /**
@@ -76,14 +76,14 @@ class CRM_DataprocessorSearch_Form_ContributionSearch extends CRM_DataprocessorS
    * @return string
    */
   protected function getIdFieldName() {
-    return $this->dataProcessorOutput['configuration']['contribution_id_field'];
+    return $this->dataProcessorOutput['configuration']['membership_id_field'];
   }
 
   /**
    * @return string
    */
   protected function getEntityTable() {
-    return 'civicrm_contribution';
+    return 'civicrm_membership';
   }
 
   /**
@@ -101,8 +101,8 @@ class CRM_DataprocessorSearch_Form_ContributionSearch extends CRM_DataprocessorS
    */
   public function buildTaskList() {
     if (!$this->_taskList) {
-      $taskParams['softCreditFiltering'] = FALSE;
-      $this->_taskList = CRM_Contribute_Task::permissionedTaskTitles(CRM_Core_Permission::getPermission(), $taskParams);
+      $taskParams = [];
+      $this->_taskList = CRM_Member_Task::permissionedTaskTitles(CRM_Core_Permission::getPermission(), $taskParams);
     }
     return $this->_taskList;
   }

@@ -126,6 +126,7 @@ class Factory {
     $this->addOutput('activity_search', 'CRM_DataprocessorSearch_ActivitySearch', E::ts('Activity Search'));
     $this->addOutput('case_search', 'CRM_DataprocessorSearch_CaseSearch', E::ts('Case Search'));
     $this->addOutput('contribution_search', 'CRM_DataprocessorSearch_ContributionSearch', E::ts('Contribution Search'));
+    $this->addOutput('membership_search', 'CRM_DataprocessorSearch_MembershipSearch', E::ts('Membership Search'));
     $this->addOutput('participant_search', 'CRM_DataprocessorSearch_ParticipantSearch', E::ts('Participant Search'));
     $this->addOutput('export_csv', 'CRM_DataprocessorOutputExport_CSV', E::ts('CSV Export'));
     $this->addFilter('simple_sql_filter', 'Civi\DataProcessor\FilterHandler\SimpleSqlFilter', E::ts('Field filter'));
