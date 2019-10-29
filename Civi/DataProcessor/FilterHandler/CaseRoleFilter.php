@@ -58,7 +58,7 @@ class CaseRoleFilter extends AbstractFieldFilterHandler {
   public function setFilter($filter) {
     $this->resetFilter();
 
-    $dataFlow  = $this->dataSource->ensureField($this->fieldSpecification->name);
+    $dataFlow  = $this->dataSource->ensureField($this->fieldSpecification);
     $cids = $filter['value'];
     if (!is_array($cids)) {
       $cids = array($cids);

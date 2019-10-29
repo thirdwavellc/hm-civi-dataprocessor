@@ -49,7 +49,7 @@ class ContactInGroupFilter extends AbstractFieldFilterHandler {
    */
   public function setFilter($filter) {
     $this->resetFilter();
-    $dataFlow  = $this->dataSource->ensureField($this->fieldSpecification->name);
+    $dataFlow  = $this->dataSource->ensureField($this->fieldSpecification);
     $group_ids = $filter['value'];
     if (!is_array($group_ids)) {
       $group_ids = array($group_ids);

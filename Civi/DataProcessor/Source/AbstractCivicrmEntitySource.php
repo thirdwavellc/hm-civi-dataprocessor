@@ -198,13 +198,19 @@ abstract class AbstractCivicrmEntitySource extends AbstractSource {
   /**
    * Ensure that filter field is accesible in the query
    *
-   * @param String $fieldName
+   * @param FieldSpecification $field
    * @return \Civi\DataProcessor\DataFlow\AbstractDataFlow|null
    * @throws \Exception
    */
-  public function ensureField($fieldName) {
-    if ($this->getAvailableFilterFields()->doesFieldExist($fieldName)) {
-      $spec = $this->getAvailableFilterFields()->getFieldSpecificationByName($fieldName);
+  public function ensureField(FieldSpecification $field) {
+    if ($this->getAvailableFilterFields()->doesAliasExists($field->alias)) {
+      $spec = $this->getAvailableFilterFields()->getFieldSpecificationByAlias($field->alias);
+      if ($spec instanceof CustomFieldSpecification) {
+        return $this->ensureCustomGroup($spec->customGroupTableName, $spec->customGroupName);
+      }
+      return $this->ensureEntity();
+    } elseif ($this->getAvailableFilterFields()->doesFieldExist($field->name)) {
+      $spec = $this->getAvailableFilterFields()->getFieldSpecificationByName($field->name);
       if ($spec instanceof CustomFieldSpecification) {
         return $this->ensureCustomGroup($spec->customGroupTableName, $spec->customGroupName);
       }
@@ -316,8 +322,8 @@ abstract class AbstractCivicrmEntitySource extends AbstractSource {
    */
   public function ensureFieldInSource(FieldSpecification $fieldSpecification) {
     try {
-      if ($this->getAvailableFields()->doesFieldExist($fieldSpecification->name)) {
-        $originalFieldSpecification = $this->getAvailableFields()->getFieldSpecificationByName($fieldSpecification->name);
+      if ($this->getAvailableFields()->doesAliasExists($fieldSpecification->alias)) {
+        $originalFieldSpecification = $this->getAvailableFields()->getFieldSpecificationByAlias($fieldSpecification->alias);
         if ($originalFieldSpecification instanceof CustomFieldSpecification) {
           $customGroupDataFlow = $this->ensureCustomGroup($originalFieldSpecification->customGroupTableName, $originalFieldSpecification->customGroupName);
           if (!$customGroupDataFlow->getDataSpecification()

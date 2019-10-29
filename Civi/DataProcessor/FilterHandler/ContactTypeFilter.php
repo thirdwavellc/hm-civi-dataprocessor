@@ -33,7 +33,7 @@ class ContactTypeFilter extends AbstractFieldFilterHandler {
    */
   public function setFilter($filter) {
     $this->resetFilter();
-    $dataFlow  = $this->dataSource->ensureField($this->fieldSpecification->name);
+    $dataFlow  = $this->dataSource->ensureField($this->fieldSpecification);
     $contactTypeIds = $filter['value'];
     if (!is_array($contactTypeIds)) {
       $contactTypeIds = explode(",", $contactTypeIds);

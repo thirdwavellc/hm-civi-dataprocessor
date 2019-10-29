@@ -127,15 +127,15 @@ abstract class AbstractSource implements SourceInterface {
   /**
    * Ensure that filter field is accesible in the query
    *
-   * @param String $fieldName
+   * @param FieldSpecification $field
    * @return \Civi\DataProcessor\DataFlow\AbstractDataFlow|null
    * @throws \Exception
    */
-  public function ensureField($fieldName) {
-    $field = $this->getAvailableFields()->getFieldSpecificationByName($fieldName);
+  public function ensureField(FieldSpecification $field) {
+    $field = $this->getAvailableFields()->getFieldSpecificationByAlias($field->alias);
     if ($field) {
       $this->dataFlow->getDataSpecification()
-        ->addFieldSpecification($fieldName, $field);
+        ->addFieldSpecification($field->name, $field);
     }
     return $this->dataFlow;
   }

@@ -179,7 +179,11 @@ class MultipleFieldFilter extends AbstractFilterHandler {
     foreach($this->configuration['fields'] as $fieldAndDataSource) {
       list($datasource_name, $field_name) = explode("::", $fieldAndDataSource);
       $dataSource = $this->data_processor->getDataSourceByName($datasource_name);
-      $dataFlow = $dataSource->ensureField($field_name);
+      $fieldSpec = $dataSource->getAvailableFields()->getFieldSpecificationByAlias($field_name);
+      if (!$fieldSpec) {
+        $fieldSpec = $dataSource->getAvailableFields()->getFieldSpecificationByName($field_name);
+      }
+      $dataFlow = $dataSource->ensureField($fieldSpec);
       if ($dataFlow && $dataFlow instanceof SqlDataFlow) {
         $clauses[] = new SqlDataFlow\SimpleWhereClause($dataFlow->getName(), $field_name, $filterParams['op'], $filterParams['value'], $this->fieldSpecification->type);
       }

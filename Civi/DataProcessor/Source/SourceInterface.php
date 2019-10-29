@@ -71,11 +71,11 @@ interface SourceInterface {
   /**
    * Ensure that filter field is accesible in the query
    *
-   * @param String $fieldName
+   * @param FieldSpecification $field
    * @return \Civi\DataProcessor\DataFlow\AbstractDataFlow|null
    * @throws \Exception
    */
-  public function ensureField($fieldName);
+  public function ensureField(FieldSpecification $field);
 
   /**
    * Ensures a field is in the data source

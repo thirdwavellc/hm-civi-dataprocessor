@@ -42,7 +42,7 @@ class PermissionToViewContactFilter extends AbstractFieldFilterHandler {
    */
   public function setFilter($filter) {
     $this->resetFilter();
-    $dataFlow  = $this->dataSource->ensureField($this->fieldSpecification->name);
+    $dataFlow  = $this->dataSource->ensureField($this->fieldSpecification);
     $where = $this->getAclWhereClause();
     $contactTableAlias = 'civicrm_contact_'.$this->fieldSpecification->alias;
     $where = str_replace(["`contact_a`.", "contact_a."], "`{$contactTableAlias}`.", $where);

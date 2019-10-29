@@ -138,7 +138,7 @@ class CRM_Contact_Form_DataProcessorContactSummaryTab extends CRM_DataprocessorS
     }
 
     $fieldSpecification->alias = 'contact_summary_tab_contact_id';
-    $dataFlow = $dataSource->ensureField($fieldSpecification->name);
+    $dataFlow = $dataSource->ensureField($fieldSpecification);
     if ($dataFlow && $dataFlow instanceof SqlDataFlow) {
       $whereClause = new SimpleWhereClause($dataFlow->getName(), $fieldSpecification->name, '=', $cid, $fieldSpecification->type);
       $dataFlow->addWhereClause($whereClause);

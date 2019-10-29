@@ -33,7 +33,7 @@ class ContactWithTagFilter extends AbstractFieldFilterHandler {
    */
   public function setFilter($filter) {
     $this->resetFilter();
-    $dataFlow  = $this->dataSource->ensureField($this->fieldSpecification->name);
+    $dataFlow  = $this->dataSource->ensureField($this->fieldSpecification);
     $tag_ids = $filter['value'];
     if (!is_array($tag_ids)) {
       $tag_ids = array($tag_ids);
