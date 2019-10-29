@@ -261,12 +261,15 @@ class SimpleJoin implements JoinInterface, SqlJoinInterface {
       $this->left_table = $this->left_prefix;
       $this->left_source = $this->dataProcessor->getDataSourceByName($this->left_prefix);
       if ($this->left_source) {
-        $leftTable = $this->left_source->ensureField($this->left_field);
-        if ($leftTable && $leftTable instanceof SqlTableDataFlow) {
-          $this->left_table = $leftTable->getTableAlias();
+        $this->leftFieldSpec = $this->left_source->getAvailableFields()->getFieldSpecificationByAlias($this->left_field);
+        if (!$this->leftFieldSpec) {
+          $this->leftFieldSpec = $this->left_source->getAvailableFields()->getFieldSpecificationByName($this->left_field);
         }
-        $this->leftFieldSpec = $this->left_source->getAvailableFields()->getFieldSpecificationByName($this->left_field);
         if ($this->leftFieldSpec) {
+          $leftTable = $this->left_source->ensureField($this->leftFieldSpec);
+          if ($leftTable && $leftTable instanceof SqlTableDataFlow) {
+            $this->left_table = $leftTable->getTableAlias();
+          }
           $this->left_field_alias = $this->leftFieldSpec->alias;
         }
       }
@@ -275,12 +278,15 @@ class SimpleJoin implements JoinInterface, SqlJoinInterface {
       $this->right_table = $this->right_prefix;
       $this->right_source = $this->dataProcessor->getDataSourceByName($this->right_prefix);
       if ($this->right_source) {
-        $rightTable = $this->right_source->ensureField($this->right_field);
-        if ($rightTable && $rightTable instanceof SqlTableDataFlow) {
-          $this->right_table = $rightTable->getTableAlias();
+        $this->rightFieldSpec = $this->right_source->getAvailableFields()->getFieldSpecificationByAlias($this->right_field);
+        if (!$this->rightFieldSpec) {
+          $this->rightFieldSpec = $this->right_source->getAvailableFields()->getFieldSpecificationByName($this->right_field);
         }
-        $this->rightFieldSpec = $this->right_source->getAvailableFields()->getFieldSpecificationByName($this->right_field);
         if ($this->rightFieldSpec) {
+          $rightTable = $this->right_source->ensureField($this->rightFieldSpec);
+          if ($rightTable && $rightTable instanceof SqlTableDataFlow) {
+            $this->right_table = $rightTable->getTableAlias();
+          }
           $this->right_field_alias = $this->rightFieldSpec->alias;
         }
       }

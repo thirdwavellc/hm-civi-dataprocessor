@@ -42,9 +42,9 @@ class PermissionToViewContactFilter extends AbstractFieldFilterHandler {
    */
   public function setFilter($filter) {
     $this->resetFilter();
-    $dataFlow  = $this->dataSource->ensureField($this->fieldSpecification->name);
+    $dataFlow  = $this->dataSource->ensureField($this->inputFieldSpecification);
     $where = $this->getAclWhereClause();
-    $contactTableAlias = 'civicrm_contact_'.$this->fieldSpecification->alias;
+    $contactTableAlias = 'civicrm_contact_'.$this->inputFieldSpecification->alias;
     $where = str_replace(["`contact_a`.", "contact_a."], "`{$contactTableAlias}`.", $where);
     if ($where) {
       $contactFilters[] = new SqlDataFlow\PureSqlStatementClause($where);
@@ -55,7 +55,7 @@ class PermissionToViewContactFilter extends AbstractFieldFilterHandler {
           $contactTableAlias,
           $contactFilters,
           $dataFlow->getName(),
-          $this->fieldSpecification->name,
+          $this->inputFieldSpecification->name,
           'IN'
         );
 

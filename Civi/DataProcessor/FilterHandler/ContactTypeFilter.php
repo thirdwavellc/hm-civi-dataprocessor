@@ -33,12 +33,12 @@ class ContactTypeFilter extends AbstractFieldFilterHandler {
    */
   public function setFilter($filter) {
     $this->resetFilter();
-    $dataFlow  = $this->dataSource->ensureField($this->fieldSpecification->name);
+    $dataFlow  = $this->dataSource->ensureField($this->inputFieldSpecification);
     $contactTypeIds = $filter['value'];
     if (!is_array($contactTypeIds)) {
       $contactTypeIds = explode(",", $contactTypeIds);
     }
-    $contactTableAlias = 'civicrm_contact_'.$this->fieldSpecification->alias;
+    $contactTableAlias = 'civicrm_contact_'.$this->inputFieldSpecification->alias;
     $contactTypeApiParams['id']['IN'] = $contactTypeIds;
     $contactTypeApiParams['options']['limit'] = 0;
     $contactTypeApi = civicrm_api3('ContactType', 'get', $contactTypeApiParams);
@@ -60,7 +60,7 @@ class ContactTypeFilter extends AbstractFieldFilterHandler {
           $contactTableAlias,
           array($contactTypeClause),
           $dataFlow->getName(),
-          $this->fieldSpecification->name,
+          $this->inputFieldSpecification->name,
           $filter['op']
         );
 

@@ -82,19 +82,22 @@ class EventSource extends AbstractCivicrmEntitySource {
   /**
    * Ensure that filter field is accesible in the query
    *
-   * @param String $fieldName
+   * @param FieldSpecification $field
    * @return \Civi\DataProcessor\DataFlow\AbstractDataFlow|null
    * @throws \Exception
    */
-  public function ensureField($fieldName) {
-    if ($this->getAvailableFilterFields()->doesFieldExist($fieldName)) {
-      $spec = $this->getAvailableFilterFields()->getFieldSpecificationByName($fieldName);
+  public function ensureField(FieldSpecification $field) {
+    if ($this->getAvailableFilterFields()->doesAliasExists($field->alias) || $this->getAvailableFilterFields()->doesFieldExist($field->name)) {
+      $spec = $this->getAvailableFilterFields()->getFieldSpecificationByAlias($field->alias);
+      if (!$spec) {
+        $spec = $this->getAvailableFilterFields()->getFieldSpecificationByName($field->name);
+      }
       if (stripos($spec->alias, $this->getSourceName().'_locblock_') === 0) {
         $this->ensureEntity();
         return $this->locBlockDataFlow;
       }
     }
-    return parent::ensureField($fieldName);
+    return parent::ensureField($field);
   }
 
   /**

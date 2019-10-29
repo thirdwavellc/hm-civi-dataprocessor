@@ -46,7 +46,7 @@ class CRM_Dataprocessor_Utils_DataSourceFields {
         $isFieldValid = call_user_func($callback, $field);
       }
       if ($isFieldValid) {
-        $fieldSelect[$namePrefix . $fieldName] = $titlePrefix . $field->title;
+        $fieldSelect[$namePrefix . $field->alias] = $titlePrefix . $field->title;
       }
     }
     return $fieldSelect;
@@ -84,13 +84,13 @@ class CRM_Dataprocessor_Utils_DataSourceFields {
    */
   public static function getAvailableFilterFieldsInDataSource(SourceInterface $dataSource, $titlePrefix='', $namePrefix='', $filterFieldsCallback=null) {
     $fieldSelect = array();
-    foreach($dataSource->getAvailableFilterFields()->getFields() as $fieldName => $field) {
+    foreach($dataSource->getAvailableFilterFields()->getFields() as $field) {
       $isFieldValid = true;
       if ($filterFieldsCallback) {
         $isFieldValid = call_user_func($filterFieldsCallback, $field);
       }
       if ($isFieldValid) {
-        $fieldSelect[$namePrefix . $fieldName] = $titlePrefix . $field->title;
+        $fieldSelect[$namePrefix . $field->alias] = $titlePrefix . $field->title;
       }
     }
     return $fieldSelect;

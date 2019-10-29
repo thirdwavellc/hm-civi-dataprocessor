@@ -58,12 +58,12 @@ class CaseRoleFilter extends AbstractFieldFilterHandler {
   public function setFilter($filter) {
     $this->resetFilter();
 
-    $dataFlow  = $this->dataSource->ensureField($this->fieldSpecification->name);
+    $dataFlow  = $this->dataSource->ensureField($this->inputFieldSpecification);
     $cids = $filter['value'];
     if (!is_array($cids)) {
       $cids = array($cids);
     }
-    $relationshipTableAlias = 'civicrm_relationship_'.$this->fieldSpecification->alias;
+    $relationshipTableAlias = 'civicrm_relationship_'.$this->inputFieldSpecification->alias;
     $relationshipFilters = array(
       new SqlDataFlow\SimpleWhereClause($relationshipTableAlias, 'is_active', '=', '1'),
       new SqlDataFlow\SimpleWhereClause($relationshipTableAlias, 'case_id', 'IS NOT NULL', 0),
@@ -80,7 +80,7 @@ class CaseRoleFilter extends AbstractFieldFilterHandler {
         $relationshipTableAlias,
         $relationshipFilters,
         $dataFlow->getName(),
-        $this->fieldSpecification->name,
+        $this->inputFieldSpecification->name,
         $filter['op']
       );
 
