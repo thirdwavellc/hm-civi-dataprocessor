@@ -56,6 +56,20 @@ abstract class CRM_Dataprocessor_Form_Output_AbstractUIOutputForm extends CRM_Co
   }
 
   /**
+   * Check whether the user has access to the output.
+   *
+   * @return bool
+   */
+  protected function checkPermission() {
+    if (isset($this->dataProcessorOutput['permission']) && $this->dataProcessorOutput['permission']) {
+      if (!CRM_Core_Permission::check(array($this->dataProcessorOutput['permission']))) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  /**
    * Retrieve the data processor and the output configuration
    *
    * @throws \Exception
@@ -83,7 +97,10 @@ abstract class CRM_Dataprocessor_Form_Output_AbstractUIOutputForm extends CRM_Co
       $this->dataProcessorOutput = civicrm_api3('DataProcessorOutput', 'getsingle', array('id' => $dao->output_id));
       $this->assign('output', $this->dataProcessorOutput);
 
-      if (!$this->isConfigurationValid()) {
+      if (!$this->checkPermission()) {
+        CRM_Utils_System::permissionDenied();
+        CRM_Utils_System::civiExit();
+      } elseif (!$this->isConfigurationValid()) {
         throw new \Exception('Invalid configuration found of the data processor "' . $dataProcessorName . '"');
       }
     }
@@ -184,5 +201,4 @@ abstract class CRM_Dataprocessor_Form_Output_AbstractUIOutputForm extends CRM_Co
   protected function getCriteriaElementSize() {
     return 'full';
   }
-
 }
