@@ -290,7 +290,7 @@ abstract class CRM_DataprocessorSearch_Form_AbstractSearch extends CRM_Dataproce
           if ($value instanceof Markupable) {
             $row['record'][$column] = $value->getMarkupOut();
           } elseif ($value instanceof FieldOutput) {
-            $row['record'][$column] = $value->formattedValue;
+            $row['record'][$column] = htmlspecialchars($value->formattedValue);
           }
         }
 

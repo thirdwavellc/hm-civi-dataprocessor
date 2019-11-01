@@ -180,8 +180,13 @@ abstract class AbstractCivicrmEntitySource extends AbstractSource {
    * @throws \Exception
    */
   protected function addFilter($filter_field_alias, $op, $values) {
-    if ($this->getAvailableFilterFields()->doesFieldExist($filter_field_alias)) {
-      $spec = $this->getAvailableFilterFields()->getFieldSpecificationByName($filter_field_alias);
+    $spec = null;
+    if ($this->getAvailableFields()->doesAliasExists($filter_field_alias)) {
+      $spec = $this->getAvailableFields()->getFieldSpecificationByAlias($filter_field_alias);
+    } elseif ($this->getAvailableFields()->doesFieldExist($filter_field_alias)) {
+      $spec = $this->getAvailableFields()->getFieldSpecificationByName($filter_field_alias);
+    }
+    if ($spec) {
       if ($spec instanceof CustomFieldSpecification) {
         $customGroupDataFlow = $this->ensureCustomGroup($spec->customGroupTableName, $spec->customGroupName);
         $customGroupTableAlias = $customGroupDataFlow->getTableAlias();

@@ -21,6 +21,7 @@
 * Added a Date field.
 * Added function to clone a data processor.
 * Added Case ID field on the activity source.
+* Added field to display relationships.
 
 # Version 1.0.7
 

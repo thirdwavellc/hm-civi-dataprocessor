@@ -146,6 +146,7 @@ class Factory {
     $this->addOutputHandler('contact_link', 'Civi\DataProcessor\FieldOutputHandler\ContactLinkFieldOutputHandler', E::ts('Link to view contact'));
     $this->addOutputHandler('file_field', 'Civi\DataProcessor\FieldOutputHandler\FileFieldOutputHandler', E::ts('File download link'));
     $this->addOutputHandler('option_label', 'Civi\DataProcessor\FieldOutputHandler\OptionFieldOutputHandler', E::ts('Option label'));
+    $this->addOutputHandler('relationships', 'Civi\DataProcessor\FieldOutputHandler\RelationshipsFieldOutputHandler', E::ts('Relationships'));
     $this->addOutputHandler('case_roles', 'Civi\DataProcessor\FieldOutputHandler\CaseRolesFieldOutputHandler', E::ts('Case Roles'));
     $this->addOutputHandler('groups_of_contact', 'Civi\DataProcessor\FieldOutputHandler\GroupsOfContactFieldOutputHandler', E::ts('Display the groups of a contact'));
     $this->addOutputHandler('event_repeating_info', 'Civi\DataProcessor\FieldOutputHandler\EventRepeatingInfoFieldOutputHandler', E::ts('Display info about repeating event'));
