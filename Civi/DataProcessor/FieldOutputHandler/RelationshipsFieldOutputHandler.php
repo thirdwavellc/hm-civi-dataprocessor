@@ -162,18 +162,18 @@ class RelationshipsFieldOutputHandler extends AbstractFieldOutputHandler {
         $link = '<a href="' . $url . '">' . $dao->display_name . '</a>';
         $image = \CRM_Contact_BAO_Contact_Utils::getImage($dao->contact_sub_type ? $dao->contact_sub_type : $dao->contact_type,  FALSE, $dao->id);
         if ($this->show_label) {
-          $htmlFormattedValues[] = $dao->label . ':&nbsp;' . $link;
+          $htmlFormattedValues[] = $image .'&nbsp;' . $dao->label . ':&nbsp;' . $link;
           $formattedValues[] = $dao->label.': '.$dao->display_name;
         }
         else {
-          $htmlFormattedValues[] = $link;
+          $htmlFormattedValues[] = $image .'&nbsp;' . $link;
           $formattedValues[] = $dao->display_name;
         }
       }
     }
     $output = new HTMLFieldOutput($contactId);
     $output->formattedValue = implode(",", $formattedValues);
-    $output->setHtmlOutput(implode("<br>", $formattedValues));
+    $output->setHtmlOutput(implode("<br>", $htmlFormattedValues));
     return $output;
   }
 
