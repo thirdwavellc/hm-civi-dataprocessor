@@ -22,6 +22,7 @@
 * Added function to clone a data processor.
 * Added Case ID field on the activity source.
 * Added field to display relationships.
+* Added is not empty as a filter operator.
 
 # Version 1.0.7
 
