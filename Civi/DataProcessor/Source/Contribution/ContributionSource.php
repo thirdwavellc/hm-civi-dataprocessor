@@ -39,7 +39,7 @@ class ContributionSource extends AbstractCivicrmEntitySource {
 
     // Create the contribution soft data flow and data flow description
     $this->contributionSoftDataFlow = new SqlTableDataFlow('civicrm_contribution_soft', $this->getSourceName().'_contribution_soft');
-    DataSpecificationUtils::addDAOFieldsToDataSpecification('CRM_Contribute_DAO_ContributionSoft', $this->contributionSoftDataFlow->getDataSpecification(), array('id'), 'contribution_soft_', 'contribution_soft_', E::ts('Soft :: '));
+    DataSpecificationUtils::addDAOFieldsToDataSpecification('CRM_Contribute_DAO_ContributionSoft', $this->contributionSoftDataFlow->getDataSpecification(), array('id'), '', 'contribution_soft_', E::ts('Soft :: '));
   }
 
 
