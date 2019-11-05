@@ -117,13 +117,12 @@ class DateFieldOutputHandler extends AbstractSimpleFieldOutputHandler implements
    * @return \Civi\DataProcessor\FieldOutputHandler\FieldOutput
    */
   public function formatField($rawRecord, $formattedRecord) {
-    $formattedValue = $rawRecord[$this->inputFieldSpec->alias];
-    if ($this->format) {
-      $date = new \DateTime($formattedValue);
-      $formattedValue = $date->format($this->format);
-    }
+    $rawValue = $rawRecord[$this->inputFieldSpec->alias];
     $output = new FieldOutput($rawRecord[$this->inputFieldSpec->alias]);
-    $output->formattedValue = $formattedValue;
+    if ($this->format && $rawValue) {
+      $date = new \DateTime($rawValue);
+      $output->formattedValue = $date->format($this->format);
+    }
     return $output;
   }
 
