@@ -19,7 +19,7 @@ use Civi\Test\TransactionalInterface;
  *
  * @group headless
  */
-class CRM_Dataprocessor_TestBase extends \PHPUnit_Framework_TestCase implements HeadlessInterface, HookInterface, TransactionalInterface {
+class CRM_Dataprocessor_TestBase extends \PHPUnit\Framework\TestCase implements HeadlessInterface, HookInterface, TransactionalInterface {
 
   /**
    * @var array keyed by ID

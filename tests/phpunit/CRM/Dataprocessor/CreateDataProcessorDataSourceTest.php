@@ -24,8 +24,10 @@ class CRM_Dataprocessor_CreateDataProcessorDataSourceTest extends CRM_Dataproces
 
     $data_processor_id = $this->createTestDataProcessorFixture();
 
-    // Retrieving the id of data processor
     $factory = dataprocessor_get_factory();
+    if ($factory === NULL) {
+      $this->fail("Test cannot complete, unable to obtain data processor factory.");
+    }
     $data_sources = $factory->getDataSources();
 
     foreach ($data_sources as $key => $value) {
