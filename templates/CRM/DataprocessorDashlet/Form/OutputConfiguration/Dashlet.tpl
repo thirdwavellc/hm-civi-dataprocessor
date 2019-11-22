@@ -5,11 +5,17 @@
       <div class="clear"></div>
     </div>
 
-  <div class="crm-section">
-    <div class="label">{$form.expanded_search.label}</div>
-    <div class="content">{$form.expanded_search.html}</div>
-    <div class="clear"></div>
-  </div>
+    <div class="crm-section">
+      <div class="label">{$form.hidden_fields.label}</div>
+      <div class="content">{$form.hidden_fields.html}</div>
+      <div class="clear"></div>
+    </div>
+
+    <div class="crm-section">
+      <div class="label">{$form.expanded_search.label}</div>
+      <div class="content">{$form.expanded_search.html}</div>
+      <div class="clear"></div>
+    </div>
 
     <div class="crm-section">
       <div class="label">{$form.help_text.label}</div>

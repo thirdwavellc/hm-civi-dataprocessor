@@ -96,6 +96,13 @@ class CRM_Contact_DataProcessorContactSummaryTab implements UIOutputInterface {
    */
   public function buildConfigurationForm(\CRM_Core_Form $form, $output = []) {
     $fieldSelect = \CRM_Dataprocessor_Utils_DataSourceFields::getAvailableFilterFieldsInDataSources($output['data_processor_id']);
+    $dataProcessor = civicrm_api3('DataProcessor', 'getsingle', array('id' => $output['data_processor_id']));
+    $dataProcessorClass = \CRM_Dataprocessor_BAO_DataProcessor::dataProcessorToClass($dataProcessor);
+    $fields = array();
+    foreach($dataProcessorClass->getDataFlow()->getOutputFieldHandlers() as $outputFieldHandler) {
+      $field = $outputFieldHandler->getOutputFieldSpecification();
+      $fields[$field->alias] = $field->title;
+    }
 
     $form->add('select','permission', E::ts('Permission'), \CRM_Core_Permission::basicPermissions(), true, array(
       'style' => 'min-width:250px',
@@ -106,6 +113,13 @@ class CRM_Contact_DataProcessorContactSummaryTab implements UIOutputInterface {
     $form->add('select', 'contact_id_field', E::ts('Contact ID field'), $fieldSelect, true, array(
       'style' => 'min-width:250px',
       'class' => 'crm-select2 huge',
+      'placeholder' => E::ts('- select -'),
+    ));
+
+    $form->add('select', 'hidden_fields', E::ts('Hidden fields'), $fields, false, array(
+      'style' => 'min-width:250px',
+      'class' => 'crm-select2 huge',
+      'multiple' => true,
       'placeholder' => E::ts('- select -'),
     ));
 
@@ -129,6 +143,9 @@ class CRM_Contact_DataProcessorContactSummaryTab implements UIOutputInterface {
         }
         if (isset($output['configuration']['contact_id_field'])) {
           $defaults['contact_id_field'] = $output['configuration']['contact_id_field'];
+        }
+        if (isset($output['configuration']['hidden_fields'])) {
+          $defaults['hidden_fields'] = $output['configuration']['hidden_fields'];
         }
         if (isset($output['configuration']['default_limit'])) {
           $defaults['default_limit'] = $output['configuration']['default_limit'];
@@ -172,6 +189,7 @@ class CRM_Contact_DataProcessorContactSummaryTab implements UIOutputInterface {
   public function processConfiguration($submittedValues, &$output) {
     $output['permission'] = $submittedValues['permission'];
     $configuration['contact_id_field'] = $submittedValues['contact_id_field'];
+    $configuration['hidden_fields'] = $submittedValues['hidden_fields'];
     $configuration['help_text'] = $submittedValues['help_text'];
     $configuration['no_result_text'] = $submittedValues['no_result_text'];
     $configuration['weight'] = $submittedValues['weight'];

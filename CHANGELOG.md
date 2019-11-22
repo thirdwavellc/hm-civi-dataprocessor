@@ -23,6 +23,7 @@
 * Added Case ID field on the activity source.
 * Added field to display relationships.
 * Added is not empty as a filter operator.
+* Added hidden fields option to search outputs, dashboard output and contact summary tab output.
 
 # Version 1.0.7
 

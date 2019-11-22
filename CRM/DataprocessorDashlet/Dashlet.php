@@ -25,6 +25,14 @@ class CRM_DataprocessorDashlet_Dashlet implements Civi\DataProcessor\Output\Outp
    * @param array $output
    */
   public function buildConfigurationForm(\CRM_Core_Form $form, $output = []) {
+    $dataProcessor = civicrm_api3('DataProcessor', 'getsingle', array('id' => $output['data_processor_id']));
+    $dataProcessorClass = \CRM_Dataprocessor_BAO_DataProcessor::dataProcessorToClass($dataProcessor);
+    $fields = array();
+    foreach($dataProcessorClass->getDataFlow()->getOutputFieldHandlers() as $outputFieldHandler) {
+      $field = $outputFieldHandler->getOutputFieldSpecification();
+      $fields[$field->alias] = $field->title;
+    }
+
     $form->add('select','permission', E::ts('Permission'), \CRM_Core_Permission::basicPermissions(), true, array(
       'style' => 'min-width:250px',
       'class' => 'crm-select2 huge',
@@ -33,6 +41,13 @@ class CRM_DataprocessorDashlet_Dashlet implements Civi\DataProcessor\Output\Outp
     $form->add('text', 'default_limit', E::ts('Default Limit'));
     $form->add('wysiwyg', 'help_text', E::ts('Help text for this dashlet'), array('rows' => 6, 'cols' => 80));
     $form->add('checkbox', 'expanded_search', E::ts('Expand criteria form initially'));
+
+    $form->add('select', 'hidden_fields', E::ts('Hidden fields'), $fields, false, array(
+      'style' => 'min-width:250px',
+      'class' => 'crm-select2 huge',
+      'multiple' => true,
+      'placeholder' => E::ts('- select -'),
+    ));
 
     $defaults = array();
     if ($output) {
@@ -45,6 +60,9 @@ class CRM_DataprocessorDashlet_Dashlet implements Civi\DataProcessor\Output\Outp
         }
         if (isset($output['configuration']['help_text'])) {
           $defaults['help_text'] = $output['configuration']['help_text'];
+        }
+        if (isset($output['configuration']['hidden_fields'])) {
+          $defaults['hidden_fields'] = $output['configuration']['hidden_fields'];
         }
         if (isset($output['configuration']['expanded_search'])) {
           $defaults['expanded_search'] = $output['configuration']['expanded_search'];
@@ -106,6 +124,7 @@ class CRM_DataprocessorDashlet_Dashlet implements Civi\DataProcessor\Output\Outp
     $output['permission'] = $submittedValues['permission'];
     $configuration['default_limit'] = $submittedValues['default_limit'];
     $configuration['help_text'] = $submittedValues['help_text'];
+    $configuration['hidden_fields'] = $submittedValues['hidden_fields'];
     $configuration['expanded_search'] = isset($submittedValues['expanded_search']) ? $submittedValues['expanded_search'] : false;
     return $configuration;
   }

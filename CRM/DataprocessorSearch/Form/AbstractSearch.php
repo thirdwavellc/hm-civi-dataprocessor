@@ -97,6 +97,9 @@ abstract class CRM_DataprocessorSearch_Form_AbstractSearch extends CRM_Dataproce
     if (!$this->isIdFieldVisible()) {
       $hiddenFields[] = $this->getIdFieldName();
     }
+    if (isset($this->dataProcessorOutput['configuration']['hidden_fields']) && is_array($this->dataProcessorOutput['configuration']['hidden_fields'])) {
+      $hiddenFields = array_merge($hiddenFields, $this->dataProcessorOutput['configuration']['hidden_fields']);
+    }
     return $hiddenFields;
   }
 

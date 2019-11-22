@@ -17,6 +17,11 @@
     <div class="clear"></div>
   </div>
   <div class="crm-section">
+    <div class="label">{$form.hidden_fields.label}</div>
+    <div class="content">{$form.hidden_fields.html}</div>
+    <div class="clear"></div>
+  </div>
+  <div class="crm-section">
     <div class="label">{$form.no_result_text.label}</div>
     <div class="content">{$form.no_result_text.html}</div>
     <div class="clear"></div>

@@ -49,6 +49,13 @@ class CRM_DataprocessorSearch_ContributionSearch implements UIOutputInterface {
     ));
     $form->add('select', 'hide_id_field', E::ts('Show Contribution ID field'), array(0=>'Contribution ID is Visible', 1=> 'Contribution ID is hidden'));
 
+    $form->add('select', 'hidden_fields', E::ts('Hidden fields'), $fields, false, array(
+      'style' => 'min-width:250px',
+      'class' => 'crm-select2 huge',
+      'multiple' => true,
+      'placeholder' => E::ts('- select -'),
+    ));
+
     $form->add('wysiwyg', 'help_text', E::ts('Help text for this search'), array('rows' => 6, 'cols' => 80));
     $form->add('checkbox', 'expanded_search', E::ts('Expand criteria form initially'));
 
@@ -74,6 +81,9 @@ class CRM_DataprocessorSearch_ContributionSearch implements UIOutputInterface {
         }
         if (isset($output['configuration']['hide_id_field'])) {
           $defaults['hide_id_field'] = $output['configuration']['hide_id_field'];
+        }
+        if (isset($output['configuration']['hidden_fields'])) {
+          $defaults['hidden_fields'] = $output['configuration']['hidden_fields'];
         }
         if (isset($output['configuration']['help_text'])) {
           $defaults['help_text'] = $output['configuration']['help_text'];
@@ -112,6 +122,7 @@ class CRM_DataprocessorSearch_ContributionSearch implements UIOutputInterface {
     $configuration['contribution_id_field'] = $submittedValues['contribution_id_field'];
     $configuration['navigation_parent_path'] = $submittedValues['navigation_parent_path'];
     $configuration['hide_id_field'] = $submittedValues['hide_id_field'];
+    $configuration['hidden_fields'] = $submittedValues['hidden_fields'];
     $configuration['help_text'] = $submittedValues['help_text'];
     $configuration['expanded_search'] = isset($submittedValues['expanded_search']) ? $submittedValues['expanded_search'] : false;
     return $configuration;
