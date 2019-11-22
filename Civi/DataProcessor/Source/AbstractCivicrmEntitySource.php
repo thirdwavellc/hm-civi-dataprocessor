@@ -327,21 +327,25 @@ abstract class AbstractCivicrmEntitySource extends AbstractSource {
    */
   public function ensureFieldInSource(FieldSpecification $fieldSpecification) {
     try {
+      $originalFieldSpecification = null;
       if ($this->getAvailableFields()->doesAliasExists($fieldSpecification->alias)) {
         $originalFieldSpecification = $this->getAvailableFields()->getFieldSpecificationByAlias($fieldSpecification->alias);
-        if ($originalFieldSpecification instanceof CustomFieldSpecification) {
-          $customGroupDataFlow = $this->ensureCustomGroup($originalFieldSpecification->customGroupTableName, $originalFieldSpecification->customGroupName);
-          if (!$customGroupDataFlow->getDataSpecification()
-            ->doesFieldExist($fieldSpecification->alias)) {
-            $customGroupDataFlow->getDataSpecification()
-              ->addFieldSpecification($fieldSpecification->alias, $fieldSpecification);
-          }
-        }
-        else {
-          $entityDataFlow = $this->ensureEntity();
-          $entityDataFlow->getDataSpecification()
+      } elseif ($this->getAvailableFields()->doesFieldExist($fieldSpecification->name)) {
+        $originalFieldSpecification = $this->getAvailableFields()
+          ->getFieldSpecificationByName($fieldSpecification->name);
+      }
+      if ($originalFieldSpecification && $originalFieldSpecification instanceof CustomFieldSpecification) {
+        $customGroupDataFlow = $this->ensureCustomGroup($originalFieldSpecification->customGroupTableName, $originalFieldSpecification->customGroupName);
+        if (!$customGroupDataFlow->getDataSpecification()
+          ->doesFieldExist($fieldSpecification->alias)) {
+          $customGroupDataFlow->getDataSpecification()
             ->addFieldSpecification($fieldSpecification->alias, $fieldSpecification);
         }
+      }
+      elseif ($originalFieldSpecification) {
+        $entityDataFlow = $this->ensureEntity();
+        $entityDataFlow->getDataSpecification()
+          ->addFieldSpecification($fieldSpecification->alias, $fieldSpecification);
       }
     } catch (FieldExistsException $e) {
       // Do nothing.
