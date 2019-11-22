@@ -159,7 +159,7 @@ class SimpleJoin implements JoinInterface, SqlJoinInterface {
     }
 
     $defaults = array();
-    if (isset($joinConfiguration['left_prefix'])) {
+    if (isset($joinConfiguration['left_field'])) {
       $defaults['left_field'] = $joinConfiguration['left_field'];
     }
     if (isset($joinConfiguration['right_prefix'])) {
