@@ -78,6 +78,7 @@ class AbstractSimpleFieldOutputHandler extends AbstractFieldOutputHandler implem
       )));
     }
     $this->inputFieldSpec = clone $this->inputFieldSpec;
+    $this->inputFieldSpec->alias = $alias;
     $this->dataSource->ensureFieldInSource($this->inputFieldSpec);
 
     $this->outputFieldSpec = clone $this->inputFieldSpec;
