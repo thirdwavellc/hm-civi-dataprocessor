@@ -77,8 +77,10 @@ class CRM_Dataprocessor_ImportDataProcessorTest extends CRM_Dataprocessor_TestBa
 
     $importCode = json_decode($configuration, TRUE);
     $importResult = CRM_Dataprocessor_Utils_Importer::import($importCode, '', true);
-    $id = $importResult['original_id'];
+
+    $id = $importResult['new_id'];
     $result = civicrm_api3('DataProcessor', 'get',  array("id"=> $id));
+
     $fields = civicrm_api3('DataProcessorField', 'get',  array("data_processor_id"=> $id));
     $datasource = civicrm_api3('DataProcessorSource', 'get',  array("data_processor_id"=> $id));
     $outputs = civicrm_api3('DataProcessorOutput', 'get',  array("data_processor_id"=> $id));

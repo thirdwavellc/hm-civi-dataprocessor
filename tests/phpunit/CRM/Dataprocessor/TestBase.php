@@ -62,10 +62,13 @@ class CRM_Dataprocessor_TestBase extends \PHPUnit\Framework\TestCase implements 
     // See: https://docs.civicrm.org/dev/en/latest/testing/phpunit/#civitest
     return \Civi\Test::headless()
       ->installMe(__DIR__)
-      ->apply(TRUE);
+      ->apply(FALSE);
   }
 
   public function setUp() {
+    // This assertion is here to catch the issue previously caused in UIOutputHelper::postHook
+    // whereby running a test would break the transaction of the test and therefore leave
+    // a processor defined in the test databsae, corrupting the fixture for the next tests.
     $c = CRM_Core_DAO::singleValueQuery("SELECT count(*) FROM civicrm_data_processor");
     $this->assertEquals(0, $c, "setup: already $c data processors defined.");
     parent::setUp();

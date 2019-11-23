@@ -66,6 +66,10 @@ class UIOutputHelper {
    */
   public static function preHook($op, $objectName, $id, &$params) {
     if ($objectName == 'DataProcessorOutput') {
+      // Disable this hook in unit tests because the menu rebuild it causes breaks transactions.
+      if (CIVICRM_UF === 'UnitTests') {
+        return;
+      }
       if ($op == 'delete') {
         $output = civicrm_api3('DataProcessorOutput', 'getsingle', ['id' => $id]);
         self::removeOutputFromNavigation($output['configuration']);
@@ -139,6 +143,10 @@ class UIOutputHelper {
    */
   public static function postHook($op, $objectName, $id, &$objectRef) {
     if ($objectName != 'DataProcessorOutput') {
+      return;
+    }
+    // Disable this hook in unit tests because the menu rebuild it causes breaks transactions.
+    if (CIVICRM_UF === 'UnitTests') {
       return;
     }
 
