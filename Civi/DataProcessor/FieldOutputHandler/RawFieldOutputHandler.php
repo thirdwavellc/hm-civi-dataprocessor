@@ -30,6 +30,13 @@ class RawFieldOutputHandler extends AbstractSimpleFieldOutputHandler implements 
   public function initialize($alias, $title, $configuration) {
     parent::initialize($alias, $title, $configuration);
     $this->isAggregateField = isset($configuration['is_aggregate']) ? $configuration['is_aggregate'] : false;
+
+    if ($this->isAggregateField) {
+      $dataFlow = $this->dataSource->ensureField($this->getAggregateFieldSpec());
+      if ($dataFlow) {
+        $dataFlow->addAggregateOutputHandler($this);
+      }
+    }
   }
 
   /**

@@ -201,7 +201,7 @@ abstract class AbstractCivicrmEntitySource extends AbstractSource {
   }
 
   /**
-   * Ensure that filter field is accesible in the query
+   * Ensure that filter or aggregate field is accesible in the query
    *
    * @param FieldSpecification $field
    * @return \Civi\DataProcessor\DataFlow\AbstractDataFlow|null
@@ -322,7 +322,6 @@ abstract class AbstractCivicrmEntitySource extends AbstractSource {
    * Ensures a field is in the data source
    *
    * @param \Civi\DataProcessor\DataSpecification\FieldSpecification $fieldSpecification
-   * @return SourceInterface
    * @throws \Exception
    */
   public function ensureFieldInSource(FieldSpecification $fieldSpecification) {
@@ -335,17 +334,13 @@ abstract class AbstractCivicrmEntitySource extends AbstractSource {
           ->getFieldSpecificationByName($fieldSpecification->name);
       }
       if ($originalFieldSpecification && $originalFieldSpecification instanceof CustomFieldSpecification) {
-        $customGroupDataFlow = $this->ensureCustomGroup($originalFieldSpecification->customGroupTableName, $originalFieldSpecification->customGroupName);
-        if (!$customGroupDataFlow->getDataSpecification()
-          ->doesFieldExist($fieldSpecification->alias)) {
-          $customGroupDataFlow->getDataSpecification()
-            ->addFieldSpecification($fieldSpecification->alias, $fieldSpecification);
+        $dataFlow = $this->ensureCustomGroup($originalFieldSpecification->customGroupTableName, $originalFieldSpecification->customGroupName);
+        if (!$dataFlow->getDataSpecification()->doesFieldExist($fieldSpecification->alias)) {
+          $dataFlow->getDataSpecification()->addFieldSpecification($fieldSpecification->alias, $fieldSpecification);
         }
-      }
-      elseif ($originalFieldSpecification) {
-        $entityDataFlow = $this->ensureEntity();
-        $entityDataFlow->getDataSpecification()
-          ->addFieldSpecification($fieldSpecification->alias, $fieldSpecification);
+      } elseif ($originalFieldSpecification) {
+        $dataFlow = $this->ensureEntity();
+        $dataFlow->getDataSpecification()->addFieldSpecification($fieldSpecification->alias, $fieldSpecification);
       }
     } catch (FieldExistsException $e) {
       // Do nothing.

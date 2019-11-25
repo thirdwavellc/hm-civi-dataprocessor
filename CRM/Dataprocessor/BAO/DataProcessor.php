@@ -98,9 +98,6 @@ class CRM_Dataprocessor_BAO_DataProcessor extends CRM_Dataprocessor_DAO_DataProc
         try {
           $outputHandler->initialize($field['name'], $field['title'], $field['configuration']);
           $dataProcessorClass->addOutputFieldHandlers($outputHandler);
-          if ($outputHandler instanceof OutputHandlerAggregate && $outputHandler->isAggregateField()) {
-            $dataProcessorClass->getDataFlow()->addAggregateOutputHandler($outputHandler);
-          }
         } catch (\Exception $e) {
           CRM_Core_Session::setStatus($e->getMessage(), E::ts("Invalid field"), 'error');
         }

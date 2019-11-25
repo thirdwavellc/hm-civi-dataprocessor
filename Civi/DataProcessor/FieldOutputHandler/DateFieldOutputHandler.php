@@ -41,6 +41,13 @@ class DateFieldOutputHandler extends AbstractSimpleFieldOutputHandler implements
       $this->function = $function;
       $this->inputFieldSpec->setMySqlFunction($availableFunctions[$function]['sql']);
     }
+
+    if ($this->isAggregateField) {
+      $dataFlow = $this->dataSource->ensureField($this->getAggregateFieldSpec());
+      if ($dataFlow) {
+        $dataFlow->addAggregateOutputHandler($this);
+      }
+    }
   }
 
   /**
