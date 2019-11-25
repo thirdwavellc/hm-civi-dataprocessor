@@ -1,10 +1,9 @@
 {assign var=relativeName   value=$fieldName|cat:"_relative"}
-<td>
+
     {if $label}
         {ts}{$label}{/ts}<br />
     {/if}
     {$form.$relativeName.html}<br />
-</td><td>
     <span class="crm-absolute-date-range">
     <span class="crm-absolute-date-from">
       {assign var=fromName   value=$fieldName|cat:$from}
@@ -18,6 +17,7 @@
         {include file="CRM/common/jcalendar.tpl" elementName=$toName}
     </span>
   </span>
+
     {literal}
     <script type="text/javascript">
       cj("#{/literal}{$relativeName}{literal}").change(function() {
@@ -31,4 +31,3 @@
       }).change();
     </script>
     {/literal}
-</td>
