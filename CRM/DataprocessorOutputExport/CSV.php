@@ -239,9 +239,9 @@ class CRM_DataprocessorOutputExport_CSV implements ExportOutputInterface {
     fwrite($file, "\xEF\xBB\xBF"); // BOF this will make sure excel opens the file correctly.
     $headerLine = array();
     foreach($dataProcessor->getDataFlow()->getOutputFieldHandlers() as $outputHandler) {
-      $headerLine[] = $outputHandler->getOutputFieldSpecification()->title;
+      $headerLine[] = self::encodeValue($outputHandler->getOutputFieldSpecification()->title, $configuration['escape_char'], $configuration['enclosure']);
     }
-    fputcsv($file, $headerLine, $configuration['delimiter'], $configuration['enclosure'], $configuration['escape_char']);
+    fwrite($file, implode($configuration['delimiter'], $headerLine)."\r\n");
     fclose($file);
   }
 
@@ -251,14 +251,23 @@ class CRM_DataprocessorOutputExport_CSV implements ExportOutputInterface {
       while($record = $dataProcessor->getDataFlow()->nextRecord()) {
         $row = array();
         foreach($record as $field => $value) {
-          $row[] = $value->formattedValue;
+          $row[] = self::encodeValue($value->formattedValue, $configuration['escape_char'], $configuration['enclosure']);
         }
-        fputcsv($file, $row, $configuration['delimiter'], $configuration['enclosure'], $configuration['escape_char']);
+        fwrite($file, implode($configuration['delimiter'], $row)."\r\n");
       }
     } catch (\Civi\DataProcessor\DataFlow\EndOfFlowException $e) {
       // Do nothing
     }
     fclose($file);
+  }
+
+  protected static function encodeValue($value, $escape, $enclosure) {
+    ///remove any ESCAPED double quotes within string.
+    $value = str_replace("{$escape}{$enclosure}","{$enclosure}",$value);
+    //then force escape these same double quotes And Any UNESCAPED Ones.
+    $value = str_replace("{$enclosure}","{$escape}{$enclosure}",$value);
+    //force wrap value in quotes and return
+    return "{$enclosure}{$value}{$enclosure}";
   }
 
   public static function exportBatch(CRM_Queue_TaskContext $ctx, $filename, $params, $dataProcessorId, $outputId, $offset, $limit, $sortFieldName = null, $sortDirection = 'ASC') {
