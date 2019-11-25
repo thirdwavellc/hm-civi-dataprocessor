@@ -228,7 +228,7 @@ abstract class AbstractFilterHandler {
         $toTime = \CRM_Utils_Array::value("{$filterName}_to_time", $submittedValues);
         $op = \CRM_Utils_Array::value("op", $submittedValues);
 
-        if ($op != 'null') {
+        if ($relative != 'null') {
           list($from, $to) = \CRM_Utils_Date::getFromTo($relative, $from, $to, $fromTime, $toTime);
         }
         if (!$from && !$to) {
@@ -632,7 +632,7 @@ abstract class AbstractFilterHandler {
     $fromTime = \CRM_Utils_Array::value("from_time", $submittedValues);
     $toTime = \CRM_Utils_Array::value("to_time", $submittedValues);
 
-    if ($op == 'null') {
+    if ($relative == 'null') {
       $filterParams = [
         'op' => 'IS NULL',
         'value' => '',
