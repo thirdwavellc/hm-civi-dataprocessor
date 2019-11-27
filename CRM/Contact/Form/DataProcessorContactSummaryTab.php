@@ -129,7 +129,10 @@ class CRM_Contact_Form_DataProcessorContactSummaryTab extends CRM_DataprocessorS
         2 => $datasource_name
       )));
     }
-    $fieldSpecification  =  clone $dataSource->getAvailableFilterFields()->getFieldSpecificationByName($field_name);
+    $fieldSpecification  =  $dataSource->getAvailableFilterFields()->getFieldSpecificationByAlias($field_name);
+    if (!$fieldSpecification) {
+      $fieldSpecification  =  $dataSource->getAvailableFilterFields()->getFieldSpecificationByName($field_name);
+    }
     if (!$fieldSpecification) {
       throw new FieldNotFoundException(E::ts("Requires a field with the name '%1' in the data source '%2'. Did you change the data source type?", array(
         1 => $field_name,
@@ -137,6 +140,7 @@ class CRM_Contact_Form_DataProcessorContactSummaryTab extends CRM_DataprocessorS
       )));
     }
 
+    $fieldSpecification = clone $fieldSpecification;
     $fieldSpecification->alias = 'contact_summary_tab_contact_id';
     $dataFlow = $dataSource->ensureField($fieldSpecification);
     if ($dataFlow && $dataFlow instanceof SqlDataFlow) {

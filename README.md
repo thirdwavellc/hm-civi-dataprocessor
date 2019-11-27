@@ -22,6 +22,12 @@ The extension is licensed under [AGPL-3.0](LICENSE.txt).
 * [Using API output to fetch the results in data processor](docs/HowToAddAPIDataOutput.md)
 * How to export and import a data processor
 
+## Related extenions
+
+* [dataprocessor-token-output](https://lab.civicrm.org/extensions/dataprocessor-token-output) Create tokens from a data processor
+* [dataprocessor-vega-graphs](https://lab.civicrm.org/extensions/dataprocessor-vega-graphs) Graph output of a dataprocessor
+
+
 ## Developer documentation
 
 * Enhancing the data processor
