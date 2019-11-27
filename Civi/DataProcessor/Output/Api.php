@@ -146,7 +146,7 @@ class Api implements OutputInterface, API_ProviderInterface, EventSubscriberInte
       $actions = array_map('strtolower', $actions);
       if (strtolower($apiRequest['entity']) == strtolower($entity)) {
         if (strtolower($apiRequest['action']) == 'getfields' || strtolower($apiRequest['action']) == 'getoptions') {
-          if (!isset($apiRequest['params']) || !isset($apiRequest['params']['action']) || in_array(strtolower($apiRequest['params']['action']), $actions)) {
+          if (isset($apiRequest['params']) && isset($apiRequest['params']['action']) && in_array(strtolower($apiRequest['params']['action']), $actions)) {
             $event->setApiProvider($this);
             $event->stopPropagation();
           }
