@@ -138,11 +138,20 @@ class Api implements OutputInterface, API_ProviderInterface, EventSubscriberInte
   public function onApiResolve(ResolveEvent $event) {
     $entities = $this->getEntityNames();
     $apiRequest = $event->getApiRequest();
+    if (strtolower($apiRequest['entity'] == 'contact') && strtolower($apiRequest['action']) == 'getquick') {
+      return;
+    }
     foreach($entities as $entity) {
+      $actions = $this->getActionNames(3, $entity);
+      $actions = array_map('strtolower', $actions);
       if (strtolower($apiRequest['entity']) == strtolower($entity)) {
-        $event->setApiProvider($this);
         if (strtolower($apiRequest['action']) == 'getfields' || strtolower($apiRequest['action']) == 'getoptions') {
-          $event->stopPropagation();
+          if (!isset($apiRequest['params']) || !isset($apiRequest['params']['action']) || in_array(strtolower($apiRequest['params']['action']), $actions)) {
+            $event->setApiProvider($this);
+            $event->stopPropagation();
+          }
+        } elseif (in_array(strtolower($apiRequest['action'], $actions))) {
+          $event->setApiProvider($this);
         }
       }
     }
