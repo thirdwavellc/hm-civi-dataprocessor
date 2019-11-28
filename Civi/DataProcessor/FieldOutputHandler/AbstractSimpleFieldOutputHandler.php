@@ -125,7 +125,7 @@ class AbstractSimpleFieldOutputHandler extends AbstractFieldOutputHandler implem
   public function buildConfigurationForm(\CRM_Core_Form $form, $field=array()) {
     $fieldSelect = $this->getFieldOptions($field['data_processor_id']);
 
-    $form->add('select', 'field', E::ts('Field'), $fieldSelect, true, array(
+    $form->add('select', 'field', $this->getFieldTitle(), $fieldSelect, true, array(
       'style' => 'min-width:250px',
       'class' => 'crm-select2 huge data-processor-field-for-name',
       'placeholder' => E::ts('- select -'),
@@ -185,6 +185,17 @@ class AbstractSimpleFieldOutputHandler extends AbstractFieldOutputHandler implem
    */
   public function isFieldValid(FieldSpecification $field) {
     return true;
+  }
+
+  /**
+   * Returns the label of the field for selecting a field.
+   *
+   * This could be override in a child class.
+   *
+   * @return string
+   */
+  protected function getFieldTitle() {
+    return E::ts('Field');
   }
 
 

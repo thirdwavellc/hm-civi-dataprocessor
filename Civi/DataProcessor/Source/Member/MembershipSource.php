@@ -30,4 +30,20 @@ class MembershipSource extends AbstractCivicrmEntitySource {
     return 'civicrm_membership';
   }
 
+  /**
+   * Returns the default configuration for this data source
+   *
+   * @return array
+   */
+  public function getDefaultConfiguration() {
+    return array(
+      'filter' => array(
+        'is_test' => array (
+          'op' => '=',
+          'value' => '0',
+        )
+      )
+    );
+  }
+
 }

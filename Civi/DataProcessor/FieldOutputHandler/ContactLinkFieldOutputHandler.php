@@ -83,7 +83,7 @@ class ContactLinkFieldOutputHandler extends AbstractFieldOutputHandler implement
     if (!$this->contactIdSource) {
       throw new DataSourceNotFoundException(E::ts("Field %1 requires data source '%2' which could not be found. Did you rename or deleted the data source?", array(
         1=>$title,
-        2=>$configuration['datasource'])
+        2=>$configuration['contact_id_datasource'])
       ));
     }
     $this->contactIdField = $this->contactIdSource->getAvailableFields()->getFieldSpecificationByAlias($configuration['contact_id_field']);

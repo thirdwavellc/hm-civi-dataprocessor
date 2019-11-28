@@ -142,6 +142,7 @@ class Factory {
     $this->addjoinType('simple_join', 'Civi\DataProcessor\DataFlow\MultipleDataFlows\SimpleJoin', E::ts('Select fields to join on'));
     $this->addjoinType('simple_non_required_join', 'Civi\DataProcessor\DataFlow\MultipleDataFlows\SimpleNonRequiredJoin', E::ts('Select fields to join on (not required)'));
     $this->addOutputHandler('raw', 'Civi\DataProcessor\FieldOutputHandler\RawFieldOutputHandler', E::ts('Raw field value'));
+    $this->addOutputHandler('number', 'Civi\DataProcessor\FieldOutputHandler\NumberFieldOutputHandler', E::ts('Formatted Number field value'));
     $this->addOutputHandler('date', 'Civi\DataProcessor\FieldOutputHandler\DateFieldOutputHandler', E::ts('Date field value'));
     $this->addOutputHandler('contact_link', 'Civi\DataProcessor\FieldOutputHandler\ContactLinkFieldOutputHandler', E::ts('Link to view contact'));
     $this->addOutputHandler('file_field', 'Civi\DataProcessor\FieldOutputHandler\FileFieldOutputHandler', E::ts('File download link'));

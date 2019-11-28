@@ -206,8 +206,11 @@ abstract class AbstractSource implements SourceInterface {
             $fields[$alias] = $fieldSpec->title;
           }
           $form->addElement('select', "{$alias}_op", ts('Operator:'), [
+            '' => E::ts(' - Select - '),
             '=' => E::ts('Is equal to'),
             '!=' => E::ts('Is not equal to'),
+            'IS NOT NULL' => E::ts('Is not empty'),
+            'IS NULL' => E::ts('Is empty'),
           ]);
           if (!empty($fieldSpec->getOptions())) {
             $form->addElement('select', "{$alias}_value", $fieldSpec->title, array('' => E::ts(' - Select - ')) + $fieldSpec->getOptions());
@@ -221,8 +224,11 @@ abstract class AbstractSource implements SourceInterface {
               $fields[$alias] = $fieldSpec->title;
             }
             $form->addElement('select', "{$alias}_op", ts('Operator:'), [
+              '' => E::ts(' - Select - '),
               'IN' => E::ts('Is one of'),
               'NOT IN' => E::ts('Is not one of'),
+              'IS NOT NULL' => E::ts('Is not empty'),
+              'IS NULL' => E::ts('Is empty'),
             ]);
             $form->addElement('select', "{$alias}_value", $fieldSpec->title, $fieldSpec->getOptions(), array(
               'style' => 'min-width:250px',
@@ -230,6 +236,17 @@ abstract class AbstractSource implements SourceInterface {
               'multiple' => 'multiple',
               'placeholder' => E::ts('- select -'),
             ));
+          } else {
+            if ($isRequired) {
+              $required_fields[$alias] = $fieldSpec->title;
+            } else {
+              $fields[$alias] = $fieldSpec->title;
+            }
+            $form->addElement('select', "{$alias}_op", ts('Operator:'), [
+              '' => E::ts(' - Select - '),
+              'IS NOT NULL' => E::ts('Is not empty'),
+              'IS NULL' => E::ts('Is empty'),
+            ]);
           }
       }
     }
@@ -268,37 +285,16 @@ abstract class AbstractSource implements SourceInterface {
     $filter_config = array();
     foreach($this->getAvailableFilterFields()->getFields() as $fieldSpec) {
       $alias = $fieldSpec->name;
-      if ($this->valueSubmittedAndNotEmpty($alias.'_value', $submittedValues)) {
+      if (isset($submittedValues[$alias.'_op']) && $submittedValues[$alias.'_op']) {
         $filter_config[$alias] = array(
           'op' => $submittedValues[$alias.'_op'],
-          'value' => $submittedValues[$alias.'_value']
+          'value' => isset($submittedValues[$alias.'_value']) ? $submittedValues[$alias.'_value'] : ''
         );
       }
     }
     $configuration['filter'] = $filter_config;
 
     return $configuration;
-  }
-
-  /**
-   * Checks whether a value is submitted and not empty.
-   *
-   * @param $field
-   * @param $values
-   *
-   * @return bool
-   */
-  protected function valueSubmittedAndNotEmpty($field, $values) {
-    if (!isset($values[$field])) {
-      return false;
-    }
-    if (is_array($values[$field]) && count($values[$field]) === 0) {
-      return false;
-    }
-    if (is_string($values[$field]) && strlen($values[$field]) === 0) {
-      return false;
-    }
-    return true;
   }
 
 }

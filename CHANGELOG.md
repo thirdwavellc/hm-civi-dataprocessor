@@ -24,6 +24,7 @@
 * Added field to display relationships.
 * Added is not empty as a filter operator.
 * Added hidden fields option to search outputs, dashboard output and contact summary tab output.
+* Added formatted number output field handler
 
 # Version 1.0.7
 
