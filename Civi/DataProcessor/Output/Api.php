@@ -150,7 +150,7 @@ class Api implements OutputInterface, API_ProviderInterface, EventSubscriberInte
             $event->setApiProvider($this);
             $event->stopPropagation();
           }
-        } elseif (in_array(strtolower($apiRequest['action'], $actions))) {
+        } elseif (in_array(strtolower($apiRequest['action']), $actions)) {
           $event->setApiProvider($this);
         }
       }
