@@ -10,8 +10,18 @@
         <div class="clear"></div>
     </div>
     <div class="crm-section">
+      <div class="label">{$form.separator.label}</div>
+      <div class="content">{$form.separator.html}</div>
+      <div class="clear"></div>
+    </div>
+    <div class="crm-section">
         <div class="label"></div>
         <div class="content">{$form.show_label.html}&nbsp;{$form.show_label.label}</div>
         <div class="clear"></div>
+    </div>
+    <div class="crm-section">
+      <div class="label">{$form.sort.label}</div>
+      <div class="content">{$form.sort.html}</div>
+      <div class="clear"></div>
     </div>
 {/crmScope}

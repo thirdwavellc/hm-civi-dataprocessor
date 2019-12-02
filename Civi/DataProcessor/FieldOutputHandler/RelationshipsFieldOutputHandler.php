@@ -43,6 +43,10 @@ class RelationshipsFieldOutputHandler extends AbstractFieldOutputHandler {
 
   protected $show_label = true;
 
+  protected $separator = ', ';
+
+  protected $sort = 'label-name';
+
   /**
    * @return \Civi\DataProcessor\DataSpecification\FieldSpecification
    */
@@ -104,6 +108,12 @@ class RelationshipsFieldOutputHandler extends AbstractFieldOutputHandler {
     if (isset($configuration['show_label'])) {
       $this->show_label = $configuration['show_label'];
     }
+    if (isset($configuration['separator'])) {
+      $this->separator = $configuration['separator'];
+    }
+    if (isset($configuration['sort'])) {
+      $this->sort = $configuration['sort'];
+    }
   }
 
   /**
@@ -117,12 +127,12 @@ class RelationshipsFieldOutputHandler extends AbstractFieldOutputHandler {
   public function formatField($rawRecord, $formattedRecord) {
     $contactId = $rawRecord[$this->contactIdField->alias];
     $sql['a_b'] = "SELECT c.id, c.display_name, t.label_a_b as label, r.relationship_type_id, c.contact_type, c.contact_sub_type
-            FROM civicrm_contact c 
+            FROM civicrm_contact c
             INNER JOIN civicrm_relationship r ON r.contact_id_b = c.id
             INNER JOIN civicrm_relationship_type t on r.relationship_type_id = t.id
             WHERE c.is_deleted = 0 AND r.is_active = 1 AND r.contact_id_a = %1";
     $sql['b_a'] = "SELECT c.id, c.display_name, t.label_b_a as label, r.relationship_type_id, c.contact_type, c.contact_sub_type
-            FROM civicrm_contact c 
+            FROM civicrm_contact c
             INNER JOIN civicrm_relationship r ON r.contact_id_a = c.id
             INNER JOIN civicrm_relationship_type t on r.relationship_type_id = t.id
             WHERE c.is_deleted = 0 AND r.is_active = 1 AND r.contact_id_b = %1";
@@ -151,7 +161,17 @@ class RelationshipsFieldOutputHandler extends AbstractFieldOutputHandler {
     $htmlFormattedValues = [];
     if (count($sql)) {
       $sql = implode(" UNION ", $sql);
-      $sql .= " ORDER BY label, display_name";
+      switch ($this->sort) {
+        case 'birthdate':
+          $sql .= " ORDER BY c.birth_date ASC, display_name ASC";
+          break;
+        case 'name':
+          $sql .= " ORDER BY display_name ASC";
+          break;
+        default:
+          $sql .= " ORDER BY label ASC, display_name ASC";
+          break;
+      }
       $sqlParams[1] = [$contactId, 'Integer'];
       $dao = \CRM_Core_DAO::executeQuery($sql, $sqlParams);
       while ($dao->fetch()) {
@@ -172,7 +192,7 @@ class RelationshipsFieldOutputHandler extends AbstractFieldOutputHandler {
       }
     }
     $output = new HTMLFieldOutput($contactId);
-    $output->formattedValue = implode(",", $formattedValues);
+    $output->formattedValue = implode($this->separator, $formattedValues);
     $output->setHtmlOutput(implode("<br>", $htmlFormattedValues));
     return $output;
   }
@@ -201,6 +221,9 @@ class RelationshipsFieldOutputHandler extends AbstractFieldOutputHandler {
       $relationshipTypes['a_b_'.$relationship_type['name_a_b']] = $relationship_type['label_a_b'];
       $relationshipTypes['b_a_'.$relationship_type['name_b_a']] = $relationship_type['label_b_a'];
     }
+    $sort['label-name'] = E::ts('Relationship Type, Display Name');
+    $sort['birthdate'] = E::ts('Birth date, Display Name');
+    $sort['name'] = E::ts('Display Name');
 
     $form->add('select', 'contact_id_field', E::ts('Contact ID Field'), $fieldSelect, true, array(
       'style' => 'min-width:250px',
@@ -214,9 +237,14 @@ class RelationshipsFieldOutputHandler extends AbstractFieldOutputHandler {
       'multiple' => true,
     ));
     $form->add('checkbox', 'show_label', E::ts('Show relationship type'), false, false);
+    $form->add('text', 'separator', E::ts('Separator'), true);
+    $form->add('select', 'sort', E::ts('Sort'), $sort, false, array(
+      'style' => 'min-width:250px',
+      'class' => 'crm-select2 huge',
+    ));
+    $defaults = array();
     if (isset($field['configuration'])) {
       $configuration = $field['configuration'];
-      $defaults = array();
       if (isset($configuration['field']) && isset($configuration['datasource'])) {
         $defaults['contact_id_field'] = $configuration['datasource'] . '::' . $configuration['field'];
       }
@@ -228,8 +256,20 @@ class RelationshipsFieldOutputHandler extends AbstractFieldOutputHandler {
       } elseif (!isset($configuration['show_label'])) {
         $defaults['show_label'] = 1;
       }
-      $form->setDefaults($defaults);
+      if (isset($configuration['separator'])) {
+        $defaults['separator'] = $configuration['separator'];
+      }
+      if (isset($configuration['sort'])) {
+        $defaults['sort'] = $configuration['sort'];
+      }
     }
+    if (!isset($defaults['separator'])) {
+      $defaults['separator'] = ',';
+    }
+    if (!isset($defaults['sort'])) {
+      $defaults['sort'] = 'label-name';
+    }
+    $form->setDefaults($defaults);
   }
 
   /**
@@ -255,6 +295,8 @@ class RelationshipsFieldOutputHandler extends AbstractFieldOutputHandler {
     $configuration['datasource'] = $datasource;
     $configuration['relationship_types'] = isset($submittedValues['relationship_types']) ? $submittedValues['relationship_types'] : array();
     $configuration['show_label'] = isset($submittedValues['show_label']) ? $submittedValues['show_label'] : 0;
+    $configuration['separator'] = $submittedValues['separator'];
+    $configuration['sort'] = $submittedValues['sort'];
     return $configuration;
   }
 
