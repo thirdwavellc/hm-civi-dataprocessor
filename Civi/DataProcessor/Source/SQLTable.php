@@ -65,6 +65,10 @@ class SQLTable extends AbstractSource {
    * @throws \Civi\DataProcessor\DataSpecification\FieldExistsException
    */
   protected function loadFields(DataSpecification $dataSpecification, $fieldsToSkip=[]) {
+    if (!\CRM_Core_DAO::checkTableExists($this->getTable())) {
+      \Civi::log()->error('Table ' . $this->getTable() . ' does not exist!');
+      return;
+    }
     $dao = \CRM_Core_DAO::executeQuery('SHOW COLUMNS FROM ' . $this->getTable());
     while ($dao->fetch()) {
       if (in_array($dao->Field, $fieldsToSkip)) {
