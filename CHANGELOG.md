@@ -1,6 +1,6 @@
 # Master version (in development)
 
-* Respect selected permissions for outputs 
+* Respect selected permissions for outputs
 * Allow to specify "Is Empty" for various filters.
 * Allow to limit ContactFilter to only show contacts from specific groups.
 * Output a data processor as a dashboard.
@@ -13,6 +13,7 @@
 * Added filter to search text in multiple fields.
 * Added filter for searching contacts with a certain tag.
 * Added filter for searching contacts with a certain type.
+* Added filter for contact has membership.
 * Added filter to respect the ACL. So that a user only sees the contacts he is allowed to see.
 * Removed the title attribute from the outputs as those don't make sense.
 * Refactored aggregation functionality and added aggregation function field.
