@@ -25,6 +25,7 @@
 * Added is not empty as a filter operator.
 * Added hidden fields option to search outputs, dashboard output and contact summary tab output.
 * Added formatted number output field handler
+* Added SQL Table Data Source
 
 # Version 1.0.7
 
