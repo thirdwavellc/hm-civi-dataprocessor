@@ -41,7 +41,10 @@ class ContactHasMembershipFilter extends AbstractFieldFilterHandler {
     $dataFlow  = $this->dataSource->ensureField($this->inputFieldSpecification);
     $membership_type_ids = $filter['value'];
     if (!is_array($membership_type_ids)) {
-      $membership_type_ids = array($membership_type_ids);
+      $membership_type_ids = explode(",", $membership_type_ids);
+      if (!is_array($membership_type_ids)) {
+        $membership_type_ids = [$membership_type_ids];
+      }
     }
 
     $currentMembershipStatuses = \CRM_Member_BAO_MembershipStatus::getMembershipStatusCurrent();
