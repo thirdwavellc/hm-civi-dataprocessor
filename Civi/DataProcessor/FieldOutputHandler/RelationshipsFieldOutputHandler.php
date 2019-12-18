@@ -47,6 +47,8 @@ class RelationshipsFieldOutputHandler extends AbstractFieldOutputHandler {
 
   protected $sort = 'label-name';
 
+  protected $includeDeceased = false;
+
   /**
    * @return \Civi\DataProcessor\DataSpecification\FieldSpecification
    */
@@ -114,6 +116,9 @@ class RelationshipsFieldOutputHandler extends AbstractFieldOutputHandler {
     if (isset($configuration['sort'])) {
       $this->sort = $configuration['sort'];
     }
+    if (isset($configuration['include_deceased'])) {
+      $this->includeDeceased = $configuration['include_deceased'] ? true : false;
+    }
   }
 
   /**
@@ -126,16 +131,20 @@ class RelationshipsFieldOutputHandler extends AbstractFieldOutputHandler {
    */
   public function formatField($rawRecord, $formattedRecord) {
     $contactId = $rawRecord[$this->contactIdField->alias];
+    $isDeceasedCond = " AND c.is_deceased = '0'";
+    if ($this->includeDeceased) {
+      $isDeceasedCond = "";
+    }
     $sql['a_b'] = "SELECT c.id, c.display_name, t.label_a_b as label, r.relationship_type_id, c.contact_type, c.contact_sub_type
             FROM civicrm_contact c
             INNER JOIN civicrm_relationship r ON r.contact_id_b = c.id
             INNER JOIN civicrm_relationship_type t on r.relationship_type_id = t.id
-            WHERE c.is_deleted = 0 AND r.is_active = 1 AND r.contact_id_a = %1";
+            WHERE c.is_deleted = 0 {$isDeceasedCond} AND r.is_active = 1 AND r.contact_id_a = %1";
     $sql['b_a'] = "SELECT c.id, c.display_name, t.label_b_a as label, r.relationship_type_id, c.contact_type, c.contact_sub_type
             FROM civicrm_contact c
             INNER JOIN civicrm_relationship r ON r.contact_id_a = c.id
             INNER JOIN civicrm_relationship_type t on r.relationship_type_id = t.id
-            WHERE c.is_deleted = 0 AND r.is_active = 1 AND r.contact_id_b = %1";
+            WHERE c.is_deleted = 0 {$isDeceasedCond} AND r.is_active = 1 AND r.contact_id_b = %1";
     if (count($this->relationship_type_ids)) {
       $relationShipTypeIdsA_B = array();
       $relationShipTypeIdsB_A = array();
@@ -237,6 +246,7 @@ class RelationshipsFieldOutputHandler extends AbstractFieldOutputHandler {
       'multiple' => true,
     ));
     $form->add('checkbox', 'show_label', E::ts('Show relationship type'), false, false);
+    $form->add('checkbox', 'include_deceased', E::ts('Include deceased'), false, false);
     $form->add('text', 'separator', E::ts('Separator'), true);
     $form->add('select', 'sort', E::ts('Sort'), $sort, false, array(
       'style' => 'min-width:250px',
@@ -261,6 +271,9 @@ class RelationshipsFieldOutputHandler extends AbstractFieldOutputHandler {
       }
       if (isset($configuration['sort'])) {
         $defaults['sort'] = $configuration['sort'];
+      }
+      if (isset($configuration['include_deceased'])) {
+        $defaults['include_deceased'] = $configuration['include_deceased'] ? true : false;
       }
     }
     if (!isset($defaults['separator'])) {
@@ -297,6 +310,7 @@ class RelationshipsFieldOutputHandler extends AbstractFieldOutputHandler {
     $configuration['show_label'] = isset($submittedValues['show_label']) ? $submittedValues['show_label'] : 0;
     $configuration['separator'] = $submittedValues['separator'];
     $configuration['sort'] = $submittedValues['sort'];
+    $configuration['include_deceased'] = $submittedValues['include_deceased'];
     return $configuration;
   }
 
