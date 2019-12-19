@@ -231,7 +231,7 @@ abstract class CRM_DataprocessorSearch_Form_AbstractSearch extends CRM_Dataproce
     $output = civicrm_api3("DataProcessorOutput", "getsingle", array('id' => $export_id));
     $outputClass = $factory->getOutputByName($output['type']);
     if ($outputClass instanceof \Civi\DataProcessor\Output\ExportOutputInterface) {
-      $outputClass->downloadExport($this->dataProcessorClass, $this->dataProcessor, $output, $this->_formValues, $sortFieldName, $sortDirection);
+      $outputClass->downloadExport($this->dataProcessorClass, $this->dataProcessor, $output, $this->_formValues, $sortFieldName, $sortDirection, $this->getIdFieldName(), $this->getSelectedIds());
     }
   }
 
@@ -395,11 +395,12 @@ abstract class CRM_DataprocessorSearch_Form_AbstractSearch extends CRM_Dataproce
       if ($outputClass instanceof \Civi\DataProcessor\Output\ExportOutputInterface) {
         $otherOutput = array();
         $otherOutput['title'] = $outputClass->getTitleForExport($output, $this->dataProcessor);
-        $otherOutput['url'] = $this->currentUrl.'&export_id='.$output['id'];
+        $otherOutput['id'] = $output['id'];
         $otherOutput['icon'] = $outputClass->getExportFileIcon($output, $this->dataProcessor);
         $otherOutputs[] = $otherOutput;
       }
     }
+    $this->add('hidden', 'export_id');
     $this->assign('other_outputs', $otherOutputs);
   }
 
@@ -408,23 +409,7 @@ abstract class CRM_DataprocessorSearch_Form_AbstractSearch extends CRM_Dataproce
 
     $this->buildCriteriaForm();
 
-    $selectedIds = [];
-    $qfKeyParam = CRM_Utils_Array::value('qfKey', $this->_formValues);
-    if (empty($qfKeyParam) && $this->controller->_key) {
-      $qfKeyParam = $this->controller->_key;
-    }
-    // We use ajax to handle selections only if the search results component_mode is set to "contacts"
-    if ($this->usePrevNextCache()) {
-      $this->addClass('crm-ajax-selection-form');
-      if ($qfKeyParam) {
-        $qfKeyParam = "civicrm search {$qfKeyParam}";
-        $selectedIdsArr = CRM_DataprocessorSearch_Utils_PrevNextCache::getSelection($qfKeyParam);
-        if (isset($selectedIdsArr[$qfKeyParam]) && is_array($selectedIdsArr[$qfKeyParam])) {
-          $selectedIds = array_keys($selectedIdsArr[$qfKeyParam]);
-        }
-      }
-    }
-
+    $selectedIds = $this->getSelectedIds();
     $this->assign_by_ref('selectedIds', $selectedIds);
     $this->add('hidden', 'context');
     $this->add('hidden', CRM_Utils_Sort::SORT_ID);
@@ -498,6 +483,39 @@ abstract class CRM_DataprocessorSearch_Form_AbstractSearch extends CRM_Dataproce
    */
   protected function alterDataProcessor(AbstractProcessorType $dataProcessorClass) {
 
+  }
+
+  /**
+   * Returns the selected IDs.
+   *
+   * @return array
+   */
+  protected function getSelectedIds() {
+    $selectedIds = [];
+    $qfKeyParam = CRM_Utils_Array::value('qfKey', $this->_formValues);
+    if (empty($qfKeyParam) && $this->controller->_key) {
+      $qfKeyParam = $this->controller->_key;
+    }
+    // We use ajax to handle selections only if the search results component_mode is set to "contacts"
+    if ($this->usePrevNextCache()) {
+      $this->addClass('crm-ajax-selection-form');
+      if ($qfKeyParam) {
+        $qfKeyParam = "civicrm search {$qfKeyParam}";
+        $selectedIdsArr = CRM_DataprocessorSearch_Utils_PrevNextCache::getSelection($qfKeyParam);
+        if (isset($selectedIdsArr[$qfKeyParam]) && is_array($selectedIdsArr[$qfKeyParam])) {
+          $selectedIds = array_keys($selectedIdsArr[$qfKeyParam]);
+        }
+      }
+    } else {
+      if (isset($this->_formValues['radio_ts']) && $this->_formValues['radio_ts'] == 'ts_sel') {
+        foreach ($this->_formValues as $name => $value) {
+          if (substr($name, 0, CRM_Core_Form::CB_PREFIX_LEN) == CRM_Core_Form::CB_PREFIX) {
+            $selectedIds[] = substr($name, CRM_Core_Form::CB_PREFIX_LEN);
+          }
+        }
+      }
+    }
+    return $selectedIds;
   }
 
 }

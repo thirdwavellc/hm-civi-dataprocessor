@@ -27,6 +27,7 @@
 * Added hidden fields option to search outputs, dashboard output and contact summary tab output.
 * Added formatted number output field handler
 * Added SQL Table Data Source
+* Export from a search only exports the selected rows.
 
 # Version 1.0.7
 

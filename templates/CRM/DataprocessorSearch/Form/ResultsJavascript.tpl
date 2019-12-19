@@ -8,6 +8,12 @@
       if (selectedIds.length > 0) {
         $('#mark_x_' + selectedIds.join(',#mark_x_') + ',input[name=radio_ts][value=ts_sel]').trigger('click');
       }
+      $('.crm-search-tasks .action-links .action-link .other-output-button').on('click', function() {
+        var output_id = $(this).data('output-id');
+        $('input[name=export_id]').val(output_id);
+        $('form').submit();
+        return false;
+      });
     });
     {/literal}
 </script>

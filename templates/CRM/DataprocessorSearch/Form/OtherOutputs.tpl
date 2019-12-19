@@ -2,7 +2,7 @@
     <div class="crm-block action-links">
         <span class="action-link">
         {foreach from=$other_outputs item=other_output}
-            <a class="" href="{$other_output.url}">
+            <a class="other-output-button" href="#" data-output-id="{$other_output.id}">
                 {if ($other_output.icon)}
                     {$other_output.icon}
                 {/if}
