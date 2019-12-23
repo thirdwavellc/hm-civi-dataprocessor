@@ -1,4 +1,4 @@
-# Master version (in development)
+# Version 1.1.0
 
 * Respect selected permissions for outputs
 * Allow to specify "Is Empty" for various filters.
