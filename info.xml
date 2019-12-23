@@ -15,7 +15,7 @@
     <url desc="Licensing">http://www.gnu.org/licenses/agpl-3.0.html</url>
   </urls>
   <releaseDate>2019-07-15</releaseDate>
-  <version>master</version>
+  <version>1.1.0</version>
   <develStage>dev</develStage>
   <compatibility>
     <ver>4.7</ver>
@@ -23,6 +23,7 @@
     <ver>5.13</ver>
     <ver>5.14</ver>
     <ver>5.15</ver>
+    <ver>5.20</ver>
   </compatibility>
   <classloader>
     <psr4 prefix="Civi\" path="Civi"/>
