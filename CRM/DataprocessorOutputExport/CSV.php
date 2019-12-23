@@ -164,18 +164,18 @@ class CRM_DataprocessorOutputExport_CSV implements ExportOutputInterface {
     self::createHeaderLine($path, $dataProcessorClass, $outputBAO['configuration']);
     self::exportDataProcessor($path, $dataProcessorClass, $outputBAO['configuration'], $idField, $selectedIds);
 
-    $mimeType = CRM_Utils_Request::retrieveValue('mime-type', 'String', '', FALSE);
+    $mimeType = $this->mimeType();
 
     if (!$path) {
-      CRM_Core_Error::statusBounce('Could not retrieve the file');
+      \CRM_Core_Error::statusBounce('Could not retrieve the file');
     }
 
     $buffer = file_get_contents($path);
     if (!$buffer) {
-      CRM_Core_Error::statusBounce('The file is either empty or you do not have permission to retrieve the file');
+      \CRM_Core_Error::statusBounce('The file is either empty or you do not have permission to retrieve the file');
     }
 
-    CRM_Utils_System::download(
+    \CRM_Utils_System::download(
       $download_name,
       $mimeType,
       $buffer,
