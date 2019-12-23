@@ -21,6 +21,8 @@ abstract class AbstractDataFlow {
    */
   private $_allRecords = null;
 
+  private $currentRecordIndex = 0;
+
   /**
    * @var \Civi\DataProcessor\FieldOutputHandler\AbstractFieldOutputHandler[]
    */
@@ -76,7 +78,9 @@ abstract class AbstractDataFlow {
    *
    * @return void
    */
-  abstract protected function resetInitializeState();
+  protected function resetInitializeState() {
+    $this->currentRecordIndex = 0;
+  }
 
   /**
    * Returns the next record in an associative array
@@ -108,11 +112,10 @@ abstract class AbstractDataFlow {
    * @throws \Civi\DataProcessor\DataFlow\EndOfFlowException
    */
   public function nextRecord($fieldNamePrefix = '') {
-    static $currentRecordIndex = 0;
     $allRecords = $this->allRecords($fieldNamePrefix);
-    if (isset($allRecords[$currentRecordIndex])) {
-      $record = $allRecords[$currentRecordIndex];
-      $currentRecordIndex++;
+    if (isset($allRecords[$this->currentRecordIndex])) {
+      $record = $allRecords[$this->currentRecordIndex];
+      $this->currentRecordIndex++;
       return $record;
     }
     throw new EndOfFlowException();

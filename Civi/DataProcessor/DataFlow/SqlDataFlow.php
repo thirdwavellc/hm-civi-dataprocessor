@@ -141,6 +141,7 @@ abstract class SqlDataFlow extends AbstractDataFlow {
    * @return void
    */
   protected function resetInitializeState() {
+    parent::resetInitializeState();
     $this->dao = null;
   }
 

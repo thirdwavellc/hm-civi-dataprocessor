@@ -161,6 +161,7 @@ class CombinedDataFlow extends AbstractDataFlow implements MultipleSourceDataFlo
    * @return void
    */
   protected function resetInitializeState() {
+    parent::resetInitializeState();
     $this->initialized = false;
   }
 

@@ -49,6 +49,7 @@ class InMemoryDataFlow extends AbstractDataFlow {
    * @return void
    */
   protected function resetInitializeState() {
+    parent::resetInitializeState();
     $this->isInitialized = FALSE;
   }
 
