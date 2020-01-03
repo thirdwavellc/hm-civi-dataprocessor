@@ -123,12 +123,6 @@ class CRM_Contact_Form_DataProcessorContactSummaryTab extends CRM_DataprocessorS
     if (!$dataSource) {
       throw new DataSourceNotFoundException(E::ts("Requires data source '%1' which could not be found. Did you rename or deleted the data source?", array(1=>$datasource_name)));
     }
-    if (!$dataSource->getAvailableFilterFields()->getFieldSpecificationByName($field_name)) {
-      throw new FieldNotFoundException(E::ts("Requires a field with the name '%1' in the data source '%2'. Did you change the data source type?", array(
-        1 => $field_name,
-        2 => $datasource_name
-      )));
-    }
     $fieldSpecification  =  $dataSource->getAvailableFilterFields()->getFieldSpecificationByAlias($field_name);
     if (!$fieldSpecification) {
       $fieldSpecification  =  $dataSource->getAvailableFilterFields()->getFieldSpecificationByName($field_name);
