@@ -68,7 +68,7 @@ class ContactInGroupFilter extends AbstractFieldFilterHandler {
         $groupFilters,
         $dataFlow->getName(),
         $this->inputFieldSpecification->name,
-        $filter['op']
+        'IN'
       );
 
       $dataFlow->addWhereClause($this->whereClause);
