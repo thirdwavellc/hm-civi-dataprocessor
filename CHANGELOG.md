@@ -1,3 +1,7 @@
+# Version 1.2.0 (not yet released)
+
+* Made CSV Export download available for anonymous users.
+
 # Version 1.1.0
 
 * Respect selected permissions for outputs

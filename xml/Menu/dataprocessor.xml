@@ -83,8 +83,15 @@
   </item>
   <item>
     <path>civicrm/dataprocessor/form/output/download</path>
-    <title>Browse Uploaded files</title>
+    <title>Download</title>
     <access_arguments>access uploaded files</access_arguments>
     <page_callback>CRM_DataprocessorOutputExport_Page_Download</page_callback>
+  </item>
+  <item>
+    <path>civicrm/dataprocessor/output/export</path>
+    <title>Export</title>
+    <page_callback>CRM_DataprocessorOutputExport_Page_Export</page_callback>
+    <access_callback>1</access_callback>
+    <is_public>true</is_public>
   </item>
 </menu>

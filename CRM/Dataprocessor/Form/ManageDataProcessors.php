@@ -41,7 +41,11 @@ class CRM_Dataprocessor_Form_ManageDataProcessors extends CRM_Core_Form {
         if ($outputClass instanceof \Civi\DataProcessor\Output\UIOutputInterface) {
           $dataProcessors[$idx]['navigation'][$outputIndex]['url'] = CRM_Utils_System::url($outputClass->getUrlToUi($output, $dataProcessor), array('reset' => '1'));
           $dataProcessors[$idx]['navigation'][$outputIndex]['title'] = $outputClass->getTitleForUiLink($output, $dataProcessor);
+        } elseif ($outputClass instanceof \Civi\DataProcessor\Output\UrlOutputInterface && $outputClass->checkPermission($output, $dataProcessor)) {
+          $dataProcessors[$idx]['navigation'][$outputIndex]['url'] = $outputClass->getUrl($output, $dataProcessor);
+          $dataProcessors[$idx]['navigation'][$outputIndex]['title'] = $outputClass->getTitleForLink($output, $dataProcessor);
         }
+
       }
 
     }
