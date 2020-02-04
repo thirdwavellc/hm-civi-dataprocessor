@@ -1,6 +1,7 @@
 # Version 1.2.0 (not yet released)
 
 * Made CSV Export download available for anonymous users.
+* Change Group Filter so that it also works with smart groups
 
 # Version 1.1.0
 
