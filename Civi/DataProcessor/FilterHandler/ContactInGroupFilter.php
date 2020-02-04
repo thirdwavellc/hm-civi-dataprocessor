@@ -54,6 +54,12 @@ class ContactInGroupFilter extends AbstractFieldFilterHandler {
     if (!is_array($group_ids)) {
       $group_ids = array($group_ids);
     }
+
+    // If the groups are smartgroups (saved searches) they may be out of date.
+    // This triggers a check (and rebuild if necessary).
+    \CRM_Contact_BAO_GroupContactCache::check($group_ids);
+
+    // Look in the group contact table
     $groupTableAlias = 'civicrm_group_contact_'.$this->inputFieldSpecification->alias;
     $groupFilters = array(
       new SqlDataFlow\SimpleWhereClause($groupTableAlias, 'status', '=', 'Added'),
@@ -70,9 +76,38 @@ class ContactInGroupFilter extends AbstractFieldFilterHandler {
         $this->inputFieldSpecification->name,
         $filter['op']
       );
-
-      $dataFlow->addWhereClause($this->whereClause);
+      $whereClauses[] = $this->whereClause;
     }
+
+    // Now look in the smartgroup group contact table
+    $groupTableAlias = 'civicrm_group_contact_cache_'.$this->inputFieldSpecification->alias;
+    $groupFilters = array(
+      new SqlDataFlow\SimpleWhereClause($groupTableAlias, 'group_id', 'IN', $group_ids),
+    );
+
+    if ($dataFlow && $dataFlow instanceof SqlDataFlow) {
+      $this->whereClause = new SqlDataFlow\InTableWhereClause(
+        'contact_id',
+        'civicrm_group_contact_cache',
+        $groupTableAlias,
+        $groupFilters,
+        $dataFlow->getName(),
+        $this->inputFieldSpecification->name,
+        $filter['op']
+      );
+
+      $whereClauses[] = $this->whereClause;
+    }
+    switch ($filter['op']) {
+      case 'IN':
+        $this->whereClause = new SqlDataFlow\OrClause($whereClauses);
+        break;
+
+      case 'NOT IN':
+        $this->whereClause = new SqlDataFlow\AndClause($whereClauses);
+        break;
+    }
+    $dataFlow->addWhereClause($this->whereClause);
   }
 
   /**
