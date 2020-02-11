@@ -31,7 +31,9 @@ class SimpleWhereClause implements WhereClauseInterface {
         case 'IS NULL':
           $operator = 'IS NULL';
           break;
-
+        case 'IS NOT NULL':
+          $operator = 'IS NOT NULL';
+          break;
       }
     }
 
@@ -40,7 +42,7 @@ class SimpleWhereClause implements WhereClauseInterface {
     $this->field = $field;
     $this->operator = $operator;
 
-    if ($operator == 'IS NULL') {
+    if ($operator == 'IS NULL' || $operator == 'IS NOT NULL') {
       $this->value = NULL;
       return;
     }
@@ -107,8 +109,10 @@ class SimpleWhereClause implements WhereClauseInterface {
         return "(`{$this->table_alias}`.`{$this->field}` {$this->operator} {$this->value} OR `{$this->table_alias}`.`{$this->field}` IS NULL)";
         break;
       case 'IS NULL':
+        return "(`{$this->table_alias}`.`{$this->field}` {$this->operator} OR `{$this->table_alias}`.`{$this->field}` = '')";
+        break;
       case 'IS NOT NULL':
-        return "`{$this->table_alias}`.`{$this->field}` {$this->operator}";
+        return "(`{$this->table_alias}`.`{$this->field}` {$this->operator} AND `{$this->table_alias}`.`{$this->field}` != '')";
         break;
       default:
         return "`{$this->table_alias}`.`{$this->field}` {$this->operator} {$this->value}";

@@ -4,6 +4,9 @@
  * @license AGPL-3.0
  */
 
+use Civi\DataProcessor\FieldOutputHandler\FieldOutput;
+use Civi\DataProcessor\FieldOutputHandler\Markupable;
+use Civi\DataProcessor\ProcessorType\AbstractProcessorType;
 use CRM_Dataprocessor_ExtensionUtil as E;
 
 abstract class CRM_DataprocessorSearch_Form_AbstractSearch extends CRM_Dataprocessor_Form_Output_AbstractUIOutputForm {
@@ -94,6 +97,9 @@ abstract class CRM_DataprocessorSearch_Form_AbstractSearch extends CRM_Dataproce
     if (!$this->isIdFieldVisible()) {
       $hiddenFields[] = $this->getIdFieldName();
     }
+    if (isset($this->dataProcessorOutput['configuration']['hidden_fields']) && is_array($this->dataProcessorOutput['configuration']['hidden_fields'])) {
+      $hiddenFields = array_merge($hiddenFields, $this->dataProcessorOutput['configuration']['hidden_fields']);
+    }
     return $hiddenFields;
   }
 
@@ -160,7 +166,7 @@ abstract class CRM_DataprocessorSearch_Form_AbstractSearch extends CRM_Dataproce
     $this->assign("context", $this->_context);
     $this->assign('debug', $this->_debug);
 
-    if (!$this->hasRequiredFilters() || (!empty($this->_formValues) && count($this->validateFilters()) == 0)) {
+    if ($this->isCriteriaFormCollapsed()) {
       $sortFields = $this->addColumnHeaders();
       $this->sort = new CRM_Utils_Sort($sortFields);
       if (isset($this->_formValues[CRM_Utils_Sort::SORT_ID])) {
@@ -173,12 +179,38 @@ abstract class CRM_DataprocessorSearch_Form_AbstractSearch extends CRM_Dataproce
         $this->runExport($export_id);
       }
 
-      $limit = CRM_Utils_Request::retrieve('crmRowCount', 'Positive', $this, FALSE, CRM_Utils_Pager::ROWCOUNT);
+      $limit = CRM_Utils_Request::retrieve('crmRowCount', 'Positive', $this, FALSE, $this->getDefaultLimit());
       $pageId = CRM_Utils_Request::retrieve('crmPID', 'Positive', $this, FALSE, 1);
       $this->buildRows($pageId, $limit);
       $this->addExportOutputs();
     }
 
+  }
+
+  /**
+   * @return bool
+   */
+  protected function isCriteriaFormCollapsed() {
+    $initialExpanded = false;
+    if (isset($this->dataProcessorOutput['configuration']['expanded_search'])) {
+      $initialExpanded = $this->dataProcessorOutput['configuration']['expanded_search'];
+    }
+    if(!$this->hasRequiredFilters() && !$initialExpanded) {
+      return  true;
+    }
+    if ((!empty($this->_formValues) && count($this->validateFilters()) == 0)) {
+      return true;
+    }
+    return false;
+  }
+
+  /**
+   * Returns the default row limit.
+   *
+   * @return int
+   */
+  protected function getDefaultLimit() {
+    return CRM_Utils_Pager::ROWCOUNT;
   }
 
   protected function runExport($export_id) {
@@ -199,7 +231,7 @@ abstract class CRM_DataprocessorSearch_Form_AbstractSearch extends CRM_Dataproce
     $output = civicrm_api3("DataProcessorOutput", "getsingle", array('id' => $export_id));
     $outputClass = $factory->getOutputByName($output['type']);
     if ($outputClass instanceof \Civi\DataProcessor\Output\ExportOutputInterface) {
-      $outputClass->downloadExport($this->dataProcessorClass, $this->dataProcessor, $output, $this->_formValues, $sortFieldName, $sortDirection);
+      $outputClass->downloadExport($this->dataProcessorClass, $this->dataProcessor, $output, $this->_formValues, $sortFieldName, $sortDirection, $this->getIdFieldName(), $this->getSelectedIds());
     }
   }
 
@@ -234,6 +266,8 @@ abstract class CRM_DataprocessorSearch_Form_AbstractSearch extends CRM_Dataproce
       $this->dataProcessorClass->getDataFlow()->addSort($sortField['name'], $sortDirection);
     }
 
+    $this->alterDataProcessor($this->dataProcessorClass);
+
     $pagerParams = $this->getPagerParams();
     $pagerParams['total'] = $this->dataProcessorClass->getDataFlow()->recordCount();
     $pagerParams['pageID'] = $pageId;
@@ -248,11 +282,20 @@ abstract class CRM_DataprocessorSearch_Form_AbstractSearch extends CRM_Dataproce
         $row = array();
 
         $row['id'] = null;
-        if (isset($record[$id_field])) {
+        if ($id_field && isset($record[$id_field])) {
           $row['id'] = $record[$id_field]->rawValue;
         }
-        $row['checkbox'] = CRM_Core_Form::CB_PREFIX.$row['id'];
-        $row['record'] = $record;
+        if ($id_field) {
+          $row['checkbox'] = CRM_Core_Form::CB_PREFIX . $row['id'];
+        }
+        $row['record'] = array();
+        foreach($record as $column => $value) {
+          if ($value instanceof Markupable) {
+            $row['record'][$column] = $value->getMarkupOut();
+          } elseif ($value instanceof FieldOutput) {
+            $row['record'][$column] = htmlspecialchars($value->formattedValue);
+          }
+        }
 
         $link = $this->link($row);
         if ($link) {
@@ -260,7 +303,9 @@ abstract class CRM_DataprocessorSearch_Form_AbstractSearch extends CRM_Dataproce
           $row['link_text'] = $this->linkText($row);
         }
 
-        $this->addElement('checkbox', $row['checkbox'], NULL, NULL, ['class' => 'select-row']);
+        if (isset($row['checkbox'])) {
+          $this->addElement('checkbox', $row['checkbox'], NULL, NULL, ['class' => 'select-row']);
+        }
 
         if ($row['id'] && $this->usePrevNextCache()) {
           $prevnextData[] = array(
@@ -329,7 +374,7 @@ abstract class CRM_DataprocessorSearch_Form_AbstractSearch extends CRM_Dataproce
     $params['total'] = 0;
     $params['status'] =E::ts('%%StatusMessage%%');
     $params['csvString'] = NULL;
-    $params['rowCount'] =  CRM_Utils_Pager::ROWCOUNT;
+    $params['rowCount'] =  $this->getDefaultLimit();
     $params['buttonTop'] = 'PagerTopButton';
     $params['buttonBottom'] = 'PagerBottomButton';
     return $params;
@@ -350,11 +395,12 @@ abstract class CRM_DataprocessorSearch_Form_AbstractSearch extends CRM_Dataproce
       if ($outputClass instanceof \Civi\DataProcessor\Output\ExportOutputInterface) {
         $otherOutput = array();
         $otherOutput['title'] = $outputClass->getTitleForExport($output, $this->dataProcessor);
-        $otherOutput['url'] = $this->currentUrl.'&export_id='.$output['id'];
+        $otherOutput['id'] = $output['id'];
         $otherOutput['icon'] = $outputClass->getExportFileIcon($output, $this->dataProcessor);
         $otherOutputs[] = $otherOutput;
       }
     }
+    $this->add('hidden', 'export_id');
     $this->assign('other_outputs', $otherOutputs);
   }
 
@@ -363,23 +409,7 @@ abstract class CRM_DataprocessorSearch_Form_AbstractSearch extends CRM_Dataproce
 
     $this->buildCriteriaForm();
 
-    $selectedIds = [];
-    $qfKeyParam = CRM_Utils_Array::value('qfKey', $this->_formValues);
-    if (empty($qfKeyParam) && $this->controller->_key) {
-      $qfKeyParam = $this->controller->_key;
-    }
-    // We use ajax to handle selections only if the search results component_mode is set to "contacts"
-    if ($this->usePrevNextCache()) {
-      $this->addClass('crm-ajax-selection-form');
-      if ($qfKeyParam) {
-        $qfKeyParam = "civicrm search {$qfKeyParam}";
-        $selectedIdsArr = CRM_DataprocessorSearch_Utils_PrevNextCache::getSelection($qfKeyParam);
-        if (isset($selectedIdsArr[$qfKeyParam]) && is_array($selectedIdsArr[$qfKeyParam])) {
-          $selectedIds = array_keys($selectedIdsArr[$qfKeyParam]);
-        }
-      }
-    }
-
+    $selectedIds = $this->getSelectedIds();
     $this->assign_by_ref('selectedIds', $selectedIds);
     $this->add('hidden', 'context');
     $this->add('hidden', CRM_Utils_Sort::SORT_ID);
@@ -438,7 +468,54 @@ abstract class CRM_DataprocessorSearch_Form_AbstractSearch extends CRM_Dataproce
    */
   public function getTitle() {
     $this->loadDataProcessor();
-    return $this->dataProcessorOutput['configuration']['title'];
+    return $this->dataProcessor['title'];
+  }
+
+  /**
+   * Alter the data processor.
+   *
+   * Use this function in child classes to add for example additional filters.
+   *
+   * E.g. The contact summary tab uses this to add additional filtering on the contact id of
+   * the displayed contact.
+   *
+   * @param \Civi\DataProcessor\ProcessorType\AbstractProcessorType $dataProcessorClass
+   */
+  protected function alterDataProcessor(AbstractProcessorType $dataProcessorClass) {
+
+  }
+
+  /**
+   * Returns the selected IDs.
+   *
+   * @return array
+   */
+  protected function getSelectedIds() {
+    $selectedIds = [];
+    $qfKeyParam = CRM_Utils_Array::value('qfKey', $this->_formValues);
+    if (empty($qfKeyParam) && $this->controller->_key) {
+      $qfKeyParam = $this->controller->_key;
+    }
+    // We use ajax to handle selections only if the search results component_mode is set to "contacts"
+    if ($this->usePrevNextCache()) {
+      $this->addClass('crm-ajax-selection-form');
+      if ($qfKeyParam) {
+        $qfKeyParam = "civicrm search {$qfKeyParam}";
+        $selectedIdsArr = CRM_DataprocessorSearch_Utils_PrevNextCache::getSelection($qfKeyParam);
+        if (isset($selectedIdsArr[$qfKeyParam]) && is_array($selectedIdsArr[$qfKeyParam])) {
+          $selectedIds = array_keys($selectedIdsArr[$qfKeyParam]);
+        }
+      }
+    } else {
+      if (isset($this->_formValues['radio_ts']) && $this->_formValues['radio_ts'] == 'ts_sel') {
+        foreach ($this->_formValues as $name => $value) {
+          if (substr($name, 0, CRM_Core_Form::CB_PREFIX_LEN) == CRM_Core_Form::CB_PREFIX) {
+            $selectedIds[] = substr($name, CRM_Core_Form::CB_PREFIX_LEN);
+          }
+        }
+      }
+    }
+    return $selectedIds;
   }
 
 }

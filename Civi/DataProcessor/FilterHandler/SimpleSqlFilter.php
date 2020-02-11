@@ -34,12 +34,12 @@ class SimpleSqlFilter extends AbstractFieldFilterHandler {
    */
   public function setFilter($filter) {
     $this->resetFilter();
-    $dataFlow  = $this->dataSource->ensureField($this->fieldSpecification->name);
+    $dataFlow  = $this->dataSource->ensureField($this->inputFieldSpecification);
     if ($dataFlow && $dataFlow instanceof SqlDataFlow) {
       if ($this->isMultiValueField()) {
-        $this->whereClause = new SqlDataFlow\MultiValueFieldWhereClause($dataFlow->getName(), $this->fieldSpecification->name, $filter['op'], $filter['value'], $this->fieldSpecification->type);
+        $this->whereClause = new SqlDataFlow\MultiValueFieldWhereClause($dataFlow->getName(), $this->inputFieldSpecification->name, $filter['op'], $filter['value'], $this->inputFieldSpecification->type);
       } else {
-        $this->whereClause = new SqlDataFlow\SimpleWhereClause($dataFlow->getName(), $this->fieldSpecification->name, $filter['op'], $filter['value'], $this->fieldSpecification->type);
+        $this->whereClause = new SqlDataFlow\SimpleWhereClause($dataFlow->getName(), $this->inputFieldSpecification->name, $filter['op'], $filter['value'], $this->inputFieldSpecification->type);
       }
       $dataFlow->addWhereClause($this->whereClause);
     }

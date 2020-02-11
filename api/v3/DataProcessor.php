@@ -28,6 +28,9 @@ function civicrm_api3_data_processor_create($params) {
   if (isset($params['id'])) {
     $id = $params['id'];
   }
+  if (!isset($params['id']) && !isset($params['status'])) {
+    $params['status'] = CRM_Dataprocessor_Status::STATUS_IN_DATABASE;
+  }
   if (isset($params['title'])) {
     $params['name'] = CRM_Dataprocessor_BAO_DataProcessor::checkName($params['title'], $id, $params['name']);
   }
@@ -36,6 +39,7 @@ function civicrm_api3_data_processor_create($params) {
   }
   $return = _civicrm_api3_basic_create(_civicrm_api3_get_BAO(__FUNCTION__), $params);
   CRM_Dataprocessor_BAO_DataProcessor::updateAndChekStatus($return['id']);
+  CRM_Dataprocessor_Utils_Cache::clearAllDataProcessorCaches();
   return $return;
 }
 
@@ -96,11 +100,6 @@ function civicrm_api3_data_processor_get($params) {
     } else {
       $return['values'][$id]['configuration'] = array();
     }
-    if (isset($value['aggregation'])) {
-      $return['values'][$id]['aggregation'] = json_decode($value['aggregation'], TRUE);
-    } else {
-      $return['values'][$id]['aggregation'] = array();
-    }
     if (isset($value['storage_configuration'])) {
       $return['values'][$id]['storage_configuration'] = json_decode($value['storage_configuration'], TRUE);
     } else {
@@ -144,6 +143,20 @@ function civicrm_api3_data_processor_check_name($params) {
 }
 
 /**
+ * DataProcessor.import API specification
+ *
+ * @param $params
+ */
+function _civicrm_api3_data_processor_import_spec($params) {
+  $params['extension'] = [
+    'name' => 'extension',
+    'title' => E::ts('Extension'),
+    'api.required' => FALSE,
+  ];
+  return $params;
+}
+
+/**
  * DataProcessor.Import API
  *
  * @param array $params
@@ -154,7 +167,11 @@ function civicrm_api3_data_processor_check_name($params) {
  */
 function civicrm_api3_data_processor_import($params) {
   $returnValues = array();
-  $returnValues['import'] = CRM_Dataprocessor_Utils_Importer::importFromExtensions();
+  $extension = null;
+  if (isset($params['extension'])) {
+    $extension = $params['extension'];
+  }
+  $returnValues['import'] = CRM_Dataprocessor_Utils_Importer::importFromExtensions($extension);
   $returnValues['is_error'] = 0;
   return $returnValues;
 }

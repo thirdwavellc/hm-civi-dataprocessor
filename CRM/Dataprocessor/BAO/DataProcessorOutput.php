@@ -30,11 +30,16 @@ class CRM_Dataprocessor_BAO_DataProcessorOutput extends CRM_Dataprocessor_DAO_Da
    * @param $id
    */
   public static function del($id) {
+    $factory = dataprocessor_get_factory();
     CRM_Utils_Hook::pre('delete', 'DataProcessorOutput', $id, CRM_Core_DAO::$_nullArray);
 
     $dao = new CRM_Dataprocessor_BAO_DataProcessorOutput();
     $dao->id = $id;
     if ($dao->find(true)) {
+      $output = array();
+      CRM_Core_DAO::storeValues($dao, $output);
+      $outputTypeClass = $factory->getOutputByName($output['type']);
+      $outputTypeClass->deleteOutput($output);
       $dao->delete();
     }
 

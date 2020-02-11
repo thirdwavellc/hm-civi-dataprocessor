@@ -83,10 +83,13 @@ class ContactLinkFieldOutputHandler extends AbstractFieldOutputHandler implement
     if (!$this->contactIdSource) {
       throw new DataSourceNotFoundException(E::ts("Field %1 requires data source '%2' which could not be found. Did you rename or deleted the data source?", array(
         1=>$title,
-        2=>$configuration['datasource'])
+        2=>$configuration['contact_id_datasource'])
       ));
     }
-    $this->contactIdField = $this->contactIdSource->getAvailableFields()->getFieldSpecificationByName($configuration['contact_id_field']);
+    $this->contactIdField = $this->contactIdSource->getAvailableFields()->getFieldSpecificationByAlias($configuration['contact_id_field']);
+    if (!$this->contactIdField) {
+      $this->contactIdField = $this->contactIdSource->getAvailableFields()->getFieldSpecificationByName($configuration['contact_id_field']);
+    }
     if (!$this->contactIdField) {
       throw new FieldNotFoundException(E::ts("Field %1 requires a field with the name '%2' in the data source '%3'. Did you change the data source type?", array(
         1 => $title,
@@ -103,7 +106,10 @@ class ContactLinkFieldOutputHandler extends AbstractFieldOutputHandler implement
         2=>$configuration['contact_name_datasource'])
       ));
     }
-    $this->contactNameField = $this->contactNameSource->getAvailableFields()->getFieldSpecificationByName($configuration['contact_name_field']);
+    $this->contactNameField = $this->contactNameSource->getAvailableFields()->getFieldSpecificationByAlias($configuration['contact_name_field']);
+    if (!$this->contactNameField) {
+      $this->contactNameField = $this->contactNameSource->getAvailableFields()->getFieldSpecificationByName($configuration['contact_name_field']);
+    }
     if (!$this->contactNameField) {
       throw new FieldNotFoundException(E::ts("Field %1 requires a field with the name '%2' in the data source '%3'. Did you change the data source type?", array(
         1 => $title,
@@ -132,8 +138,9 @@ class ContactLinkFieldOutputHandler extends AbstractFieldOutputHandler implement
       'cid' => $contactId,
     ));
     $link = '<a href="'.$url.'">'.$contactname.'</a>';
-    $formattedValue = new FieldOutput($contactId);
-    $formattedValue->formattedValue = $link;
+    $formattedValue = new HTMLFieldOutput($contactId);
+    $formattedValue->formattedValue = $contactname;
+    $formattedValue->setHtmlOutput($link);
     return $formattedValue;
   }
 

@@ -74,15 +74,12 @@ class CRM_Dataprocessor_Form_DataProcessor extends CRM_Core_Form {
       $this->addSources();
       $this->addFields();
       $this->addFilters();
-      $this->addAggregateFields();
       $this->addOutputs();
       $dataSourceAddUrl = CRM_Utils_System::url('civicrm/dataprocessor/form/source', 'reset=1&action=add&data_processor_id='.$this->dataProcessorId, TRUE);
-      $addAggregateFieldUrl = CRM_Utils_System::url('civicrm/dataprocessor/form/aggregate_field', 'reset=1&action=add&id='.$this->dataProcessorId, TRUE);
       $addFieldUrl = CRM_Utils_System::url('civicrm/dataprocessor/form/field', 'reset=1&action=add&data_processor_id='.$this->dataProcessorId, TRUE);
       $addFilterUrl = CRM_Utils_System::url('civicrm/dataprocessor/form/filter', 'reset=1&action=add&data_processor_id='.$this->dataProcessorId, TRUE);
       $outputAddUrl = CRM_Utils_System::url('civicrm/dataprocessor/form/output', 'reset=1&action=add&data_processor_id='.$this->dataProcessorId, TRUE);
       $this->assign('addDataSourceUrl', $dataSourceAddUrl);
-      $this->assign('addAggregateFieldUrl', $addAggregateFieldUrl);
       $this->assign('addFieldUrl', $addFieldUrl);
       $this->assign('addFilterUrl', $addFilterUrl);
       $this->assign('addOutputUrl', $outputAddUrl);
@@ -119,21 +116,6 @@ class CRM_Dataprocessor_Form_DataProcessor extends CRM_Core_Form {
     $this->assign('filters', $filters);
   }
 
-  protected function addAggregateFields() {
-    $aggregationFieldsFormatted = array();
-    foreach($this->dataProcessorClass->getDataSources() as $dataSource) {
-      foreach($dataSource->getAvailableAggregationFields() as $field) {
-        $aggregationFieldsFormatted[$field->fieldSpecification->alias] = $field->dataSource->getSourceTitle()." :: ".$field->fieldSpecification->title;
-      }
-    }
-    $aggregation = $this->dataProcessor['aggregation'];
-    $fields = array();
-    foreach($aggregation as $alias) {
-      $fields[$alias] = $aggregationFieldsFormatted[$alias];
-    }
-    $this->assign('aggregateFields', $fields);
-  }
-
   protected function addOutputs() {
     $factory = dataprocessor_get_factory();
     $types = $factory->getOutputs();
@@ -143,6 +125,8 @@ class CRM_Dataprocessor_Form_DataProcessor extends CRM_Core_Form {
       $outputClass = $factory->getOutputByName($output['type']);
       if ($outputClass instanceof \Civi\DataProcessor\Output\UIOutputInterface) {
         $outputs[$idx]['navigation_url'] = CRM_Utils_System::url($outputClass->getUrlToUi($output, $this->dataProcessor), array('reset' => '1'));
+      } elseif ($outputClass instanceof \Civi\DataProcessor\Output\UrlOutputInterface && $outputClass->checkPermission($output, $this->dataProcessor)) {
+        $outputs[$idx]['navigation_url'] = $outputClass->getUrl($output, $this->dataProcessor);
       }
 
       if (isset($types[$output['type']])) {
@@ -164,18 +148,22 @@ class CRM_Dataprocessor_Form_DataProcessor extends CRM_Core_Form {
       $this->add('checkbox', 'is_active', E::ts('Enabled'));
     }
     if ($this->_action == CRM_Core_Action::ADD) {
+      CRM_Utils_System::setTitle(E::ts('Add data processor'));
       $this->addButtons(array(
         array('type' => 'next', 'name' => E::ts('Next'), 'isDefault' => TRUE,),
         array('type' => 'cancel', 'name' => E::ts('Cancel'))));
     } elseif ($this->_action == CRM_Core_Action::DELETE) {
+      CRM_Utils_System::setTitle(E::ts('Delete data processor: %1', [1=>$this->dataProcessor['title']]));
       $this->addButtons(array(
         array('type' => 'next', 'name' => E::ts('Delete'), 'isDefault' => TRUE,),
         array('type' => 'cancel', 'name' => E::ts('Cancel'))));
     } elseif ($this->_action == CRM_Core_Action::EXPORT) {
+      CRM_Utils_System::setTitle(E::ts('Export data processor: %1', [1=>$this->dataProcessor['title']]));
       $this->addButtons(array(
         array('type' => 'cancel', 'name' => E::ts('Go back'), 'isDefault' => TRUE),
       ));
     } else {
+      CRM_Utils_System::setTitle(E::ts('Edit data processor: %1', [1=>$this->dataProcessor['title']]));
       $this->addButtons(array(
         array('type' => 'next', 'name' => E::ts('Save'), 'isDefault' => TRUE,),
         array('type' => 'cancel', 'name' => E::ts('Cancel'))));

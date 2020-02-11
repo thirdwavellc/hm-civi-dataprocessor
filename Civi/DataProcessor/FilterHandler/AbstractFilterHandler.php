@@ -105,10 +105,19 @@ abstract class AbstractFilterHandler {
 
     $this->doInitialization();
 
-    if (!empty($this->defaultFilterValues)) {
-      $this->setFilter($this->defaultFilterValues);
-    }
+    $this->setDefaultFilterValues();
     $this->is_initialized = true;
+  }
+
+  /**
+   * Sets the default filter.
+   *
+   * @throws \Exception
+   */
+  public function setDefaultFilterValues() {
+    if (!empty($this->defaultFilterValues)) {
+      $this->applyFilterFromSubmittedFilterParams($this->defaultFilterValues);
+    }
   }
 
   /**
@@ -217,8 +226,11 @@ abstract class AbstractFilterHandler {
         $to = \CRM_Utils_Array::value("{$filterName}_to", $submittedValues);
         $fromTime = \CRM_Utils_Array::value("{$filterName}_from_time", $submittedValues);
         $toTime = \CRM_Utils_Array::value("{$filterName}_to_time", $submittedValues);
+        $op = \CRM_Utils_Array::value("op", $submittedValues);
 
-        list($from, $to) = \CRM_Utils_Date::getFromTo($relative, $from, $to, $fromTime, $toTime);
+        if ($relative != 'null') {
+          list($from, $to) = \CRM_Utils_Date::getFromTo($relative, $from, $to, $fromTime, $toTime);
+        }
         if (!$from && !$to) {
           $errors[$filterName . '_relative'] = E::ts('Field %1 is required', [1 => $filterSpec->title]);
         }
@@ -330,7 +342,36 @@ abstract class AbstractFilterHandler {
             $isFilterSet = TRUE;
           }
           break;
-
+        case 'not null':
+          if (empty($submittedValues['value'])) {
+            $filterParams = [
+              'op' => 'IS NOT NULL',
+              'value' => '',
+            ];
+            $this->setFilter($filterParams);
+            $isFilterSet = TRUE;
+          }
+          break;
+        case 'bw':
+          if (isset($submittedValues['min']) && $submittedValues['min'] && isset($submittedValues['max']) && $submittedValues['max']) {
+            $filterParams = [
+              'op' => 'BETWEEN',
+              'value' => array($submittedValues['min'], $submittedValues['max']),
+            ];
+            $this->setFilter($filterParams);
+            $isFilterSet = TRUE;
+          }
+          break;
+        case 'nbw':
+          if (isset($submittedValues['min']) && $submittedValues['min'] && isset($submittedValues['max']) && $submittedValues['max']) {
+            $filterParams = [
+              'op' => 'NOT BETWEEN',
+              'value' => array($submittedValues['min'], $submittedValues['max']),
+            ];
+            $this->setFilter($filterParams);
+            $isFilterSet = TRUE;
+          }
+          break;
       }
     }
     if ($this->isRequired() && !$isFilterSet) {
@@ -384,10 +425,12 @@ abstract class AbstractFilterHandler {
    *
    * @param \CRM_Core_Form $form
    * @param array $defaultFilterValue
+   * @param string $size
+   *   Possible values: full or compact
    * @return array
    *   Return variables belonging to this filter.
    */
-  public function addToFilterForm(\CRM_Core_Form $form, $defaultFilterValue) {
+  public function addToFilterForm(\CRM_Core_Form $form, $defaultFilterValue, $size='full') {
     static $count = 1;
     $types = \CRM_Utils_Type::getValidTypes();
     $fieldSpec = $this->getFieldSpecification();
@@ -401,19 +444,33 @@ abstract class AbstractFilterHandler {
       $title .= ' <span class="crm-marker">*</span>';
     }
 
+    $sizeClass = 'huge';
+    $minWidth = 'min-width: 250px;';
+    if ($size =='compact') {
+      $sizeClass = 'medium';
+      $minWidth = '';
+    }
+
     if (isset($types[$fieldSpec->type])) {
       $type = $types[$fieldSpec->type];
     }
     if ($fieldSpec->getOptions()) {
-      $form->addElement('select', "{$alias}_op", E::ts('Operator:'), $operations);
-      $form->addElement('select', "{$alias}_value", NULL, $fieldSpec->getOptions(), [
-        'style' => 'min-width:250px',
-        'class' => 'crm-select2 huge',
-        'multiple' => TRUE,
+      $form->add('select', "{$alias}_op", E::ts('Operator:'), $operations, true, [
+        'style' => $minWidth,
+        'class' => 'crm-select2 '.$sizeClass,
+        'multiple' => FALSE,
         'placeholder' => E::ts('- select -'),
+      ]);
+      $form->add('select', "{$alias}_value", null, $fieldSpec->getOptions(), false, [
+        'style' => $minWidth,
+        'class' => 'crm-select2 '.$sizeClass,
+        'multiple' => TRUE,
+        'placeholder' => E::ts('- Select -'),
       ]);
       if (isset($defaultFilterValue['op'])) {
         $defaults[$alias . '_op'] = $defaultFilterValue['op'];
+      } else {
+        $defaults[$alias . '_op'] = key($operations);
       }
       if (isset($defaultFilterValue['value'])) {
         $defaults[$alias.'_value'] = $defaultFilterValue['value'];
@@ -423,7 +480,8 @@ abstract class AbstractFilterHandler {
       switch ($type) {
         case \CRM_Utils_Type::T_DATE:
         case \CRM_Utils_Type::T_TIMESTAMP:
-          \CRM_Core_Form_Date::buildDateRange($form, $alias, $count, '_from', '_to', E::ts('From:'), $this->isRequired(), $operations);
+          $additionalOp['null'] = E::ts('Not set');
+          \CRM_Core_Form_Date::buildDateRange($form, $alias, $count, '_from', '_to', E::ts('From:'), $this->isRequired(), $additionalOp, 'searchDate', FALSE, ['class' => 'crm-select2 '.$sizeClass]);
           if (isset($defaultFilterValue['op'])) {
             $defaults[$alias . '_op'] = $defaultFilterValue['op'];
           }
@@ -450,27 +508,50 @@ abstract class AbstractFilterHandler {
           break;
         case \CRM_Utils_Type::T_INT:
         case \CRM_Utils_Type::T_FLOAT:
+          $form->add('select', "{$alias}_op", E::ts('Operator:'), $operations, true, [
+            'onchange' => "return showHideMaxMinVal( '$alias', this.value );",
+            'style' => $minWidth,
+            'class' => 'crm-select2 '.$sizeClass,
+            'multiple' => FALSE,
+            'placeholder' => E::ts('- select -'),
+          ]);
+          // we need text box for value input
+          $form->add('text', "{$alias}_value", NULL, ['class' => $sizeClass]);
+          if (isset($defaultFilterValue['op']) && $defaultFilterValue['op']) {
+            $defaults[$alias . '_op'] = $defaultFilterValue['op'];
+          } else {
+            $defaults[$alias . '_op'] = key($operations);
+          }
+          if (isset($defaultFilterValue['value'])) {
+            $defaults[$alias.'_value'] = $defaultFilterValue['value'];
+          }
+
           // and a min value input box
-          $form->add('text', "{$alias}_min", E::ts('Min'));
+          $form->add('text', "{$alias}_min", E::ts('Min'), ['class' => 'six']);
           // and a max value input box
-          $form->add('text', "{$alias}_max", E::ts('Max'));
+          $form->add('text', "{$alias}_max", E::ts('Max'), ['class' => 'six']);
 
-        if (isset($defaultFilterValue['min'])) {
-          $defaults[$alias.'_min'] = $defaultFilterValue['min'];
-        }
-        if (isset($defaultFilterValue['max'])) {
-          $defaults[$alias.'_max'] = $defaultFilterValue['max'];
-        }
-
+          if (isset($defaultFilterValue['min'])) {
+            $defaults[$alias.'_min'] = $defaultFilterValue['min'];
+          }
+          if (isset($defaultFilterValue['max'])) {
+            $defaults[$alias.'_max'] = $defaultFilterValue['max'];
+          }
+          break;
         default:
           // default type is string
-          $form->addElement('select', "{$alias}_op", E::ts('Operator:'), $operations,
-            ['onchange' => "return showHideMaxMinVal( '$alias', this.value );"]
-          );
+          $form->add('select', "{$alias}_op", E::ts('Operator:'), $operations, true, [
+            'style' => $minWidth,
+            'class' => 'crm-select2 '.$sizeClass,
+            'multiple' => FALSE,
+            'placeholder' => E::ts('- select -'),
+          ]);
           // we need text box for value input
-          $form->add('text', "{$alias}_value", NULL, ['class' => 'huge']);
-          if (isset($defaultFilterValue['op'])) {
+          $form->add('text', "{$alias}_value", NULL, ['class' => $sizeClass]);
+          if (isset($defaultFilterValue['op']) && $defaultFilterValue['op']) {
             $defaults[$alias . '_op'] = $defaultFilterValue['op'];
+          } else {
+            $defaults[$alias . '_op'] = 'has'; // Contains
           }
           if (isset($defaultFilterValue['value'])) {
             $defaults[$alias.'_value'] = $defaultFilterValue['value'];
@@ -482,7 +563,7 @@ abstract class AbstractFilterHandler {
     $filter['type'] = $fieldSpec->type;
     $filter['alias'] = $fieldSpec->alias;
     $filter['title'] = $title;
-
+    $filter['size'] = $size;
 
     if (count($defaults)) {
       $form->setDefaults($defaults);
@@ -497,6 +578,7 @@ abstract class AbstractFilterHandler {
         'IN' => E::ts('Is one of'),
         'NOT IN' => E::ts('Is not one of'),
         'null' => E::ts('Is empty'),
+        'not null' => E::ts('Is not empty'),
       );
     }
     $types = \CRM_Utils_Type::getValidTypes();
@@ -506,6 +588,7 @@ abstract class AbstractFilterHandler {
     }
     switch ($type) {
       case \CRM_Utils_Type::T_DATE:
+      case \CRM_Utils_Type::T_TIMESTAMP:
         return array();
         break;
       case \CRM_Utils_Type::T_INT:
@@ -518,6 +601,9 @@ abstract class AbstractFilterHandler {
           '>' => E::ts('Is greater than'),
           '!=' => E::ts('Is not equal to'),
           'null' => E::ts('Is empty'),
+          'not null' => E::ts('Is not empty'),
+          'bw' => E::ts('Is between'),
+          'nbw' => E::ts('Is not between'),
         );
         break;
     }
@@ -529,6 +615,7 @@ abstract class AbstractFilterHandler {
       'ew' => E::ts('Ends with'),
       'nhas' => E::ts('Does not contain'),
       'null' => E::ts('Is empty'),
+      'not null' => E::ts('Is not empty'),
     );
   }
 
@@ -538,6 +625,7 @@ abstract class AbstractFilterHandler {
    */
   protected function applyDateFilter($submittedValues) {
     $type = $this->getFieldSpecification()->type;
+    $op = \CRM_Utils_Array::value("op", $submittedValues);
     $relative = \CRM_Utils_Array::value("relative", $submittedValues);
     $from = \CRM_Utils_Array::value("from", $submittedValues);
     $to = \CRM_Utils_Array::value("to", $submittedValues);
@@ -547,8 +635,16 @@ abstract class AbstractFilterHandler {
       $toTime = '235959';
     }
 
-    list($from, $to) = \CRM_Utils_Date::getFromTo($relative, $from, $to, $fromTime, $toTime);
-
+    if ($relative == 'null') {
+      $filterParams = [
+        'op' => 'IS NULL',
+        'value' => '',
+      ];
+      $this->setFilter($filterParams);
+      return TRUE;
+    } else {
+      list($from, $to) = \CRM_Utils_Date::getFromTo($relative, $from, $to, $fromTime, $toTime);
+    }
     if ($from && $to) {
       $from = ($type == "Date") ? substr($from, 0, 8) : $from;
       $to = ($type == "Date") ? substr($to, 0, 8) : $to;

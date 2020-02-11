@@ -1,4 +1,6 @@
 <?php
+
+use Civi\DataProcessor\FieldOutputHandler\OutputHandlerAggregate;
 use CRM_Dataprocessor_ExtensionUtil as E;
 
 class CRM_Dataprocessor_BAO_DataProcessor extends CRM_Dataprocessor_DAO_DataProcessor {
@@ -59,6 +61,8 @@ class CRM_Dataprocessor_BAO_DataProcessor extends CRM_Dataprocessor_DAO_DataProc
     $cache_key = 'dataprocessor_'.$dataProcessor['id'];
     $cache = CRM_Dataprocessor_Utils_Cache::singleton();
     if ($dataProcessorClass = $cache->get($cache_key)) {
+      // Reset the default filter values as they might have been changed.
+      $dataProcessorClass->setDefaultFilterValues();
       return $dataProcessorClass;
     }
     $factory = dataprocessor_get_factory();
@@ -69,17 +73,6 @@ class CRM_Dataprocessor_BAO_DataProcessor extends CRM_Dataprocessor_DAO_DataProc
         CRM_Dataprocessor_BAO_DataProcessorSource::addSourceToDataProcessor($sourceDao, $dataProcessorClass);
       } catch (\Exception $e) {
         CRM_Core_Session::setStatus($e->getMessage(), E::ts("Could not add data source"), 'error');
-      }
-    }
-
-    $aggregationFields = array();
-    foreach($dataProcessorClass->getDataSources() as $source) {
-      $aggregationFields = array_merge($aggregationFields, $source->getAvailableAggregationFields());
-    }
-    foreach($dataProcessor['aggregation'] as $alias) {
-      $dataSource = $dataProcessorClass->getDataSourceByName($aggregationFields[$alias]->dataSource->getSourceName());
-      if ($dataSource) {
-        $dataSource->ensureAggregationFieldInSource($aggregationFields[$alias]->fieldSpecification);
       }
     }
 

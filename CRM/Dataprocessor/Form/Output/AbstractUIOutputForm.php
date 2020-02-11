@@ -52,6 +52,7 @@ abstract class CRM_Dataprocessor_Form_Output_AbstractUIOutputForm extends CRM_Co
   public function preProcess() {
     parent::preProcess();
     $this->loadDataProcessor();
+    $this->assign('has_exposed_filters', $this->hasExposedFilters());
   }
 
   /**
@@ -60,6 +61,7 @@ abstract class CRM_Dataprocessor_Form_Output_AbstractUIOutputForm extends CRM_Co
    * @throws \Exception
    */
   protected function loadDataProcessor() {
+    $factory = dataprocessor_get_factory();
     if (!$this->dataProcessorId) {
       $dataProcessorName = $this->getDataProcessorName();
       $sql = "
@@ -82,7 +84,15 @@ abstract class CRM_Dataprocessor_Form_Output_AbstractUIOutputForm extends CRM_Co
       $this->dataProcessorOutput = civicrm_api3('DataProcessorOutput', 'getsingle', array('id' => $dao->output_id));
       $this->assign('output', $this->dataProcessorOutput);
 
-      if (!$this->isConfigurationValid()) {
+      $outputClass = $factory->getOutputByName($this->dataProcessorOutput['type']);
+      if (!$outputClass instanceof \Civi\DataProcessor\Output\UIOutputInterface) {
+        throw new \Exception('Invalid output');
+      }
+
+      if (!$outputClass->checkUIPermission($this->dataProcessorOutput, $this->dataProcessor)) {
+        CRM_Utils_System::permissionDenied();
+        CRM_Utils_System::civiExit();
+      } elseif (!$this->isConfigurationValid()) {
         throw new \Exception('Invalid configuration found of the data processor "' . $dataProcessorName . '"');
       }
     }
@@ -97,6 +107,22 @@ abstract class CRM_Dataprocessor_Form_Output_AbstractUIOutputForm extends CRM_Co
     if ($this->dataProcessorClass->getFilterHandlers()) {
       foreach ($this->dataProcessorClass->getFilterHandlers() as $filter) {
         if ($filter->isRequired() && $filter->isExposed()) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Returns whether the search has required filters.
+   *
+   * @return bool
+   */
+  protected function hasExposedFilters() {
+    if ($this->dataProcessorClass->getFilterHandlers()) {
+      foreach ($this->dataProcessorClass->getFilterHandlers() as $filter) {
+        if ($filter->isExposed()) {
           return true;
         }
       }
@@ -151,11 +177,20 @@ abstract class CRM_Dataprocessor_Form_Output_AbstractUIOutputForm extends CRM_Co
         if (!$fieldSpec || !$filterHandler->isExposed()) {
           continue;
         }
-        $filterElements[$fieldSpec->alias]['filter'] = $filterHandler->addToFilterForm($this, $filterHandler->getDefaultFilterValues());
+        $filterElements[$fieldSpec->alias]['filter'] = $filterHandler->addToFilterForm($this, $filterHandler->getDefaultFilterValues(), $this->getCriteriaElementSize());
         $filterElements[$fieldSpec->alias]['template'] = $filterHandler->getTemplateFileName();
       }
       $this->assign('filters', $filterElements);
     }
   }
 
+  /**
+   * Returns the size of the crireria form element.
+   * There are two sizes full and compact.
+   *
+   * @return string
+   */
+  protected function getCriteriaElementSize() {
+    return 'full';
+  }
 }

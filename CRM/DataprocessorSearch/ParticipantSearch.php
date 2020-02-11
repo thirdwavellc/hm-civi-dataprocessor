@@ -37,8 +37,6 @@ class CRM_DataprocessorSearch_ParticipantSearch implements UIOutputInterface {
       $fields[$field->alias] = $field->title;
     }
 
-    $form->add('text', 'title', E::ts('Title'), NULL,true);
-
     $form->add('select','permission', E::ts('Permission'), \CRM_Core_Permission::basicPermissions(), true, array(
       'style' => 'min-width:250px',
       'class' => 'crm-select2 huge',
@@ -51,7 +49,15 @@ class CRM_DataprocessorSearch_ParticipantSearch implements UIOutputInterface {
     ));
     $form->add('select', 'hide_id_field', E::ts('Show participant ID field'), array(0=>'Participant ID is Visible', 1=> 'Participant ID is hidden'));
 
+    $form->add('select', 'hidden_fields', E::ts('Hidden fields'), $fields, false, array(
+      'style' => 'min-width:250px',
+      'class' => 'crm-select2 huge',
+      'multiple' => true,
+      'placeholder' => E::ts('- select -'),
+    ));
+
     $form->add('wysiwyg', 'help_text', E::ts('Help text for this search'), array('rows' => 6, 'cols' => 80));
+    $form->add('checkbox', 'expanded_search', E::ts('Expand criteria form initially'));
 
     // navigation field
     $navigationOptions = $navigation->getNavigationOptions();
@@ -73,22 +79,22 @@ class CRM_DataprocessorSearch_ParticipantSearch implements UIOutputInterface {
         if (isset($output['configuration']['navigation_id'])) {
           $defaults['navigation_parent_path'] = $navigation->getNavigationParentPathById($output['configuration']['navigation_id']);
         }
-        if (isset($output['configuration']['title'])) {
-          $defaults['title'] = $output['configuration']['title'];
-        }
         if (isset($output['configuration']['hide_id_field'])) {
           $defaults['hide_id_field'] = $output['configuration']['hide_id_field'];
         }
+        if (isset($output['configuration']['hidden_fields'])) {
+          $defaults['hidden_fields'] = $output['configuration']['hidden_fields'];
+        }
         if (isset($output['configuration']['help_text'])) {
           $defaults['help_text'] = $output['configuration']['help_text'];
+        }
+        if (isset($output['configuration']['expanded_search'])) {
+          $defaults['expanded_search'] = $output['configuration']['expanded_search'];
         }
       }
     }
     if (!isset($defaults['permission'])) {
       $defaults['permission'] = 'access CiviCRM';
-    }
-    if (empty($defaults['title'])) {
-      $defaults['title'] = civicrm_api3('DataProcessor', 'getvalue', array('id' => $output['data_processor_id'], 'return' => 'title'));
     }
     $form->setDefaults($defaults);
   }
@@ -113,12 +119,23 @@ class CRM_DataprocessorSearch_ParticipantSearch implements UIOutputInterface {
    */
   public function processConfiguration($submittedValues, &$output) {
     $output['permission'] = $submittedValues['permission'];
-    $configuration['title'] = $submittedValues['title'];
     $configuration['participant_id_field'] = $submittedValues['participant_id_field'];
     $configuration['navigation_parent_path'] = $submittedValues['navigation_parent_path'];
     $configuration['hide_id_field'] = $submittedValues['hide_id_field'];
+    $configuration['hidden_fields'] = $submittedValues['hidden_fields'];
     $configuration['help_text'] = $submittedValues['help_text'];
+    $configuration['expanded_search'] = isset($submittedValues['expanded_search']) ? $submittedValues['expanded_search'] : false;
     return $configuration;
+  }
+
+  /**
+   * This function is called prior to removing an output
+   *
+   * @param array $output
+   * @return void
+   */
+  public function deleteOutput($output) {
+    // Do nothing
   }
 
   /**
@@ -140,7 +157,7 @@ class CRM_DataprocessorSearch_ParticipantSearch implements UIOutputInterface {
    * @return string
    */
   public function getTitleForUiLink($output, $dataProcessor) {
-    return isset($output['configuration']['title']) ? $output['configuration']['title'] : $dataProcessor['title'];
+    return $dataProcessor['title'];
   }
 
   /**

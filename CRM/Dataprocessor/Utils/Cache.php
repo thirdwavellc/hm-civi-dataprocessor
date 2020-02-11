@@ -25,6 +25,18 @@ class CRM_Dataprocessor_Utils_Cache {
   }
 
   /**
+   * Clear all data processor caches.
+   *
+   * This is a helper function which contains a clear cache for all caches.
+   *
+   */
+  public static function clearAllDataProcessorCaches() {
+      $cache = CRM_Dataprocessor_Utils_Cache::singleton();
+      $cache->cache->clear();
+      Civi\DataProcessor\Output\Api::clearCache();
+  }
+
+  /**
    * @return \CRM_DataProcessor_Utils_Cache
    */
   public static function singleton() {
@@ -41,7 +53,11 @@ class CRM_Dataprocessor_Utils_Cache {
    * @return mixed
    */
   public function get($key, $default=NULL) {
-    return $this->cache->get($key, $default);
+    $environment = CRM_Core_BAO_Setting::getItem('', 'environment');
+    if ($environment == 'Production') {
+      return $this->cache->get($key, $default);
+    }
+    return $default;
   }
 
   /**
@@ -52,7 +68,11 @@ class CRM_Dataprocessor_Utils_Cache {
    * @return bool
    */
   public function set($key, $value, $ttl=NULL) {
-    return $this->cache->set($key, $value, $ttl);
+    $environment = CRM_Core_BAO_Setting::getItem('', 'environment');
+    if ($environment == 'Production') {
+      return $this->cache->set($key, $value, $ttl);
+    }
+    return true;
   }
 
 }

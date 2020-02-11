@@ -12,7 +12,7 @@
 
 {else}
 
-<h3>Data Processor</h3>
+<h3>{ts}Data Processor{/ts}</h3>
 <div class="crm-block crm-form-block crm-data-processor_title-block">
   <div class="crm-section">
     <div class="label">{$form.title.label}</div>
@@ -53,7 +53,6 @@
       <tr>
         <td style="width: 50%;">
           {include file="CRM/Dataprocessor/Form/DataProcessorBlocks/Sources.tpl"}
-          {include file="CRM/Dataprocessor/Form/DataProcessorBlocks/AggregateFields.tpl"}
           {include file="CRM/Dataprocessor/Form/DataProcessorBlocks/Outputs.tpl"}
         </td>
         <td style="width: 50%;">

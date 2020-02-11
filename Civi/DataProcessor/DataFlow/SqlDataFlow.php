@@ -8,6 +8,7 @@ namespace Civi\DataProcessor\DataFlow;
 
 use Civi\DataProcessor\DataFlow\Sort\SortSpecification;
 use Civi\DataProcessor\DataFlow\SqlDataFlow\WhereClauseInterface;
+use Civi\DataProcessor\DataFlow\Utils\Aggregator;
 use \Civi\DataProcessor\DataSpecification\DataSpecification;
 
 abstract class SqlDataFlow extends AbstractDataFlow {
@@ -42,7 +43,13 @@ abstract class SqlDataFlow extends AbstractDataFlow {
    * @return string[]
    * @throws \Civi\DataProcessor\DataSpecification\FieldExistsException
    */
-  abstract public function getFieldsForGroupByStatement();
+  public function getFieldsForGroupByStatement() {
+    $fields = array();
+    foreach($this->aggregateOutputHandlers as $outputHandler) {
+      $fields[] = $outputHandler->getAggregateFieldSpec()->getSqlGroupByStatement($this->getName());
+    }
+    return $fields;
+  }
 
   /**
    * Returns the Table part in the from statement.
@@ -134,6 +141,7 @@ abstract class SqlDataFlow extends AbstractDataFlow {
    * @return void
    */
   protected function resetInitializeState() {
+    parent::resetInitializeState();
     $this->dao = null;
   }
 
@@ -282,6 +290,17 @@ abstract class SqlDataFlow extends AbstractDataFlow {
    */
   public function getDataObject() {
     return $this->dao;
+  }
+
+  /**
+   * @param $records
+   * @param string $fieldNameprefix
+   *
+   * @return array();
+   */
+  protected function aggregate($records, $fieldNameprefix="") {
+    // Aggregation is done in the database.
+    return $records;
   }
 
 }

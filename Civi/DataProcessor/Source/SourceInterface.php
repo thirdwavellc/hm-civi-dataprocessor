@@ -69,18 +69,13 @@ interface SourceInterface {
   public function getAvailableFilterFields();
 
   /**
-   * @return \Civi\DataProcessor\DataSpecification\AggregationField[]
-   */
-  public function getAvailableAggregationFields();
-
-  /**
    * Ensure that filter field is accesible in the query
    *
-   * @param String $fieldName
+   * @param FieldSpecification $field
    * @return \Civi\DataProcessor\DataFlow\AbstractDataFlow|null
    * @throws \Exception
    */
-  public function ensureField($fieldName);
+  public function ensureField(FieldSpecification $field);
 
   /**
    * Ensures a field is in the data source
@@ -90,15 +85,6 @@ interface SourceInterface {
    * @return \Civi\DataProcessor\Source\SourceInterface
    */
   public function ensureFieldInSource(FieldSpecification $fieldSpecification);
-
-  /**
-   * Ensures an aggregation field in the data source
-   *
-   * @param \Civi\DataProcessor\DataSpecification\FieldSpecification $fieldSpecification
-   *
-   * @return \Civi\DataProcessor\Source\SourceInterface
-   */
-  public function ensureAggregationFieldInSource(FieldSpecification $fieldSpecification);
 
   /**
    * @return String

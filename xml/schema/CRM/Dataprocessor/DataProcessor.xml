@@ -46,14 +46,6 @@
     <serialize>JSON</serialize>
   </field>
   <field>
-    <name>aggregation</name>
-    <title>Aggregation Fields</title>
-    <type>text</type>
-    <required>false</required>
-    <length>255</length>
-    <serialize>JSON</serialize>
-  </field>
-  <field>
     <name>is_active</name>
     <title>Is active</title>
     <type>boolean</type>

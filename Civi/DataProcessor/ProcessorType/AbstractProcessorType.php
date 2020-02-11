@@ -112,6 +112,9 @@ abstract class AbstractProcessorType {
    */
   public function addOutputFieldHandlers(AbstractFieldOutputHandler $outputFieldHandler) {
     $this->outputFieldHandlers[] = $outputFieldHandler;
+    if ($this->dataflow) {
+      $this->dataflow->setOutputFieldHandlers($this->outputFieldHandlers);
+    }
   }
 
   /**
@@ -175,6 +178,19 @@ abstract class AbstractProcessorType {
       $this->dataflow->setOutputFieldHandlers($this->outputFieldHandlers);
     }
     return $this->dataflow;
+  }
+
+  /**
+   * Sets the default filter values for all filters.
+   *
+   * @throws \Exception
+   */
+  public function setDefaultFilterValues() {
+    if ($this->filterHandlers && is_array($this->filterHandlers)) {
+      foreach ($this->filterHandlers as $filterHandler) {
+        $filterHandler->setDefaultFilterValues();
+      }
+    }
   }
 
 }

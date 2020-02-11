@@ -33,6 +33,11 @@ class FieldSpecification implements SqlFieldSpecification {
    */
   public $options = null;
 
+  /**
+   * @var null|String
+   */
+  protected $sqlValueFormatFunction = null;
+
   public function __construct($name, $type, $title, $options=null, $alias=null) {
     if (empty($alias)) {
       $this->alias = $name;
@@ -50,6 +55,13 @@ class FieldSpecification implements SqlFieldSpecification {
   }
 
   /**
+   * @param $function
+   */
+  public function setMySqlFunction($function) {
+    $this->sqlValueFormatFunction = $function;
+  }
+
+  /**
    * Returns the select statement for this field.
    * E.g. COUNT(civicrm_contact.id) AS contact_id_count
    *
@@ -57,6 +69,9 @@ class FieldSpecification implements SqlFieldSpecification {
    * @return string
    */
   public function getSqlSelectStatement($table_alias) {
+    if ($this->sqlValueFormatFunction) {
+      return "{$this->sqlValueFormatFunction} (`{$table_alias}`.`{$this->name}`) AS `{$this->alias}`";
+    }
     return "`{$table_alias}`.`{$this->name}` AS `{$this->alias}`";
   }
 
@@ -68,6 +83,24 @@ class FieldSpecification implements SqlFieldSpecification {
    * @return string
    */
   public function getSqlColumnName($table_alias) {
+    if ($this->sqlValueFormatFunction) {
+      return "{$this->sqlValueFormatFunction} (`{$table_alias}`.`{$this->name}`)";
+    }
+    return "`{$table_alias}`.`{$this->name}`";
+  }
+
+  /**
+   * Returns the group by statement for this field.
+   * E.g. civicrm_contribution.financial_type_id
+   * or MONTH(civicrm_contribution.receive_date)
+   *
+   * @param String $table_alias
+   * @return String
+   */
+  public function getSqlGroupByStatement($table_alias) {
+    if ($this->sqlValueFormatFunction) {
+      return "{$this->sqlValueFormatFunction} (`{$table_alias}`.`{$this->name}`)";
+    }
     return "`{$table_alias}`.`{$this->name}`";
   }
 

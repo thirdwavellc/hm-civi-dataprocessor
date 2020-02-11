@@ -12,7 +12,6 @@ use Civi\DataProcessor\DataFlow\SqlTableDataFlow;
 use Civi\DataProcessor\DataFlow\CombinedDataFlow\CombinedSqlDataFlow;
 use Civi\DataProcessor\DataFlow\MultipleDataFlows\DataFlowDescription;
 use Civi\DataProcessor\DataFlow\MultipleDataFlows\SimpleJoin;
-use Civi\DataProcessor\DataSpecification\AggregationField;
 use Civi\DataProcessor\DataSpecification\CustomFieldSpecification;
 use Civi\DataProcessor\DataSpecification\DataSpecification;
 use Civi\DataProcessor\DataSpecification\FieldExistsException;
@@ -181,8 +180,17 @@ abstract class AbstractCivicrmEntitySource extends AbstractSource {
    * @throws \Exception
    */
   protected function addFilter($filter_field_alias, $op, $values) {
-    if ($this->getAvailableFilterFields()->doesFieldExist($filter_field_alias)) {
-      $spec = $this->getAvailableFilterFields()->getFieldSpecificationByName($filter_field_alias);
+    $spec = null;
+    if ($this->getAvailableFields()->doesAliasExists($filter_field_alias)) {
+      $spec = $this->getAvailableFields()->getFieldSpecificationByAlias($filter_field_alias);
+    } elseif ($this->getAvailableFields()->doesFieldExist($filter_field_alias)) {
+      $spec = $this->getAvailableFields()->getFieldSpecificationByName($filter_field_alias);
+    }
+
+
+
+
+    if ($spec) {
       if ($spec instanceof CustomFieldSpecification) {
         $customGroupDataFlow = $this->ensureCustomGroup($spec->customGroupTableName, $spec->customGroupName);
         $customGroupTableAlias = $customGroupDataFlow->getTableAlias();
@@ -197,15 +205,21 @@ abstract class AbstractCivicrmEntitySource extends AbstractSource {
   }
 
   /**
-   * Ensure that filter field is accesible in the query
+   * Ensure that filter or aggregate field is accesible in the query
    *
-   * @param String $fieldName
+   * @param FieldSpecification $field
    * @return \Civi\DataProcessor\DataFlow\AbstractDataFlow|null
    * @throws \Exception
    */
-  public function ensureField($fieldName) {
-    if ($this->getAvailableFilterFields()->doesFieldExist($fieldName)) {
-      $spec = $this->getAvailableFilterFields()->getFieldSpecificationByName($fieldName);
+  public function ensureField(FieldSpecification $field) {
+    if ($this->getAvailableFilterFields()->doesAliasExists($field->alias)) {
+      $spec = $this->getAvailableFilterFields()->getFieldSpecificationByAlias($field->alias);
+      if ($spec instanceof CustomFieldSpecification) {
+        return $this->ensureCustomGroup($spec->customGroupTableName, $spec->customGroupName);
+      }
+      return $this->ensureEntity();
+    } elseif ($this->getAvailableFilterFields()->doesFieldExist($field->name)) {
+      $spec = $this->getAvailableFilterFields()->getFieldSpecificationByName($field->name);
       if ($spec instanceof CustomFieldSpecification) {
         return $this->ensureCustomGroup($spec->customGroupTableName, $spec->customGroupName);
       }
@@ -309,64 +323,31 @@ abstract class AbstractCivicrmEntitySource extends AbstractSource {
   }
 
   /**
-   * @return \Civi\DataProcessor\DataSpecification\AggregationField[]
-   * @throws \Exception
-   */
-  public function getAvailableAggregationFields() {
-    $fields = $this->getAvailableFields();
-    $aggregationFields = array();
-    foreach($fields->getFields() as $field) {
-      $aggregationFields[$field->alias] = new AggregationField($field, $this);
-    }
-    return $aggregationFields;
-  }
-
-  /**
    * Ensures a field is in the data source
    *
    * @param \Civi\DataProcessor\DataSpecification\FieldSpecification $fieldSpecification
-   * @return SourceInterface
    * @throws \Exception
    */
   public function ensureFieldInSource(FieldSpecification $fieldSpecification) {
     try {
-      if ($this->getAvailableFields()
-        ->doesFieldExist($fieldSpecification->name)) {
-        if ($fieldSpecification instanceof CustomFieldSpecification) {
-          $customGroupDataFlow = $this->ensureCustomGroup($fieldSpecification->customGroupTableName, $fieldSpecification->customGroupName);
-          if (!$customGroupDataFlow->getDataSpecification()
-            ->doesFieldExist($fieldSpecification->alias)) {
-            $customGroupDataFlow->getDataSpecification()
-              ->addFieldSpecification($fieldSpecification->alias, $fieldSpecification);
-          }
+      $originalFieldSpecification = null;
+      if ($this->getAvailableFields()->doesAliasExists($fieldSpecification->alias)) {
+        $originalFieldSpecification = $this->getAvailableFields()->getFieldSpecificationByAlias($fieldSpecification->alias);
+      } elseif ($this->getAvailableFields()->doesFieldExist($fieldSpecification->name)) {
+        $originalFieldSpecification = $this->getAvailableFields()
+          ->getFieldSpecificationByName($fieldSpecification->name);
+      }
+      if ($originalFieldSpecification && $originalFieldSpecification instanceof CustomFieldSpecification) {
+        $dataFlow = $this->ensureCustomGroup($originalFieldSpecification->customGroupTableName, $originalFieldSpecification->customGroupName);
+        if (!$dataFlow->getDataSpecification()->doesFieldExist($fieldSpecification->alias)) {
+          $dataFlow->getDataSpecification()->addFieldSpecification($fieldSpecification->alias, $fieldSpecification);
         }
-        else {
-          $entityDataFlow = $this->ensureEntity();
-          $entityDataFlow->getDataSpecification()
-            ->addFieldSpecification($fieldSpecification->alias, $fieldSpecification);
-        }
+      } elseif ($originalFieldSpecification) {
+        $dataFlow = $this->ensureEntity();
+        $dataFlow->getDataSpecification()->addFieldSpecification($fieldSpecification->alias, $fieldSpecification);
       }
     } catch (FieldExistsException $e) {
       // Do nothing.
-    }
-  }
-
-  /**
-   * Ensures an aggregation field in the data source
-   *
-   * @param \Civi\DataProcessor\DataSpecification\FieldSpecification $fieldSpecification
-   * @return \Civi\DataProcessor\Source\SourceInterface
-   * @throws \Exception
-   */
-  public function ensureAggregationFieldInSource(FieldSpecification $fieldSpecification) {
-    if ($this->getAvailableFields()->doesFieldExist($fieldSpecification->name)) {
-      if ($fieldSpecification instanceof CustomFieldSpecification) {
-        $customGroupDataFlow = $this->ensureCustomGroup($fieldSpecification->customGroupTableName, $fieldSpecification->customGroupName);
-        $customGroupDataFlow->addAggregateField($fieldSpecification);
-      } else {
-        $entityDataFlow = $this->ensureEntity();
-        $entityDataFlow->addAggregateField($fieldSpecification);
-      }
     }
   }
 

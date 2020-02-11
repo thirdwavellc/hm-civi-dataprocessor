@@ -17,4 +17,23 @@ interface SqlFieldSpecification {
    */
   public function getSqlSelectStatement($table_alias);
 
+  /**
+   * Returns the group by statement for this field.
+   * E.g. civicrm_contribution.financial_type_id
+   * or MONTH(civicrm_contribution.receive_date)
+   *
+   * @param String $table_alias
+   * @return String
+   */
+  public function getSqlGroupByStatement($table_alias);
+
+  /**
+   * Returns the SQL column name for this field.
+   * This could be used in join statements
+   *
+   * @param $table_alias
+   * @return string
+   */
+  public function getSqlColumnName($table_alias);
+
 }

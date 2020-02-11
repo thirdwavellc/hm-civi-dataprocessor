@@ -159,7 +159,7 @@ class SimpleJoin implements JoinInterface, SqlJoinInterface {
     }
 
     $defaults = array();
-    if (isset($joinConfiguration['left_prefix'])) {
+    if (isset($joinConfiguration['left_field'])) {
       $defaults['left_field'] = $joinConfiguration['left_field'];
     }
     if (isset($joinConfiguration['right_prefix'])) {
@@ -188,7 +188,7 @@ class SimpleJoin implements JoinInterface, SqlJoinInterface {
    */
   public function processConfiguration($submittedValues, SourceInterface $joinFromSource) {
     $left_prefix = $joinFromSource->getSourceName();
-    $left_field = $submittedValues['left_field'];
+    $left_field = $this->ocrrectFieldName($submittedValues['left_field'], $joinFromSource);
     list($right_prefix, $right_field) = explode("::",$submittedValues['right_field'], 2);
 
     $configuration = array(
@@ -198,6 +198,44 @@ class SimpleJoin implements JoinInterface, SqlJoinInterface {
       'right_field' => $right_field
     );
     return $configuration;
+  }
+
+  /**
+   * This function corrects the field name.
+   * Basically when we add a join the name of the source is empty but as soon as we save it
+   * the name is set. And the fields have the name of the source in their alias.
+   *
+   * For example if we join on contribution with the left table campaign
+   * our join field is called id (the id of the campaign). The alias of this field
+   * is upon adding _id
+   * but after the source name is set to for example my_campaign. Then the alias becomes my_campaign_id
+   * so we should correct this name.
+   *
+   * @param String $fieldAlias
+   * @param \Civi\DataProcessor\Source\SourceInterface $joinFromSource
+   * @return String
+   */
+  private function ocrrectFieldName($fieldAlias, SourceInterface $joinFromSource) {
+    try {
+      $fields = \CRM_Dataprocessor_Utils_DataSourceFields::getAvailableFieldsInDataSource($joinFromSource, '', '');
+      if (isset($fields[$fieldAlias])) {
+        // No need for correction as the field exists.
+        return $fieldAlias;
+      }
+      $sourceWithEmptyName = clone $joinFromSource;
+      $sourceWithEmptyName->setSourceName('');
+      $fieldsWithoutPrefix = \CRM_Dataprocessor_Utils_DataSourceFields::getAvailableFieldsInDataSource($sourceWithEmptyName, '', '');
+      $fieldKeys = array_keys($fields);
+      $fieldsWithoutPrefixKeys = array_keys($fieldsWithoutPrefix);
+      $key = array_search($fieldAlias, $fieldsWithoutPrefixKeys);
+      if (isset($fieldKeys[$key])) {
+        return $fieldKeys[$key];
+      }
+    } catch (\Exception $e) {
+      // Do nothing.
+    }
+    // We could not convert the field alias so return it as it is.
+    return $fieldAlias;
   }
 
   /**
@@ -261,12 +299,15 @@ class SimpleJoin implements JoinInterface, SqlJoinInterface {
       $this->left_table = $this->left_prefix;
       $this->left_source = $this->dataProcessor->getDataSourceByName($this->left_prefix);
       if ($this->left_source) {
-        $leftTable = $this->left_source->ensureField($this->left_field);
-        if ($leftTable && $leftTable instanceof SqlTableDataFlow) {
-          $this->left_table = $leftTable->getTableAlias();
+        $this->leftFieldSpec = $this->left_source->getAvailableFields()->getFieldSpecificationByAlias($this->left_field);
+        if (!$this->leftFieldSpec) {
+          $this->leftFieldSpec = $this->left_source->getAvailableFields()->getFieldSpecificationByName($this->left_field);
         }
-        $this->leftFieldSpec = $this->left_source->getAvailableFields()->getFieldSpecificationByName($this->left_field);
         if ($this->leftFieldSpec) {
+          $leftTable = $this->left_source->ensureField($this->leftFieldSpec);
+          if ($leftTable && $leftTable instanceof SqlTableDataFlow) {
+            $this->left_table = $leftTable->getTableAlias();
+          }
           $this->left_field_alias = $this->leftFieldSpec->alias;
         }
       }
@@ -275,12 +316,15 @@ class SimpleJoin implements JoinInterface, SqlJoinInterface {
       $this->right_table = $this->right_prefix;
       $this->right_source = $this->dataProcessor->getDataSourceByName($this->right_prefix);
       if ($this->right_source) {
-        $rightTable = $this->right_source->ensureField($this->right_field);
-        if ($rightTable && $rightTable instanceof SqlTableDataFlow) {
-          $this->right_table = $rightTable->getTableAlias();
+        $this->rightFieldSpec = $this->right_source->getAvailableFields()->getFieldSpecificationByAlias($this->right_field);
+        if (!$this->rightFieldSpec) {
+          $this->rightFieldSpec = $this->right_source->getAvailableFields()->getFieldSpecificationByName($this->right_field);
         }
-        $this->rightFieldSpec = $this->right_source->getAvailableFields()->getFieldSpecificationByName($this->right_field);
         if ($this->rightFieldSpec) {
+          $rightTable = $this->right_source->ensureField($this->rightFieldSpec);
+          if ($rightTable && $rightTable instanceof SqlTableDataFlow) {
+            $this->right_table = $rightTable->getTableAlias();
+          }
           $this->right_field_alias = $this->rightFieldSpec->alias;
         }
       }

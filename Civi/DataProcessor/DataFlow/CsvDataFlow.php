@@ -102,6 +102,7 @@ class CsvDataFlow extends AbstractDataFlow {
    * @return void
    */
   protected function resetInitializeState() {
+    parent::resetInitializeState();
     $this->isInitialized = FALSE;
   }
 

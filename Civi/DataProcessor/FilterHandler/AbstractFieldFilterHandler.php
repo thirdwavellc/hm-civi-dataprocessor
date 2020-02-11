@@ -19,6 +19,11 @@ abstract class AbstractFieldFilterHandler extends AbstractFilterHandler {
   protected $fieldSpecification;
 
   /**
+   * @var \Civi\DataProcessor\DataSpecification\FieldSpecification
+   */
+  protected $inputFieldSpecification;
+
+  /**
    * @var \Civi\DataProcessor\Source\SourceInterface
    */
   protected $dataSource;
@@ -40,21 +45,18 @@ abstract class AbstractFieldFilterHandler extends AbstractFilterHandler {
     if (!$this->dataSource) {
       throw new DataSourceNotFoundException(E::ts("Filter %1 requires data source '%2' which could not be found. Did you rename or deleted the data source?", array(1=>$this->title, 2=>$datasource_name)));
     }
-    if (!$this->dataSource->getAvailableFilterFields()->getFieldSpecificationByName($field_name)) {
+    $this->inputFieldSpecification = $this->dataSource->getAvailableFilterFields()->getFieldSpecificationByAlias($field_name);
+    if (!$this->inputFieldSpecification) {
+      $this->inputFieldSpecification = $this->dataSource->getAvailableFilterFields()->getFieldSpecificationByName($field_name);
+    }
+    if (!$this->inputFieldSpecification) {
       throw new FieldNotFoundException(E::ts("Filter %1 requires a field with the name '%2' in the data source '%3'. Did you change the data source type?", array(
         1 => $this->title,
         2 => $field_name,
         3 => $datasource_name
       )));
     }
-    $this->fieldSpecification  =  clone $this->dataSource->getAvailableFilterFields()->getFieldSpecificationByName($field_name);
-    if (!$this->fieldSpecification) {
-      throw new FieldNotFoundException(E::ts("Filter %1 requires a field with the name '%2' in the data source '%3'. Did you change the data source type?", array(
-        1 => $this->title,
-        2 => $field_name,
-        3 => $datasource_name
-      )));
-    }
+    $this->fieldSpecification = clone $this->inputFieldSpecification;
     $this->fieldSpecification->alias = $this->alias;
     $this->fieldSpecification->title = $this->title;
   }
@@ -77,7 +79,7 @@ abstract class AbstractFieldFilterHandler extends AbstractFilterHandler {
     if (!$this->isInitialized()) {
       return;
     }
-    $dataFlow  = $this->dataSource->ensureField($this->fieldSpecification->name);
+    $dataFlow  = $this->dataSource->ensureField($this->fieldSpecification);
     if ($dataFlow && $dataFlow instanceof SqlDataFlow && $this->whereClause) {
       $dataFlow->removeWhereClause($this->whereClause);
       unset($this->whereClause);
@@ -92,13 +94,13 @@ abstract class AbstractFieldFilterHandler extends AbstractFilterHandler {
    */
   public function setFilter($filter) {
     $this->resetFilter();
-    $dataFlow  = $this->dataSource->ensureField($this->fieldSpecification->name);
+    $dataFlow  = $this->dataSource->ensureField($this->inputFieldSpecification);
     if ($dataFlow && $dataFlow instanceof SqlDataFlow) {
       $value = $filter['value'];
       if (!is_array($value)) {
         $value = explode(",", $value);
       }
-      $this->whereClause = new SqlDataFlow\SimpleWhereClause($dataFlow->getName(), $this->fieldSpecification->name, $filter['op'], $value, $this->fieldSpecification->type);
+      $this->whereClause = new SqlDataFlow\SimpleWhereClause($dataFlow->getName(), $this->inputFieldSpecification->name, $filter['op'], $value, $this->inputFieldSpecification->type);
       $dataFlow->addWhereClause($this->whereClause);
     }
   }

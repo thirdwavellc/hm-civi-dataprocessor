@@ -7,10 +7,12 @@
 namespace Civi\DataProcessor\DataFlow;
 
 use \Civi\DataProcessor\DataFlow\MultipleDataFlows\DataFlowDescription;
+use Civi\DataProcessor\DataFlow\Utils\Aggregator;
 use \Civi\DataProcessor\DataSpecification\DataSpecification;
 use Civi\DataProcessor\DataSpecification\FieldSpecification;
 use \Civi\DataProcessor\FieldOutputHandler\AbstractFieldOutputHandler;
 use Civi\DataProcessor\DataFlow\Sort\SortSpecification;
+use Civi\DataProcessor\FieldOutputHandler\OutputHandlerAggregate;
 
 abstract class AbstractDataFlow {
 
@@ -18,6 +20,8 @@ abstract class AbstractDataFlow {
    * @var null|array
    */
   private $_allRecords = null;
+
+  private $currentRecordIndex = 0;
 
   /**
    * @var \Civi\DataProcessor\FieldOutputHandler\AbstractFieldOutputHandler[]
@@ -45,9 +49,9 @@ abstract class AbstractDataFlow {
   protected $dataSpecification;
 
   /**
-   * @var FieldSpecification[]
+   * @var \Civi\DataProcessor\FieldOutputHandler\OutputHandlerAggregate[]
    */
-  protected $aggregateFields = array();
+  protected $aggregateOutputHandlers = array();
 
   /**
    * @var SortSpecification[]
@@ -74,7 +78,9 @@ abstract class AbstractDataFlow {
    *
    * @return void
    */
-  abstract protected function resetInitializeState();
+  protected function resetInitializeState() {
+    $this->currentRecordIndex = 0;
+  }
 
   /**
    * Returns the next record in an associative array
@@ -106,11 +112,10 @@ abstract class AbstractDataFlow {
    * @throws \Civi\DataProcessor\DataFlow\EndOfFlowException
    */
   public function nextRecord($fieldNamePrefix = '') {
-    static $currentRecordIndex = 0;
     $allRecords = $this->allRecords($fieldNamePrefix);
-    if (isset($allRecords[$currentRecordIndex])) {
-      $record = $allRecords[$currentRecordIndex];
-      $currentRecordIndex++;
+    if (isset($allRecords[$this->currentRecordIndex])) {
+      $record = $allRecords[$this->currentRecordIndex];
+      $this->currentRecordIndex++;
       return $record;
     }
     throw new EndOfFlowException();
@@ -144,12 +149,17 @@ abstract class AbstractDataFlow {
   public function allRecords($fieldNameprefix = '') {
     if (!is_array($this->_allRecords)) {
       $this->_allRecords = [];
+      $_allRecords = [];
       try {
         while ($record = $this->retrieveNextRecord($fieldNameprefix)) {
-          $this->_allRecords[] = $this->formatRecordOutput($record);
+          $_allRecords[] = $record;
         }
       } catch (EndOfFlowException $e) {
         // Do nothing
+      }
+      $_allRecords = $this->aggregate($_allRecords, $fieldNameprefix);
+      foreach($_allRecords as $record) {
+        $this->_allRecords[] = $this->formatRecordOutput($record);
       }
       usort($this->_allRecords, array($this, 'sort'));
     }
@@ -234,8 +244,11 @@ abstract class AbstractDataFlow {
     return array();
   }
 
-  public function addAggregateField(FieldSpecification $aggregateField) {
-    $this->aggregateFields[] = $aggregateField;
+  /**
+   * @param \Civi\DataProcessor\DataFlow\OutputHandlerAggregate $aggregateOutputHandler
+   */
+  public function addAggregateOutputHandler(OutputHandlerAggregate $aggregateOutputHandler) {
+    $this->aggregateOutputHandlers[] = $aggregateOutputHandler;
   }
 
   /**
@@ -268,6 +281,20 @@ abstract class AbstractDataFlow {
       }
     }
     return $compareValue;
+  }
+
+  /**
+   * @param $records
+   * @param string $fieldNameprefix
+   *
+   * @return array();
+   */
+  protected function aggregate($records, $fieldNameprefix="") {
+    if (count($this->aggregateOutputHandlers)) {
+      $aggregator = new Aggregator($records, $this->aggregateOutputHandlers, $this->dataSpecification);
+      $records = $aggregator->aggregateRecords($fieldNameprefix);
+    }
+    return $records;
   }
 
 

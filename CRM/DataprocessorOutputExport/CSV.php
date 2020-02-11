@@ -5,10 +5,11 @@
  */
 
 use Civi\DataProcessor\Output\ExportOutputInterface;
+use Civi\DataProcessor\Output\DirectDownloadExportOutputInterface;
 
 use CRM_Dataprocessor_ExtensionUtil as E;
 
-class CRM_DataprocessorOutputExport_CSV implements ExportOutputInterface {
+class CRM_DataprocessorOutputExport_CSV implements ExportOutputInterface, DirectDownloadExportOutputInterface {
 
   const MAX_DIRECT_SIZE = 500;
 
@@ -34,6 +35,7 @@ class CRM_DataprocessorOutputExport_CSV implements ExportOutputInterface {
     $form->add('text', 'delimiter', E::ts('Delimiter'), array(), true);
     $form->add('text', 'enclosure', E::ts('Enclosure'), array(), true);
     $form->add('text', 'escape_char', E::ts('Escape char'), array(), true);
+    $form->add('checkbox', 'anonymous', E::ts('Available for anonymous users'), array(), false);
 
     $configuration = false;
     if ($output && isset($output['configuration'])) {
@@ -53,6 +55,9 @@ class CRM_DataprocessorOutputExport_CSV implements ExportOutputInterface {
       $defaults['escape_char'] = $configuration['escape_char'];
     } else {
       $defaults['escape_char'] = '\\';
+    }
+    if ($configuration && isset($configuration['anonymous'])) {
+      $defaults['anonymous'] = $configuration['anonymous'];
     }
     $form->setDefaults($defaults);
   }
@@ -80,8 +85,20 @@ class CRM_DataprocessorOutputExport_CSV implements ExportOutputInterface {
     $configuration['delimiter'] = $submittedValues['delimiter'];
     $configuration['enclosure'] = $submittedValues['enclosure'];
     $configuration['escape_char'] = $submittedValues['escape_char'];
+    $configuration['anonymous'] = $submittedValues['anonymous'];
     return $configuration;
   }
+
+  /**
+   * This function is called prior to removing an output
+   *
+   * @param array $output
+   * @return void
+   */
+  public function deleteOutput($output) {
+    // Do nothing
+  }
+
 
   /**
    * Returns the mime type of the export file.
@@ -123,17 +140,22 @@ class CRM_DataprocessorOutputExport_CSV implements ExportOutputInterface {
    * @param array $formValues
    * @param string $sortFieldName
    * @param string $sortDirection
+   * @param string $idField
+   *  Set $idField to the name of the field containing the ID of the array $selectedIds
+   * @param array $selectedIds
+   *   Array with the selectedIds.
    * @return string
+   * @throws \Exception
    */
-  public function downloadExport(\Civi\DataProcessor\ProcessorType\AbstractProcessorType $dataProcessorClass, $dataProcessor, $outputBAO, $formValues, $sortFieldName = null, $sortDirection = 'ASC') {
-    if ($dataProcessorClass->getDataFlow()->recordCount() > self::MAX_DIRECT_SIZE) {
-      $this->startBatchJob($dataProcessorClass, $dataProcessor, $outputBAO, $formValues, $sortFieldName, $sortDirection);
+  public function downloadExport(\Civi\DataProcessor\ProcessorType\AbstractProcessorType $dataProcessorClass, $dataProcessor, $outputBAO, $formValues, $sortFieldName = null, $sortDirection = 'ASC', $idField=null, $selectedIds=array()) {
+    if (!$dataProcessorClass->getDataFlow()->recordCount() > self::MAX_DIRECT_SIZE) {
+      $this->startBatchJob($dataProcessorClass, $dataProcessor, $outputBAO, $formValues, $sortFieldName, $sortDirection, $idField, $selectedIds);
     } else {
-      $this->doDirectDownload($dataProcessorClass, $dataProcessor, $outputBAO, $sortFieldName, $sortDirection);
+      $this->doDirectDownload($dataProcessorClass, $dataProcessor, $outputBAO, $sortFieldName, $sortDirection, $idField, $selectedIds);
     }
   }
 
-  protected function doDirectDownload(\Civi\DataProcessor\ProcessorType\AbstractProcessorType $dataProcessorClass, $dataProcessor, $outputBAO, $sortFieldName = null, $sortDirection = 'ASC') {
+  public function doDirectDownload(\Civi\DataProcessor\ProcessorType\AbstractProcessorType $dataProcessorClass, $dataProcessor, $outputBAO, $sortFieldName = null, $sortDirection = 'ASC', $idField, $selectedIds=array()) {
     $filename = date('Ymdhis').'_'.$dataProcessor['id'].'_'.$outputBAO['id'].'_'.CRM_Core_Session::getLoggedInContactID().'_'.$dataProcessor['name'].'.csv';
     $download_name = date('Ymdhis').'_'.$dataProcessor['name'].'.csv';
 
@@ -147,20 +169,20 @@ class CRM_DataprocessorOutputExport_CSV implements ExportOutputInterface {
     }
 
     self::createHeaderLine($path, $dataProcessorClass, $outputBAO['configuration']);
-    self::exportDataProcessor($path, $dataProcessorClass, $outputBAO['configuration']);
+    self::exportDataProcessor($path, $dataProcessorClass, $outputBAO['configuration'], $idField, $selectedIds);
 
-    $mimeType = CRM_Utils_Request::retrieveValue('mime-type', 'String', '', FALSE);
+    $mimeType = $this->mimeType();
 
     if (!$path) {
-      CRM_Core_Error::statusBounce('Could not retrieve the file');
+      \CRM_Core_Error::statusBounce('Could not retrieve the file');
     }
 
     $buffer = file_get_contents($path);
     if (!$buffer) {
-      CRM_Core_Error::statusBounce('The file is either empty or you do not have permission to retrieve the file');
+      \CRM_Core_Error::statusBounce('The file is either empty or you do not have permission to retrieve the file');
     }
 
-    CRM_Utils_System::download(
+    \CRM_Utils_System::download(
       $download_name,
       $mimeType,
       $buffer,
@@ -171,7 +193,7 @@ class CRM_DataprocessorOutputExport_CSV implements ExportOutputInterface {
   }
 
 
-  protected function startBatchJob(\Civi\DataProcessor\ProcessorType\AbstractProcessorType $dataProcessorClass, $dataProcessor, $outputBAO, $formValues, $sortFieldName = null, $sortDirection = 'ASC') {
+  protected function startBatchJob(\Civi\DataProcessor\ProcessorType\AbstractProcessorType $dataProcessorClass, $dataProcessor, $outputBAO, $formValues, $sortFieldName = null, $sortDirection = 'ASC', $idField=null, $selectedIds=array()) {
     $session = CRM_Core_Session::singleton();
 
     $name = date('Ymdhis').'_'.$dataProcessor['id'].'_'.$outputBAO['id'].'_'.CRM_Core_Session::getLoggedInContactID().'_'.$dataProcessor['name'];
@@ -203,7 +225,7 @@ class CRM_DataprocessorOutputExport_CSV implements ExportOutputInterface {
           'CRM_DataprocessorOutputExport_CSV',
           'exportBatch'
         ), //call back method
-        array($filename,$formValues, $dataProcessor['id'], $outputBAO['id'], $i, $recordsPerJob, $sortFieldName, $sortDirection), //parameters,
+        array($filename,$formValues, $dataProcessor['id'], $outputBAO['id'], $i, $recordsPerJob, $sortFieldName, $sortDirection, $idField, $selectedIds), //parameters,
         $title
       );
       //now add this task to the queue
@@ -228,21 +250,31 @@ class CRM_DataprocessorOutputExport_CSV implements ExportOutputInterface {
     fwrite($file, "\xEF\xBB\xBF"); // BOF this will make sure excel opens the file correctly.
     $headerLine = array();
     foreach($dataProcessor->getDataFlow()->getOutputFieldHandlers() as $outputHandler) {
-      $headerLine[] = $outputHandler->getOutputFieldSpecification()->title;
+      $headerLine[] = self::encodeValue($outputHandler->getOutputFieldSpecification()->title, $configuration['escape_char'], $configuration['enclosure']);
     }
-    fputcsv($file, $headerLine, $configuration['delimiter'], $configuration['enclosure'], $configuration['escape_char']);
+    fwrite($file, implode($configuration['delimiter'], $headerLine)."\r\n");
     fclose($file);
   }
 
-  protected static function exportDataProcessor($filename, \Civi\DataProcessor\ProcessorType\AbstractProcessorType $dataProcessor, $configuration) {
+  protected static function exportDataProcessor($filename, \Civi\DataProcessor\ProcessorType\AbstractProcessorType $dataProcessor, $configuration, $idField, $selectedIds=array()) {
     $file = fopen($filename, 'a');
     try {
       while($record = $dataProcessor->getDataFlow()->nextRecord()) {
         $row = array();
-        foreach($record as $field => $value) {
-          $row[] = $value->formattedValue;
+        $rowIsSelected = true;
+        if (isset($idField) && is_array($selectedIds) && count($selectedIds)) {
+          $rowIsSelected = false;
+          $id = $record[$idField]->rawValue;
+          if (in_array($id, $selectedIds)) {
+            $rowIsSelected = true;
+          }
         }
-        fputcsv($file, $row, $configuration['delimiter'], $configuration['enclosure'], $configuration['escape_char']);
+        if ($rowIsSelected) {
+          foreach ($record as $field => $value) {
+            $row[] = self::encodeValue($value->formattedValue, $configuration['escape_char'], $configuration['enclosure']);
+          }
+          fwrite($file, implode($configuration['delimiter'], $row) . "\r\n");
+        }
       }
     } catch (\Civi\DataProcessor\DataFlow\EndOfFlowException $e) {
       // Do nothing
@@ -250,7 +282,16 @@ class CRM_DataprocessorOutputExport_CSV implements ExportOutputInterface {
     fclose($file);
   }
 
-  public static function exportBatch(CRM_Queue_TaskContext $ctx, $filename, $params, $dataProcessorId, $outputId, $offset, $limit, $sortFieldName = null, $sortDirection = 'ASC') {
+  protected static function encodeValue($value, $escape, $enclosure) {
+    ///remove any ESCAPED double quotes within string.
+    $value = str_replace("{$escape}{$enclosure}","{$enclosure}",$value);
+    //then force escape these same double quotes And Any UNESCAPED Ones.
+    $value = str_replace("{$enclosure}","{$escape}{$enclosure}",$value);
+    //force wrap value in quotes and return
+    return "{$enclosure}{$value}{$enclosure}";
+  }
+
+  public static function exportBatch(CRM_Queue_TaskContext $ctx, $filename, $params, $dataProcessorId, $outputId, $offset, $limit, $sortFieldName = null, $sortDirection = 'ASC', $idField=null, $selectedIds=array()) {
     $dataProcessor = civicrm_api3('DataProcessor', 'getsingle', array('id' => $dataProcessorId));
     $output = civicrm_api3('DataProcessorOutput', 'getsingle', array('id' => $outputId));
     $dataProcessorClass = \CRM_Dataprocessor_BAO_DataProcessor::dataProcessorToClass($dataProcessor);
@@ -260,7 +301,7 @@ class CRM_DataprocessorOutputExport_CSV implements ExportOutputInterface {
     }
     $dataProcessorClass->getDataFlow()->setOffset($offset);
     $dataProcessorClass->getDataFlow()->setLimit($limit);
-    self::exportDataProcessor($filename, $dataProcessorClass, $output['configuration']);
+    self::exportDataProcessor($filename, $dataProcessorClass, $output['configuration'], $idField, $selectedIds);
     return TRUE;
   }
 
@@ -270,6 +311,52 @@ class CRM_DataprocessorOutputExport_CSV implements ExportOutputInterface {
     $downloadLink = CRM_Utils_System::url('civicrm/dataprocessor/form/output/download', 'filename='.$filename.'&directory=dataprocessor_export_csv');
     //set a status message for the user
     CRM_Core_Session::setStatus(E::ts('<a href="%1">Download CSV file</a>', array(1=>$downloadLink)), E::ts('Exported data'), 'success');
+  }
+
+  /**
+   * Returns the url for the page/form this output will show to the user
+   *
+   * @param array $output
+   * @param array $dataProcessor
+   * @return string
+   */
+  public function getUrl($output, $dataProcessor) {
+    return CRM_Utils_System::url('civicrm/dataprocessor/output/export', array(
+      'name' => $dataProcessor['name'],
+      'type' => $output['type']
+    ));
+  }
+
+  /**
+   * Returns the url for the page/form this output will show to the user
+   *
+   * @param array $output
+   * @param array $dataProcessor
+   * @return string
+   */
+  public function getTitleForLink($output, $dataProcessor) {
+    return $dataProcessor['title'];
+  }
+
+  /**
+   * Checks whether the current user has access to this output
+   *
+   * @param array $output
+   * @param array $dataProcessor
+   * @return bool
+   */
+  public function checkPermission($output, $dataProcessor) {
+    $anonymous = false;
+    if (isset($output['configuration']) && isset($output['configuration']['anonymous'])) {
+      $anonymous = $output['configuration']['anonymous'] ? true : false;
+    }
+    $userId = \CRM_Core_Session::getLoggedInContactID();
+    if ($userId) {
+      return true;
+    } elseif ($anonymous) {
+      return true;
+    }
+    return false;
   }
 
 

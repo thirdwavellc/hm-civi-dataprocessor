@@ -88,7 +88,6 @@ CREATE TABLE `civicrm_data_processor` (
      `title` varchar(255) NOT NULL   ,
      `type` varchar(255) NOT NULL   ,
      `configuration` text NULL   ,
-     `aggregation` text NULL   ,
      `is_active` tinyint NOT NULL   ,
      `description` text NULL   ,
      `storage_type` varchar(255) NULL   ,

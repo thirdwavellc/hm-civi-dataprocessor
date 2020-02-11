@@ -10,6 +10,7 @@ use Civi\DataProcessor\DataFlow\CombinedDataFlow\CombinedSqlDataFlow;
 use Civi\DataProcessor\DataFlow\MultipleDataFlows\DataFlowDescription;
 use Civi\DataProcessor\DataFlow\MultipleDataFlows\SimpleJoin;
 use Civi\DataProcessor\DataFlow\CombinedDataFlow\SubqueryDataFlow;
+use Civi\DataProcessor\DataFlow\MultipleDataFlows\SimpleNonRequiredJoin;
 use Civi\DataProcessor\DataFlow\SqlTableDataFlow;
 use Civi\DataProcessor\DataSpecification\DataSpecification;
 use Civi\DataProcessor\Source\AbstractCivicrmEntitySource;
@@ -93,7 +94,7 @@ class ContributionSource extends AbstractCivicrmEntitySource {
   protected function getEntityDataFlow() {
     $contributionDataDescription = new DataFlowDescription($this->contributionDataFlow);
 
-    $join = new SimpleJoin($this->contributionDataFlow->getTableAlias(), 'id', $this->contributionSoftDataFlow->getTableAlias(), 'contribution_id');
+    $join = new SimpleJoin($this->contributionDataFlow->getTableAlias(), 'id', $this->contributionSoftDataFlow->getTableAlias(), 'contribution_id', 'LEFT');
     $join->setDataProcessor($this->dataProcessor);
     $contributionSoftDataDescription = new DataFlowDescription($this->contributionSoftDataFlow, $join);
 
@@ -142,6 +143,22 @@ class ContributionSource extends AbstractCivicrmEntitySource {
     $aliasPrefix = $this->getSourceName().'_';
 
     DataSpecificationUtils::addDAOFieldsToDataSpecification($daoClass, $dataSpecification, $fieldsToSkip, '', $aliasPrefix);
-    DataSpecificationUtils::addDAOFieldsToDataSpecification('CRM_Contribute_DAO_ContributionSoft', $dataSpecification, array('id', 'contribution_id'), 'contribution_soft_', $aliasPrefix, E::ts('Soft :: '));
+    DataSpecificationUtils::addDAOFieldsToDataSpecification('CRM_Contribute_DAO_ContributionSoft', $dataSpecification, array('id', 'contribution_id'), 'contribution_soft_', $aliasPrefix.'_contribution_soft_', E::ts('Soft :: '));
+  }
+
+  /**
+   * Returns the default configuration for this data source
+   *
+   * @return array
+   */
+  public function getDefaultConfiguration() {
+    return array(
+      'filter' => array(
+        'is_test' => array (
+          'op' => '=',
+          'value' => '0',
+        )
+      )
+    );
   }
 }

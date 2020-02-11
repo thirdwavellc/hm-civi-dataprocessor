@@ -49,12 +49,18 @@ class ContactInGroupFilter extends AbstractFieldFilterHandler {
    */
   public function setFilter($filter) {
     $this->resetFilter();
-    $dataFlow  = $this->dataSource->ensureField($this->fieldSpecification->name);
+    $dataFlow  = $this->dataSource->ensureField($this->inputFieldSpecification);
     $group_ids = $filter['value'];
     if (!is_array($group_ids)) {
       $group_ids = array($group_ids);
     }
-    $groupTableAlias = 'civicrm_group_contact_'.$this->fieldSpecification->alias;
+
+    // If the groups are smartgroups (saved searches) they may be out of date.
+    // This triggers a check (and rebuild if necessary).
+    \CRM_Contact_BAO_GroupContactCache::check($group_ids);
+
+    // Look in the group contact table
+    $groupTableAlias = 'civicrm_group_contact_'.$this->inputFieldSpecification->alias;
     $groupFilters = array(
       new SqlDataFlow\SimpleWhereClause($groupTableAlias, 'status', '=', 'Added'),
       new SqlDataFlow\SimpleWhereClause($groupTableAlias, 'group_id', 'IN', $group_ids),
@@ -67,12 +73,41 @@ class ContactInGroupFilter extends AbstractFieldFilterHandler {
         $groupTableAlias,
         $groupFilters,
         $dataFlow->getName(),
-        $this->fieldSpecification->name,
+        $this->inputFieldSpecification->name,
+        $filter['op']
+      );
+      $whereClauses[] = $this->whereClause;
+    }
+
+    // Now look in the smartgroup group contact table
+    $groupTableAlias = 'civicrm_group_contact_cache_'.$this->inputFieldSpecification->alias;
+    $groupFilters = array(
+      new SqlDataFlow\SimpleWhereClause($groupTableAlias, 'group_id', 'IN', $group_ids),
+    );
+
+    if ($dataFlow && $dataFlow instanceof SqlDataFlow) {
+      $this->whereClause = new SqlDataFlow\InTableWhereClause(
+        'contact_id',
+        'civicrm_group_contact_cache',
+        $groupTableAlias,
+        $groupFilters,
+        $dataFlow->getName(),
+        $this->inputFieldSpecification->name,
         $filter['op']
       );
 
-      $dataFlow->addWhereClause($this->whereClause);
+      $whereClauses[] = $this->whereClause;
     }
+    switch ($filter['op']) {
+      case 'IN':
+        $this->whereClause = new SqlDataFlow\OrClause($whereClauses);
+        break;
+
+      case 'NOT IN':
+        $this->whereClause = new SqlDataFlow\AndClause($whereClauses);
+        break;
+    }
+    $dataFlow->addWhereClause($this->whereClause);
   }
 
   /**
@@ -155,17 +190,26 @@ class ContactInGroupFilter extends AbstractFieldFilterHandler {
    *
    * @param \CRM_Core_Form $form
    * @param array $defaultFilterValue
-   *
+   * @param string $size
+   *   Possible values: full or compact
    * @return array
    *   Return variables belonging to this filter.
    */
-  public function addToFilterForm(\CRM_Core_Form $form, $defaultFilterValue) {
+  public function addToFilterForm(\CRM_Core_Form $form, $defaultFilterValue, $size='full') {
     $fieldSpec = $this->getFieldSpecification();
+    $alias = $fieldSpec->alias;
     $operations = $this->getOperatorOptions($fieldSpec);
 
     $title = $fieldSpec->title;
     if ($this->isRequired()) {
       $title .= ' <span class="crm-marker">*</span>';
+    }
+
+    $sizeClass = 'huge';
+    $minWidth = 'min-width: 250px;';
+    if ($size =='compact') {
+      $sizeClass = 'medium';
+      $minWidth = '';
     }
 
     $api_params['is_active'] = 1;
@@ -174,18 +218,38 @@ class ContactInGroupFilter extends AbstractFieldFilterHandler {
       $api_params['id']['IN'] = $childGroupIds;
     }
 
-    $form->addElement('select', "{$fieldSpec->alias}_op", E::ts('Operator:'), $operations);
+    $form->add('select', "{$fieldSpec->alias}_op", E::ts('Operator:'), $operations, true, [
+      'style' => $minWidth,
+      'class' => 'crm-select2 '.$sizeClass,
+      'multiple' => FALSE,
+      'placeholder' => E::ts('- select -'),
+    ]);
     $form->addEntityRef( "{$fieldSpec->alias}_value", NULL, array(
       'placeholder' => E::ts('Select a group'),
       'entity' => 'Group',
       'api' => array('params' => $api_params),
       'create' => false,
       'multiple' => true,
+      'select' => ['minimumInputLength' => 0],
     ));
+
+    if (isset($defaultFilterValue['op'])) {
+      $defaults[$alias . '_op'] = $defaultFilterValue['op'];
+    } else {
+      $defaults[$alias . '_op'] = key($operations);
+    }
+    if (isset($defaultFilterValue['value'])) {
+      $defaults[$alias.'_value'] = $defaultFilterValue['value'];
+    }
+
+    if (count($defaults)) {
+      $form->setDefaults($defaults);
+    }
 
     $filter['type'] = $fieldSpec->type;
     $filter['alias'] = $fieldSpec->alias;
     $filter['title'] = $title;
+    $filter['size'] = $size;
 
     return $filter;
   }

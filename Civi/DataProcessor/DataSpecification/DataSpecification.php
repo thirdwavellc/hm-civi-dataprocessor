@@ -29,10 +29,15 @@ class DataSpecification {
    * @throws \Civi\DataProcessor\DataSpecification\FieldExistsException
    */
   public function addFieldSpecification($name, FieldSpecification $field) {
-    if (isset($this->fields[$name])) {
+    if (in_array($field, $this->fields)) {
       throw new FieldExistsException($name);
     }
-    $this->fields[$name] = $field;
+    $this->fields[] = $field;
+
+    /*if (isset($this->fields[$name])) {
+      throw new FieldExistsException($name);
+    }
+    $this->fields[$name] = $field;*/
     return $this;
   }
 
@@ -48,8 +53,10 @@ class DataSpecification {
    * @return \Civi\DataProcessor\DataSpecification\FieldSpecification
    */
   public function getFieldSpecificationByName($name) {
-    if (isset($this->fields[$name])) {
-      return $this->fields[$name];
+    foreach($this->fields as $field) {
+      if ($field->name == $name) {
+        return $field;
+      }
     }
     return null;
   }
@@ -74,8 +81,25 @@ class DataSpecification {
    * @return bool
    */
   public function doesFieldExist($name) {
-    if (isset($this->fields[$name])) {
-      return true;
+    foreach($this->fields as $field) {
+      if ($field->name == $name) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Returns whether a field exists
+   *
+   * @param $alias
+   * @return bool
+   */
+  public function doesAliasExists($alias) {
+    foreach($this->fields as $field) {
+      if ($field->alias == $alias) {
+        return true;
+      }
     }
     return false;
   }

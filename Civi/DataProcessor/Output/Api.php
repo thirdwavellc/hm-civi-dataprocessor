@@ -32,6 +32,14 @@ class Api implements OutputInterface, API_ProviderInterface, EventSubscriberInte
   }
 
   /**
+   * Flushes the caches
+   */
+  public static function clearCache() {
+    $api = new Api();
+    $api->cache->clear();
+  }
+
+  /**
    * Returns true when this filter has additional configuration
    *
    * @return bool
@@ -97,6 +105,16 @@ class Api implements OutputInterface, API_ProviderInterface, EventSubscriberInte
   }
 
   /**
+   * This function is called prior to removing an output
+   *
+   * @param array $output
+   * @return void
+   */
+  public function deleteOutput($output) {
+    // Do nothing
+  }
+
+  /**
    * @return array
    */
   public static function getSubscribedEvents() {
@@ -120,11 +138,21 @@ class Api implements OutputInterface, API_ProviderInterface, EventSubscriberInte
   public function onApiResolve(ResolveEvent $event) {
     $entities = $this->getEntityNames();
     $apiRequest = $event->getApiRequest();
+    $params = array();
+    if (isset($apiRequest['params'])) {
+      $params = $apiRequest['params'];
+    }
     foreach($entities as $entity) {
+      $actions = $this->getActionNames(3, $entity);
+      $actions = array_map('strtolower', $actions);
       if (strtolower($apiRequest['entity']) == strtolower($entity)) {
-        $event->setApiProvider($this);
         if (strtolower($apiRequest['action']) == 'getfields' || strtolower($apiRequest['action']) == 'getoptions') {
-          $event->stopPropagation();
+          if (isset($params['api_action']) && in_array(strtolower($params['api_action']), $actions)) {
+            $event->setApiProvider($this);
+            $event->stopPropagation();
+          }
+        } elseif (in_array(strtolower($apiRequest['action']), $actions)) {
+          $event->setApiProvider($this);
         }
       }
     }
@@ -147,6 +175,10 @@ class Api implements OutputInterface, API_ProviderInterface, EventSubscriberInte
         if (strtolower($params['action']) != 'getoptions') {
           $result['values'] = $fields;
         } else {
+          $actions = array();
+          foreach($this->getActionNames(3, $apiRequest['entity']) as $action) {
+            $actions[$action] = $action;
+          }
           $fieldNames = array();
           foreach($fields as $field) {
             $fieldNames[$field['name']] = $field['title'];
@@ -166,7 +198,7 @@ class Api implements OutputInterface, API_ProviderInterface, EventSubscriberInte
           $result['values']['api_action']['title'] = E::ts('Action');
           $result['values']['api_action']['name'] = 'api_action';
           $result['values']['api_action']['api.required'] = FALSE;
-          $result['values']['api_action']['options'] = $this->getActionNames(3, $apiRequest['entity']);
+          $result['values']['api_action']['options'] = $actions;
           $result['values']['api_action']['type'] = \CRM_Utils_Type::T_STRING;
 
         }
@@ -197,8 +229,8 @@ class Api implements OutputInterface, API_ProviderInterface, EventSubscriberInte
     // Find the data processor
     $dataProcessorIdSql = "
           SELECT *
-          FROM civicrm_data_processor_output o 
-          INNER JOIN civicrm_data_processor p ON o.data_processor_id = p.id 
+          FROM civicrm_data_processor_output o
+          INNER JOIN civicrm_data_processor p ON o.data_processor_id = p.id
           WHERE p.is_active = 1 AND LOWER(o.api_entity) = LOWER(%1)
         ";
 
@@ -329,8 +361,8 @@ class Api implements OutputInterface, API_ProviderInterface, EventSubscriberInte
     $isCountAction = FALSE;
     $dataProcessorIdSql = "
       SELECT *
-      FROM civicrm_data_processor_output o 
-      INNER JOIN civicrm_data_processor p ON o.data_processor_id = p.id 
+      FROM civicrm_data_processor_output o
+      INNER JOIN civicrm_data_processor p ON o.data_processor_id = p.id
       WHERE p.is_active = 1 AND LOWER(o.api_entity) = LOWER(%1)
       AND (LOWER(o.api_action) = LOWER(%2) OR LOWER(o.api_count_action) = LOWER(%2))
     ";
@@ -468,9 +500,9 @@ class Api implements OutputInterface, API_ProviderInterface, EventSubscriberInte
    */
   public function getEntityNames($version=null) {
     $dao = \CRM_Core_DAO::executeQuery("
-      SELECT DISTINCT o.api_entity 
-      FROM civicrm_data_processor_output o 
-      INNER JOIN civicrm_data_processor p ON o.data_processor_id = p.id 
+      SELECT DISTINCT o.api_entity
+      FROM civicrm_data_processor_output o
+      INNER JOIN civicrm_data_processor p ON o.data_processor_id = p.id
       WHERE p.is_active = 1
     ");
     $entities = array();
@@ -493,9 +525,9 @@ class Api implements OutputInterface, API_ProviderInterface, EventSubscriberInte
   public function getActionNames($version, $entity) {
     $actions = array();
     $dao = \CRM_Core_DAO::executeQuery("
-      SELECT api_action, api_count_action 
-      FROM civicrm_data_processor_output o 
-      INNER JOIN civicrm_data_processor p ON o.data_processor_id = p.id 
+      SELECT api_action, api_count_action
+      FROM civicrm_data_processor_output o
+      INNER JOIN civicrm_data_processor p ON o.data_processor_id = p.id
       WHERE p.is_active = 1 AND LOWER(o.api_entity) = LOWER(%1)",
       array(1=>array($entity, 'String'))
     );

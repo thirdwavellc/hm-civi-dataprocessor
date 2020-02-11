@@ -116,6 +116,21 @@ function dataprocessor_search_action_designer_types(&$types) {
 }
 
 /**
+ * Implements hook_civicrm_tabset().
+ *
+ * Adds the data processor out to the contact summary tabs.
+ *
+ * @link https://docs.civicrm.org/dev/en/latest/hooks/hook_civicrm_tabset/
+ *
+ * @param $tabsetName
+ * @param $tabs
+ * @param $context
+ */
+function dataprocessor_civicrm_tabset($tabsetName, &$tabs, $context) {
+  CRM_Contact_DataProcessorContactSummaryTab::hookTabset($tabsetName, $tabs, $context);
+}
+
+/**
  * Implements hook_civicrm_config().
  *
  * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_config

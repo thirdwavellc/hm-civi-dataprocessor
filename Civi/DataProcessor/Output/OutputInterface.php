@@ -42,4 +42,12 @@ interface OutputInterface {
    */
   public function processConfiguration($submittedValues, &$output);
 
+  /**
+   * This function is called prior to removing an output
+   *
+   * @param array $output
+   * @return void
+   */
+  public function deleteOutput($output);
+
 }

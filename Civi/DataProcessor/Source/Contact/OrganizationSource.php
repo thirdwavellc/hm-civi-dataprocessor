@@ -14,6 +14,21 @@ use CRM_Dataprocessor_ExtensionUtil as E;
 class OrganizationSource extends AbstractCivicrmEntitySource {
 
   protected $skipFields = array(
+    'first_name',
+    'middle_name',
+    'last_name',
+    'formal_title',
+    'job_title',
+    'gender_id',
+    'prefix_id',
+    'suffix_id',
+    'birth_date',
+    'household_name',
+    'is_deceased',
+    'deceased_date',
+  );
+
+  protected $skipFilterFields = array(
     'contact_type',
     'first_name',
     'middle_name',
@@ -70,7 +85,7 @@ class OrganizationSource extends AbstractCivicrmEntitySource {
   public function getAvailableFilterFields() {
     if (!$this->availableFilterFields) {
       $this->availableFilterFields = new DataSpecification();
-      $this->loadFields($this->availableFilterFields, $this->skipFields);
+      $this->loadFields($this->availableFilterFields, $this->skipFilterFields);
       $this->loadCustomGroupsAndFields($this->availableFilterFields, true, 'Organization');
     }
     return $this->availableFilterFields;

@@ -11,10 +11,10 @@
   </maintainer>
   <urls>
     <url desc="Main Extension Page">https://lab.civicrm.org/extensions/dataprocessor</url>
-    <url desc="Documentation">https://lab.civicrm.org/extensions/dataprocessor/README.md</url>
+    <url desc="Documentation">https://lab.civicrm.org/extensions/dataprocessor/blob/master/README.md</url>
     <url desc="Licensing">http://www.gnu.org/licenses/agpl-3.0.html</url>
   </urls>
-  <releaseDate>2019-07-15</releaseDate>
+  <releaseDate>2019-12-23</releaseDate>
   <version>master</version>
   <develStage>dev</develStage>
   <compatibility>
@@ -23,9 +23,10 @@
     <ver>5.13</ver>
     <ver>5.14</ver>
     <ver>5.15</ver>
+    <ver>5.20</ver>
   </compatibility>
   <classloader>
-    <psr4 prefix="Civi\" path="Civi" />
+    <psr4 prefix="Civi\" path="Civi"/>
   </classloader>
   <civix>
     <namespace>CRM/Dataprocessor</namespace>

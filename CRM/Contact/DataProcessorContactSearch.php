@@ -34,18 +34,6 @@ class CRM_Contact_DataProcessorContactSearch implements UIOutputInterface {
       $field = $outputFieldHandler->getOutputFieldSpecification();
       $fields[$field->alias] = $field->title;
     }
-
-    $form->add('text', 'title', E::ts('Title'),NULL, true);
-    
-    // form elements for adding Dashlet
-    // $output['dashlet'] 1-> Yes 2->No
-
-    if(isset($output['dashlet']) && $output['dashlet']==1){
-      $form->add('text', 'dashlet_title', E::ts('Dashlet Title'), NULL, true);
-      $form->add('text', 'dashlet_name', E::ts('Dashlet Name (system name)'), NULL, true);
-      $form->add('select', 'dashlet_active', E::ts('Is Dashlet Active ?'), array(1=>'Yes', 0=> 'No'), true);
-    }
-
     $form->add('select','permission', E::ts('Permission'), \CRM_Core_Permission::basicPermissions(), true, array(
       'style' => 'min-width:250px',
       'class' => 'crm-select2 huge',
@@ -58,7 +46,16 @@ class CRM_Contact_DataProcessorContactSearch implements UIOutputInterface {
     ));
     $form->add('select', 'hide_id_field', E::ts('Show Contact ID field'), array(0=>'Contact ID is Visible', 1=> 'Contact ID is hidden'));
 
+    $form->add('select', 'hidden_fields', E::ts('Hidden fields'), $fields, false, array(
+      'style' => 'min-width:250px',
+      'class' => 'crm-select2 huge',
+      'multiple' => true,
+      'placeholder' => E::ts('- select -'),
+    ));
+
     $form->add('wysiwyg', 'help_text', E::ts('Help text for this search'), array('rows' => 6, 'cols' => 80));
+
+    $form->add('checkbox', 'expanded_search', E::ts('Expand criteria form initially'));
 
     // navigation field
     $navigationOptions = $navigation->getNavigationOptions();
@@ -70,14 +67,9 @@ class CRM_Contact_DataProcessorContactSearch implements UIOutputInterface {
 
     $defaults = array();
     if ($output) {
-      
+
       if (isset($output['permission'])) {
         $defaults['permission'] = $output['permission'];
-      }
-      if (isset($output['dashlet_name'])) {
-        $defaults['dashlet_name'] = $output['dashlet_name'];
-        $defaults['dashlet_title'] = $output['dashlet_title'];
-        $defaults['dashlet_active'] = $output['dashlet_active'];
       }
       if (isset($output['configuration']) && is_array($output['configuration'])) {
         if (isset($output['configuration']['contact_id_field'])) {
@@ -86,24 +78,24 @@ class CRM_Contact_DataProcessorContactSearch implements UIOutputInterface {
         if (isset($output['configuration']['navigation_id'])) {
           $defaults['navigation_parent_path'] = $navigation->getNavigationParentPathById($output['configuration']['navigation_id']);
         }
-        if (isset($output['configuration']['title'])) {
-          $defaults['title'] = $output['configuration']['title'];
-        }
         if (isset($output['configuration']['hide_id_field'])) {
           $defaults['hide_id_field'] = $output['configuration']['hide_id_field'];
         }
+        if (isset($output['configuration']['hidden_fields'])) {
+          $defaults['hidden_fields'] = $output['configuration']['hidden_fields'];
+        }
         if (isset($output['configuration']['help_text'])) {
           $defaults['help_text'] = $output['configuration']['help_text'];
+        }
+        if (isset($output['configuration']['expanded_search'])) {
+          $defaults['expanded_search'] = $output['configuration']['expanded_search'];
         }
       }
     }
     if (!isset($defaults['permission'])) {
       $defaults['permission'] = 'access CiviCRM';
     }
-    if (empty($defaults['title'])) {
-      $defaults['title'] = civicrm_api3('DataProcessor', 'getvalue', array('id' => $output['data_processor_id'], 'return' => 'title'));
-    }
-    
+
     $form->setDefaults($defaults);
   }
 
@@ -127,31 +119,23 @@ class CRM_Contact_DataProcessorContactSearch implements UIOutputInterface {
    */
   public function processConfiguration($submittedValues, &$output) {
     $output['permission'] = $submittedValues['permission'];
-    $configuration['title'] = $submittedValues['title'];
     $configuration['contact_id_field'] = $submittedValues['contact_id_field'];
+    $configuration['hidden_fields'] = $submittedValues['hidden_fields'];
     $configuration['navigation_parent_path'] = $submittedValues['navigation_parent_path'];
     $configuration['hide_id_field'] = $submittedValues['hide_id_field'];
     $configuration['help_text'] = $submittedValues['help_text'];
+    $configuration['expanded_search'] = isset($submittedValues['expanded_search']) ? $submittedValues['expanded_search'] : false;
     return $configuration;
   }
 
   /**
-   * Process the submitted values and create a configuration array
+   * This function is called prior to removing an output
    *
-   * @param $submittedValues
    * @param array $output
-   * @return array
+   * @return void
    */
-  public function processDashletConfiguration($submittedValues) {
-
-    $configuration['domain_id'] = 1;
-    $configuration['name'] = $submittedValues['dashlet_name'];
-    $configuration['label'] = $submittedValues['dashlet_title'];
-    $configuration['permission'] = $submittedValues['permission'];
-    $configuration['is_active'] = $submittedValues['dashlet_active'];
-    $configuration['cache_minutes'] = 60;
-
-    return $configuration;
+  public function deleteOutput($output) {
+    // Do nothing
   }
 
   /**
@@ -173,7 +157,7 @@ class CRM_Contact_DataProcessorContactSearch implements UIOutputInterface {
    * @return string
    */
   public function getTitleForUiLink($output, $dataProcessor) {
-    return isset($output['configuration']['title']) ? $output['configuration']['title'] : $dataProcessor['title'];
+    return $dataProcessor['title'];
   }
 
   /**

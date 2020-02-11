@@ -93,7 +93,7 @@ class Utils {
         continue;
       }
       foreach ($customGroup['fields'] as $field) {
-        if (!$onlySearchAbleFields || $field['is_searchable']) {
+        if (!$onlySearchAbleFields || (isset($field['is_searchable']) && $field['is_searchable'])) {
           $alias = $aliasPrefix . $customGroup['name'] . '_' . $field['name'];
           $customFieldSpec = new CustomFieldSpecification(
             $customGroup['name'], $customGroup['table_name'], $customGroup['title'],

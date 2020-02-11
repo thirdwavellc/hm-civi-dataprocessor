@@ -12,45 +12,12 @@ use CRM_Dataprocessor_ExtensionUtil as E;
 use Civi\DataProcessor\Source\SourceInterface;
 use Civi\DataProcessor\DataSpecification\FieldSpecification;
 
-class RawFieldOutputHandler extends AbstractFieldOutputHandler implements OutputHandlerSortable{
+class RawFieldOutputHandler extends AbstractSimpleFieldOutputHandler implements OutputHandlerAggregate {
 
   /**
-   * @var \Civi\DataProcessor\DataSpecification\FieldSpecification
+   * @var bool
    */
-  protected $inputFieldSpec;
-
-  /**
-   * @var \Civi\DataProcessor\DataSpecification\FieldSpecification
-   */
-  protected $outputFieldSpec;
-
-  /**
-   * @var SourceInterface
-   */
-  protected $dataSource;
-
-  /**
-   * @return \Civi\DataProcessor\DataSpecification\FieldSpecification
-   */
-  public function getOutputFieldSpecification() {
-    return $this->outputFieldSpec;
-  }
-
-  /**
-   * @return \Civi\DataProcessor\DataSpecification\FieldSpecification
-   */
-  public function getSortableInputFieldSpec() {
-    return $this->inputFieldSpec;
-  }
-
-  /**
-   * Returns the data type of this field
-   *
-   * @return String
-   */
-  protected function getType() {
-    return $this->inputFieldSpec->type;
-  }
+  protected $isAggregateField = false;
 
   /**
    * Initialize the processor
@@ -61,45 +28,15 @@ class RawFieldOutputHandler extends AbstractFieldOutputHandler implements Output
    * @param \Civi\DataProcessor\ProcessorType\AbstractProcessorType $processorType
    */
   public function initialize($alias, $title, $configuration) {
-    $this->dataSource = $this->dataProcessor->getDataSourceByName($configuration['datasource']);
-    if (!$this->dataSource) {
-      throw new DataSourceNotFoundException(E::ts("Field %1 requires data source '%2' which could not be found. Did you rename or deleted the data source?", array(1=>$title, 2=>$configuration['datasource'])));
+    parent::initialize($alias, $title, $configuration);
+    $this->isAggregateField = isset($configuration['is_aggregate']) ? $configuration['is_aggregate'] : false;
+
+    if ($this->isAggregateField) {
+      $dataFlow = $this->dataSource->ensureField($this->getAggregateFieldSpec());
+      if ($dataFlow) {
+        $dataFlow->addAggregateOutputHandler($this);
+      }
     }
-    $this->inputFieldSpec = $this->dataSource->getAvailableFields()->getFieldSpecificationByName($configuration['field']);
-    if (!$this->inputFieldSpec) {
-      throw new FieldNotFoundException(E::ts("Field %1 requires a field with the name '%2' in the data source '%3'. Did you change the data source type?", array(
-        1 => $title,
-        2 => $configuration['field'],
-        3 => $configuration['datasource']
-      )));
-    }
-    $this->dataSource->ensureFieldInSource($this->inputFieldSpec);
-
-    $this->outputFieldSpec = clone $this->inputFieldSpec;
-    $this->outputFieldSpec->alias = $alias;
-    $this->outputFieldSpec->title = $title;
-    $this->outputFieldSpec->type = $this->getType();
-  }
-
-  /**
-   * Returns the formatted value
-   *
-   * @param $rawRecord
-   * @param $formattedRecord
-   *
-   * @return \Civi\DataProcessor\FieldOutputHandler\FieldOutput
-   */
-  public function formatField($rawRecord, $formattedRecord) {
-    return new FieldOutput($rawRecord[$this->inputFieldSpec->alias]);
-  }
-
-  /**
-   * Returns true when this handler has additional configuration.
-   *
-   * @return bool
-   */
-  public function hasConfiguration() {
-    return true;
   }
 
   /**
@@ -110,18 +47,13 @@ class RawFieldOutputHandler extends AbstractFieldOutputHandler implements Output
    * @param array $field
    */
   public function buildConfigurationForm(\CRM_Core_Form $form, $field=array()) {
-    $fieldSelect = $this->getFieldOptions($field['data_processor_id']);
-
-    $form->add('select', 'field', E::ts('Field'), $fieldSelect, true, array(
-      'style' => 'min-width:250px',
-      'class' => 'crm-select2 huge data-processor-field-for-name',
-      'placeholder' => E::ts('- select -'),
-    ));
+    parent::buildConfigurationForm($form, $field);
+    $form->add('checkbox', 'is_aggregate', E::ts('Aggregate on this field'));
     if (isset($field['configuration'])) {
       $configuration = $field['configuration'];
       $defaults = array();
-      if (isset($configuration['field']) && isset($configuration['datasource'])) {
-        $defaults['field'] = $configuration['datasource'] . '::' . $configuration['field'];
+      if (isset($configuration['is_aggregate'])) {
+        $defaults['is_aggregate'] = $configuration['is_aggregate'];
       }
       $form->setDefaults($defaults);
     }
@@ -145,33 +77,35 @@ class RawFieldOutputHandler extends AbstractFieldOutputHandler implements Output
    * @return array
    */
   public function processConfiguration($submittedValues) {
-    list($datasource, $field) = explode('::', $submittedValues['field'], 2);
-    $configuration['field'] = $field;
-    $configuration['datasource'] = $datasource;
+    $configuration = parent::processConfiguration($submittedValues);
+    $configuration['is_aggregate'] = isset($submittedValues['is_aggregate']) ? $submittedValues['is_aggregate'] : false;
     return $configuration;
   }
 
   /**
-   * Returns all possible fields
-   *
-   * @param $data_processor_id
-   *
-   * @return array
-   * @throws \Exception
+   * @return \Civi\DataProcessor\DataSpecification\FieldSpecification
    */
-  protected function getFieldOptions($data_processor_id) {
-    $fieldSelect = \CRM_Dataprocessor_Utils_DataSourceFields::getAvailableFieldsInDataSources($data_processor_id, array($this, 'isFieldValid'));
-    return $fieldSelect;
+  public function getAggregateFieldSpec() {
+    return $this->inputFieldSpec;
   }
 
   /**
-   * Callback function for determining whether this field could be handled by this output handler.
-   *
-   * @param \Civi\DataProcessor\DataSpecification\FieldSpecification $field
    * @return bool
    */
-  public function isFieldValid(FieldSpecification $field) {
-    return true;
+  public function isAggregateField() {
+    return $this->isAggregateField;
+  }
+
+  /**
+   * Returns the value. And if needed a formatting could be applied.
+   * E.g. when the value is a date field and you want to aggregate on the month
+   * you can then return the month here.
+   *
+   * @param $value
+   * @return mixed
+   */
+  public function formatAggregationValue($value) {
+    return $value;
   }
 
 

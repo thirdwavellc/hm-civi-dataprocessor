@@ -104,9 +104,12 @@ class CRM_Dataprocessor_Utils_Importer {
             $new_id = self::importDataProcessor($data, $filename, $data_processor_id, CRM_Dataprocessor_Status::STATUS_IN_CODE);
             $new_status = CRM_Dataprocessor_Status::STATUS_IN_CODE;
           }
-          else {
+          elseif ($filename) {
             $new_id = self::importDataProcessor($data, $filename, $data_processor_id, CRM_Dataprocessor_Status::STATUS_OVERRIDDEN);
             $new_status = CRM_Dataprocessor_Status::STATUS_OVERRIDDEN;
+          } else {
+            $new_id = self::importDataProcessor($data, $filename, $data_processor_id, CRM_Dataprocessor_Status::STATUS_IN_DATABASE);
+            $new_status = CRM_Dataprocessor_Status::STATUS_IN_DATABASE;
           }
           break;
       }
@@ -205,10 +208,10 @@ class CRM_Dataprocessor_Utils_Importer {
    *
    * This scans the extension directory data-processors/ for json files.
    */
-  public static function importFromExtensions() {
+  public static function importFromExtensions($extension=null) {
     $return = array();
     $importedIds = array();
-    $extensions = self::getExtensionFileListWithDataProcessors();
+    $extensions = self::getExtensionFileListWithDataProcessors($extension);
     foreach($extensions as $ext_file) {
       $data = json_decode($ext_file['data'], true);
       $return[$ext_file['file']] = self::import($data, $ext_file['file']);
@@ -218,11 +221,27 @@ class CRM_Dataprocessor_Utils_Importer {
     }
 
     // Remove all data processors which are in code or overridden but not imported
-    $dao = CRM_Core_DAO::executeQuery("SELECT id, name FROM civicrm_data_processor WHERE id NOT IN (".implode($importedIds, ",").") AND status IN (".CRM_Dataprocessor_Status::STATUS_IN_CODE.", ".CRM_Dataprocessor_Status::STATUS_OVERRIDDEN.")");
+    $removeSql = "
+        SELECT id, name, status 
+        FROM civicrm_data_processor 
+        WHERE  status IN (".CRM_Dataprocessor_Status::STATUS_IN_CODE.", ".CRM_Dataprocessor_Status::STATUS_OVERRIDDEN.") 
+        AND source_file IS NOT NULL";
+    if (count($importedIds)) {
+      $removeSql .= " AND id NOT IN (".implode($importedIds, ",").")";
+    }
+    if ($extension) {
+      $removeSql .= " AND source_file LIKE '".CRM_Utils_Type::escape($extension, 'String')."/data-processors/%'";
+    }
+    $dao = CRM_Core_DAO::executeQuery($removeSql);
     while ($dao->fetch()) {
       try {
-        civicrm_api3('DataProcessor', 'delete', ['id' => $dao->id]);
-        $return['deleted data processors'][] = $dao->id.": ".$dao->name;
+        if ($dao->status == CRM_Dataprocessor_Status::STATUS_OVERRIDDEN) {
+          civicrm_api3('DataProcessor', 'create', array('id' => $dao->id, 'status' => CRM_Dataprocessor_Status::STATUS_IN_DATABASE, 'source_file' => 'null'));
+          $return['kept data processors'][] = $dao->id.": ".$dao->name;
+        } else {
+          civicrm_api3('DataProcessor', 'delete', ['id' => $dao->id]);
+          $return['deleted data processors'][] = $dao->id . ": " . $dao->name;
+        }
       } catch (\Exception $e) {
         $return['deleted data processors'][] = 'Error: '. $dao->id.": ".$dao->name;
       }
@@ -235,11 +254,14 @@ class CRM_Dataprocessor_Utils_Importer {
    *
    * @return array
    */
-  private static function getExtensionFileListWithDataProcessors() {
+  private static function getExtensionFileListWithDataProcessors($extension=null) {
     $return = array();
     $extensions = civicrm_api3('Extension', 'get', array('options' => array('limit' => 0)));
     foreach($extensions['values'] as $ext) {
       if ($ext['status'] != 'installed') {
+        continue;
+      }
+      if ($extension && $extension != $ext['key']) {
         continue;
       }
 

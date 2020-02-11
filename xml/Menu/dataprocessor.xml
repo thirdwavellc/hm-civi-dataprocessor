@@ -15,6 +15,13 @@
     <access_arguments>administer CiviCRM</access_arguments>
   </item>
   <item>
+    <path>civicrm/dataprocessor/form/clone</path>
+    <page_callback>CRM_Dataprocessor_Form_CloneDataProcessor</page_callback>
+    <title>Clone DataProcessor</title>
+    <access_arguments>access CiviCRM</access_arguments>
+    <access_arguments>administer CiviCRM</access_arguments>
+  </item>
+  <item>
     <path>civicrm/dataprocessor/form/import</path>
     <page_callback>CRM_Dataprocessor_Form_Import</page_callback>
     <title>Import DataProcessor</title>
@@ -50,13 +57,6 @@
     <access_arguments>administer CiviCRM</access_arguments>
   </item>
   <item>
-    <path>civicrm/dataprocessor/form/aggregate_field</path>
-    <page_callback>CRM_Dataprocessor_Form_AggregateField</page_callback>
-    <title>DataProcessor</title>
-    <access_arguments>access CiviCRM</access_arguments>
-    <access_arguments>administer CiviCRM</access_arguments>
-  </item>
-  <item>
     <path>civicrm/dataprocessor/form/output</path>
     <page_callback>CRM_Dataprocessor_Form_Output</page_callback>
     <title>DataProcessor</title>
@@ -64,21 +64,34 @@
     <access_arguments>administer CiviCRM</access_arguments>
   </item>
   <item>
-    <path>civicrm/dataprocessor/form/dashlet</path>
-    <page_callback>CRM_Dataprocessor_Page_Dashlet</page_callback>
+    <path>civicrm/dataprocessor/page/contactsummary</path>
+    <page_callback>CRM_Contact_Page_DataProcessorContactSummaryTab</page_callback>
     <title>DataProcessor</title>
     <access_arguments>access CiviCRM</access_arguments>
-    <access_arguments>administer CiviCRM</access_arguments>
+  </item>
+  <item>
+    <path>civicrm/dataprocessor/page/dashlet</path>
+    <page_callback>CRM_DataprocessorDashlet_Page_Dashlet</page_callback>
+    <title>DataProcessor</title>
+    <access_arguments>access CiviCRM</access_arguments>
+  </item>
+  <item>
+    <path>civicrm/dataprocessor/form/dashlet</path>
+    <page_callback>CRM_DataprocessorDashlet_Form_Dashlet</page_callback>
+    <title>DataProcessor</title>
+    <access_arguments>access CiviCRM</access_arguments>
   </item>
   <item>
     <path>civicrm/dataprocessor/form/output/download</path>
-    <title>Browse Uploaded files</title>
+    <title>Download</title>
     <access_arguments>access uploaded files</access_arguments>
     <page_callback>CRM_DataprocessorOutputExport_Page_Download</page_callback>
   </item>
   <item>
-     <path>civicrm/ajax/getDashlet</path>
-     <page_callback>CRM_Dataprocessor_Page_AJAX::getDashlet</page_callback>
-     <access_arguments>access CiviCRM</access_arguments>
-</item>
+    <path>civicrm/dataprocessor/output/export</path>
+    <title>Export</title>
+    <page_callback>CRM_DataprocessorOutputExport_Page_Export</page_callback>
+    <access_callback>1</access_callback>
+    <is_public>true</is_public>
+  </item>
 </menu>

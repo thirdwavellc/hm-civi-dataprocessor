@@ -117,10 +117,12 @@ class ActivityFilter extends AbstractFieldFilterHandler {
    *
    * @param \CRM_Core_Form $form
    * @param array $defaultFilterValue
+   * @param string $size
+   *   Possible values: full or compact
    * @return array
    *   Return variables belonging to this filter.
    */
-  public function addToFilterForm(\CRM_Core_Form $form, $defaultFilterValue) {
+  public function addToFilterForm(\CRM_Core_Form $form, $defaultFilterValue, $size='full') {
     $fieldSpec = $this->getFieldSpecification();
     $operations = $this->getOperatorOptions($fieldSpec);
     $defaults = array();
@@ -131,13 +133,27 @@ class ActivityFilter extends AbstractFieldFilterHandler {
       $title .= ' <span class="crm-marker">*</span>';
     }
 
-    $form->addElement('select', "{$alias}_op", E::ts('Operator:'), $operations);
+    $sizeClass = 'huge';
+    $minWidth = 'min-width: 250px;';
+    if ($size =='compact') {
+      $sizeClass = 'medium';
+      $minWidth = '';
+    }
+
+    $form->add('select', "{$alias}_op", E::ts('Operator:'), $operations, true, [
+      'style' => $minWidth,
+      'class' => 'crm-select2 '.$sizeClass,
+      'multiple' => FALSE,
+      'placeholder' => E::ts('- select -'),
+    ]);
 
     $props = array(
       'placeholder' => E::ts('Select a Contact'),
       'entity' => 'Contact',
       'create' => false,
       'multiple' => true,
+      'style' => $minWidth,
+      'class' => $sizeClass,
     );
     if (!empty($this->configuration['limit_activity_types'])) {
       $optionValueApi = civicrm_api3('OptionValue', 'get', array('option_group_id' => "activity_type", 'options' => array('limit' => 0)));
@@ -168,6 +184,8 @@ class ActivityFilter extends AbstractFieldFilterHandler {
     $form->addEntityRef( "{$alias}_value", '', $props);
     if (isset($defaultFilterValue['op'])) {
       $defaults[$alias . '_op'] = $defaultFilterValue['op'];
+    } else {
+      $defaults[$alias . '_op'] = key($operations);
     }
     if (isset($defaultFilterValue['value'])) {
       $defaults[$alias.'_value'] = $defaultFilterValue['value'];
@@ -178,6 +196,8 @@ class ActivityFilter extends AbstractFieldFilterHandler {
 
     $filter['type'] = $fieldSpec->type;
     $filter['title'] = $title;
+    $filter['size'] = $size;
+    $filter['alias'] = $fieldSpec->alias;
 
     return $filter;
   }

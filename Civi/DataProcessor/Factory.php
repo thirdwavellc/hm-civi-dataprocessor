@@ -118,31 +118,45 @@ class Factory {
     $this->addDataSource('membership_type', 'Civi\DataProcessor\Source\Member\MembershipTypeSource', E::ts('Membership Type'));
     $this->addDataSource('membership_status', 'Civi\DataProcessor\Source\Member\MembershipStatusSource', E::ts('Membership Status'));
     $this->addDataSource('csv', 'Civi\DataProcessor\Source\CSV', E::ts('CSV File'));
+    $this->addDataSource('sqltable', 'Civi\DataProcessor\Source\SQLTable', E::ts('SQL Table'));
     $this->addOutput('api', 'Civi\DataProcessor\Output\Api', E::ts('API'));
-    $this->addOutput('search', 'CRM_DataprocessorSearch_Search', E::ts('Search'));
+    $this->addOutput('contact_summary_tab', 'CRM_Contact_DataProcessorContactSummaryTab', E::ts('Tab on contact summary'));
+    $this->addOutput('dashlet', 'CRM_DataprocessorDashlet_Dashlet', E::ts('Dashlet'));
+    $this->addOutput('search', 'CRM_DataprocessorSearch_Search', E::ts('Search / Report'));
     $this->addOutput('contact_search', 'CRM_Contact_DataProcessorContactSearch', E::ts('Contact Search'));
     $this->addOutput('activity_search', 'CRM_DataprocessorSearch_ActivitySearch', E::ts('Activity Search'));
     $this->addOutput('case_search', 'CRM_DataprocessorSearch_CaseSearch', E::ts('Case Search'));
+    $this->addOutput('contribution_search', 'CRM_DataprocessorSearch_ContributionSearch', E::ts('Contribution Search'));
+    $this->addOutput('membership_search', 'CRM_DataprocessorSearch_MembershipSearch', E::ts('Membership Search'));
     $this->addOutput('participant_search', 'CRM_DataprocessorSearch_ParticipantSearch', E::ts('Participant Search'));
     $this->addOutput('export_csv', 'CRM_DataprocessorOutputExport_CSV', E::ts('CSV Export'));
     $this->addFilter('simple_sql_filter', 'Civi\DataProcessor\FilterHandler\SimpleSqlFilter', E::ts('Field filter'));
+    $this->addFilter('multiple_field_filter', 'Civi\DataProcessor\FilterHandler\MultipleFieldFilter', E::ts('Text in multiple fields Filter'));
     $this->addFilter('activity_filter', 'Civi\DataProcessor\FilterHandler\ActivityFilter', E::ts('Activity filter'));
     $this->addFilter('contact_filter', 'Civi\DataProcessor\FilterHandler\ContactFilter', E::ts('Contact filter'));
     $this->addFilter('contact_in_group_filter', 'Civi\DataProcessor\FilterHandler\ContactInGroupFilter', E::ts('Contact in Group filter'));
+    $this->addFilter('contact_with_tag_filter', 'Civi\DataProcessor\FilterHandler\ContactWithTagFilter', E::ts('Contact has Tag filter'));
+    $this->addFilter('contact_has_membership', 'Civi\DataProcessor\FilterHandler\ContactHasMembershipFilter', E::ts('Contact has Membership filter'));
+    $this->addFilter('contact_type_filter', 'Civi\DataProcessor\FilterHandler\ContactTypeFilter', E::ts('Contact Type filter'));
+    $this->addFilter('permission_to_view_contact', 'Civi\DataProcessor\FilterHandler\PermissionToViewContactFilter', E::ts('Permission to view contact'));
     $this->addFilter('case_role_filter', 'Civi\DataProcessor\FilterHandler\CaseRoleFilter', E::ts('Case Role filter'));
     $this->addFilter('in_api_filter', 'Civi\DataProcessor\FilterHandler\InApiFilter', E::ts('API filter'));
     $this->addjoinType('simple_join', 'Civi\DataProcessor\DataFlow\MultipleDataFlows\SimpleJoin', E::ts('Select fields to join on'));
     $this->addjoinType('simple_non_required_join', 'Civi\DataProcessor\DataFlow\MultipleDataFlows\SimpleNonRequiredJoin', E::ts('Select fields to join on (not required)'));
     $this->addOutputHandler('raw', 'Civi\DataProcessor\FieldOutputHandler\RawFieldOutputHandler', E::ts('Raw field value'));
+    $this->addOutputHandler('number', 'Civi\DataProcessor\FieldOutputHandler\NumberFieldOutputHandler', E::ts('Formatted Number field value'));
+    $this->addOutputHandler('date', 'Civi\DataProcessor\FieldOutputHandler\DateFieldOutputHandler', E::ts('Date field value'));
     $this->addOutputHandler('contact_link', 'Civi\DataProcessor\FieldOutputHandler\ContactLinkFieldOutputHandler', E::ts('Link to view contact'));
     $this->addOutputHandler('file_field', 'Civi\DataProcessor\FieldOutputHandler\FileFieldOutputHandler', E::ts('File download link'));
     $this->addOutputHandler('option_label', 'Civi\DataProcessor\FieldOutputHandler\OptionFieldOutputHandler', E::ts('Option label'));
+    $this->addOutputHandler('relationships', 'Civi\DataProcessor\FieldOutputHandler\RelationshipsFieldOutputHandler', E::ts('Relationships'));
     $this->addOutputHandler('case_roles', 'Civi\DataProcessor\FieldOutputHandler\CaseRolesFieldOutputHandler', E::ts('Case Roles'));
     $this->addOutputHandler('groups_of_contact', 'Civi\DataProcessor\FieldOutputHandler\GroupsOfContactFieldOutputHandler', E::ts('Display the groups of a contact'));
     $this->addOutputHandler('event_repeating_info', 'Civi\DataProcessor\FieldOutputHandler\EventRepeatingInfoFieldOutputHandler', E::ts('Display info about repeating event'));
     $this->addOutputHandler('event_participants', 'Civi\DataProcessor\FieldOutputHandler\EventParticipantsFieldOutputHandler', E::ts('List participants'));
-    $this->addOutputHandler('calculations_substract', 'Civi\DataProcessor\FieldOutputHandler\Calculations\SubtractFieldOutputHandler', E::ts('Calculation: Subtract'));
-    $this->addOutputHandler('calculations_total', 'Civi\DataProcessor\FieldOutputHandler\Calculations\TotalFieldOutputHandler', E::ts('Calculation: Total'));
+    $this->addOutputHandler('calculations_substract', 'Civi\DataProcessor\FieldOutputHandler\Calculations\SubtractFieldOutputHandler', E::ts('Calculations (on multiple fields): Subtract'));
+    $this->addOutputHandler('calculations_total', 'Civi\DataProcessor\FieldOutputHandler\Calculations\TotalFieldOutputHandler', E::ts('Calculations (on multiple fields): Adding up'));
+    $this->addOutputHandler('aggregation_function', 'Civi\DataProcessor\FieldOutputHandler\AggregateFunctionFieldOutputHandler', E::ts('Aggregation function'));
   }
 
   /**

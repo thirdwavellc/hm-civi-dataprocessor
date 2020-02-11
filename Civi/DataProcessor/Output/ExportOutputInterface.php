@@ -24,9 +24,13 @@ interface ExportOutputInterface extends OutputInterface {
    * @param array $formValues
    * @param string $sortFieldName
    * @param string $sortDirection
+   * @param string $idField
+   *  Set $idField to the name of the field containing the ID of the array $selectedIds
+   * @param array $selectedIds
+   *   Array with the selectedIds.
    * @return string
    */
-  public function downloadExport(\Civi\DataProcessor\ProcessorType\AbstractProcessorType $dataProcessorClass, $dataProcessor, $outputBAO, $formValues);
+  public function downloadExport(\Civi\DataProcessor\ProcessorType\AbstractProcessorType $dataProcessorClass, $dataProcessor, $outputBAO, $formValues, $sortFieldName=null, $sortDirection='ASC', $idField=null, $selectedIds=array());
 
   /**
    * Returns the mime type of the export file.
