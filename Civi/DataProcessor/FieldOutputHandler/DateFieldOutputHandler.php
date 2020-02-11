@@ -185,6 +185,11 @@ class DateFieldOutputHandler extends AbstractSimpleFieldOutputHandler implements
 
   protected function getFunctions() {
     return array(
+      'date' => array(
+        'sql' => 'DATE',
+        'php_date_format' => 'Y-m-d',
+        'title' => E::ts('Date'),
+      ),
       'dayofmonth' => array(
         'sql' => 'DAYOFMONTH',
         'php_date_format' => 'j',
