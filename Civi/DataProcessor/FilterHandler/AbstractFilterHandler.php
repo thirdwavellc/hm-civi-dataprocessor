@@ -543,6 +543,9 @@ abstract class AbstractFilterHandler {
     $to = \CRM_Utils_Array::value("to", $submittedValues);
     $fromTime = \CRM_Utils_Array::value("from_time", $submittedValues);
     $toTime = \CRM_Utils_Array::value("to_time", $submittedValues);
+    if (!$toTime) {
+      $toTime = '235959';
+    }
 
     list($from, $to) = \CRM_Utils_Date::getFromTo($relative, $from, $to, $fromTime, $toTime);
 
