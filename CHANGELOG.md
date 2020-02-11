@@ -3,6 +3,7 @@
 * Made CSV Export download available for anonymous users.
 * Change Group Filter so that it also works with smart groups
 * Fixed bug with date filter
+* Added date group by function to date output field handler.
 
 # Version 1.1.0
 
