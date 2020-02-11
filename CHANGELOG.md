@@ -4,6 +4,7 @@
 * Change Group Filter so that it also works with smart groups
 * Fixed bug with date filter
 * Added date group by function to date output field handler.
+* Added exposure of Aggregation on the Search/Report output.
 
 # Version 1.1.0
 

@@ -183,6 +183,38 @@ class DateFieldOutputHandler extends AbstractSimpleFieldOutputHandler implements
     return $value;
   }
 
+  /**
+   * Enable aggregation for this field.
+   *
+   * @return void
+   */
+  public function enableAggregation() {
+    try {
+      $dataFlow = $this->dataSource->ensureField($this->getAggregateFieldSpec());
+      if ($dataFlow) {
+        $dataFlow->addAggregateOutputHandler($this);
+      }
+    } catch (\Exception $e) {
+      // Do nothing.
+    }
+  }
+
+  /**
+   * Disable aggregation for this field.
+   *
+   * @return void
+   */
+  public function disableAggregation() {
+    try {
+      $dataFlow = $this->dataSource->ensureField($this->getAggregateFieldSpec());
+      if ($dataFlow) {
+        $dataFlow->removeAggregateOutputHandler($this);
+      }
+    } catch (\Exception $e) {
+      // Do nothing.
+    }
+  }
+
   protected function getFunctions() {
     return array(
       'date' => array(

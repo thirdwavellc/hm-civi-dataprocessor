@@ -58,6 +58,7 @@ class CRM_DataprocessorSearch_Search implements UIOutputInterface {
 
     $form->add('wysiwyg', 'help_text', E::ts('Help text for this search'), array('rows' => 6, 'cols' => 80));
     $form->add('checkbox', 'expanded_search', E::ts('Expand criteria form initially'));
+    $form->add('checkbox', 'expose_aggregate', E::ts('Expose aggregate options'));
 
     // navigation field
     $navigationOptions = $navigation->getNavigationOptions();
@@ -90,6 +91,9 @@ class CRM_DataprocessorSearch_Search implements UIOutputInterface {
         }
         if (isset($output['configuration']['expanded_search'])) {
           $defaults['expanded_search'] = $output['configuration']['expanded_search'];
+        }
+        if (isset($output['configuration']['expose_aggregate'])) {
+          $defaults['expose_aggregate'] = $output['configuration']['expose_aggregate'];
         }
       }
     }
@@ -124,6 +128,7 @@ class CRM_DataprocessorSearch_Search implements UIOutputInterface {
     $configuration['hidden_fields'] = $submittedValues['hidden_fields'];
     $configuration['help_text'] = $submittedValues['help_text'];
     $configuration['expanded_search'] = isset($submittedValues['expanded_search']) ? $submittedValues['expanded_search'] : false;
+    $configuration['expose_aggregate'] = isset($submittedValues['expose_aggregate']) ? $submittedValues['expose_aggregate'] : false;
     return $configuration;
   }
 

@@ -40,6 +40,38 @@ class RawFieldOutputHandler extends AbstractSimpleFieldOutputHandler implements 
   }
 
   /**
+   * Enable aggregation for this field.
+   *
+   * @return void
+   */
+  public function enableAggregation() {
+    try {
+      $dataFlow = $this->dataSource->ensureField($this->getAggregateFieldSpec());
+      if ($dataFlow) {
+        $dataFlow->addAggregateOutputHandler($this);
+      }
+    } catch (\Exception $e) {
+      // Do nothing.
+    }
+  }
+
+  /**
+   * Disable aggregation for this field.
+   *
+   * @return void
+   */
+  public function disableAggregation() {
+    try {
+      $dataFlow = $this->dataSource->ensureField($this->getAggregateFieldSpec());
+      if ($dataFlow) {
+        $dataFlow->removeAggregateOutputHandler($this);
+      }
+    } catch (\Exception $e) {
+      // Do nothing.
+    }
+  }
+
+  /**
    * When this handler has additional configuration you can add
    * the fields on the form with this function.
    *

@@ -66,7 +66,7 @@ abstract class CRM_Dataprocessor_Form_Output_AbstractUIOutputForm extends CRM_Co
       $dataProcessorName = $this->getDataProcessorName();
       $sql = "
         SELECT civicrm_data_processor.id as data_processor_id,  civicrm_data_processor_output.id AS output_id
-        FROM civicrm_data_processor 
+        FROM civicrm_data_processor
         INNER JOIN civicrm_data_processor_output ON civicrm_data_processor.id = civicrm_data_processor_output.data_processor_id
         WHERE is_active = 1 AND civicrm_data_processor.name = %1 AND civicrm_data_processor_output.type = %2
       ";
@@ -181,6 +181,7 @@ abstract class CRM_Dataprocessor_Form_Output_AbstractUIOutputForm extends CRM_Co
         $filterElements[$fieldSpec->alias]['template'] = $filterHandler->getTemplateFileName();
       }
       $this->assign('filters', $filterElements);
+      $this->assign('additional_criteria_template', $this->getAdditionalCriteriaTemplate());
     }
   }
 
@@ -192,5 +193,14 @@ abstract class CRM_Dataprocessor_Form_Output_AbstractUIOutputForm extends CRM_Co
    */
   protected function getCriteriaElementSize() {
     return 'full';
+  }
+
+  /**
+   * Returns the name of the additional criteria template.
+   *
+   * @return false|String
+   */
+  protected function getAdditionalCriteriaTemplate() {
+    return false;
   }
 }

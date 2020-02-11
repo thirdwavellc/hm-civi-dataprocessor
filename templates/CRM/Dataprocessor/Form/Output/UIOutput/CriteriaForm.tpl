@@ -17,7 +17,11 @@
                       {foreach from=$filters key=filterName item=filter}
                           {include file=$filter.template filterName=$filter.alias filter=$filter.filter}
                       {/foreach}
+                      {if $additional_criteria_template}
+                        {include file=$additional_criteria_template}
+                      {/if}
                   </table>
+
                   <div class="crm-submit-buttons">{include file="CRM/common/formButtons.tpl" location="botton"}</div>
               </div>
           </div>

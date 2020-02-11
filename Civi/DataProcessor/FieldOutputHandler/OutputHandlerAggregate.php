@@ -19,6 +19,21 @@ interface OutputHandlerAggregate {
   public function isAggregateField();
 
   /**
+   * Enable aggregation for this field.
+   *
+   * @return void
+   */
+  public function enableAggregation();
+
+  /**
+   * Disable aggregation for this field.
+   *
+   * @return void
+   */
+  public function disableAggregation();
+
+
+  /**
    * Returns the value. And if needed a formatting could be applied.
    * E.g. when the value is a date field and you want to aggregate on the month
    * you can then return the month here.

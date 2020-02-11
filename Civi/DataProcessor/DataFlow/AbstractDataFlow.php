@@ -252,6 +252,18 @@ abstract class AbstractDataFlow {
   }
 
   /**
+   * @param \Civi\DataProcessor\DataFlow\OutputHandlerAggregate $aggregateOutputHandler
+   */
+  public function removeAggregateOutputHandler(OutputHandlerAggregate $aggregateOutputHandler) {
+    foreach($this->aggregateOutputHandlers as $key => $item) {
+      if ($item->getAggregateFieldSpec()->alias == $aggregateOutputHandler->getAggregateFieldSpec()->alias) {
+        unset($this->aggregateOutputHandlers[$key]);
+        break;
+      }
+    }
+  }
+
+  /**
    * Adds a field for sorting
    *
    * @param $fieldName

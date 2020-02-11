@@ -228,6 +228,8 @@ abstract class CRM_DataprocessorSearch_Form_AbstractSearch extends CRM_Dataproce
       $sortFieldName = $sortField['name'];
     }
 
+    $this->alterDataProcessor($this->dataProcessorClass);
+
     $output = civicrm_api3("DataProcessorOutput", "getsingle", array('id' => $export_id));
     $outputClass = $factory->getOutputByName($output['type']);
     if ($outputClass instanceof \Civi\DataProcessor\Output\ExportOutputInterface) {
