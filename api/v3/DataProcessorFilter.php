@@ -56,6 +56,7 @@ function civicrm_api3_data_processor_filter_create($params) {
 function civicrm_api3_data_processor_filter_delete($params) {
   $dataProcessorId = civicrm_api3('DataProcessorFilter', 'getvalue', array('id' => $params['id'], 'return' => 'data_processor_id'));
   CRM_Dataprocessor_BAO_DataProcessor::updateAndChekStatus($dataProcessorId);
+  CRM_Dataprocessor_Utils_Cache::clearAllDataProcessorCaches();
   return _civicrm_api3_basic_delete(_civicrm_api3_get_BAO(__FUNCTION__), $params);
 }
 

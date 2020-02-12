@@ -30,6 +30,7 @@ function civicrm_api3_data_processor_output_create($params) {
   $return = _civicrm_api3_basic_create(_civicrm_api3_get_BAO(__FUNCTION__), $params);
   $dataProcessorId = civicrm_api3('DataProcessorOutput', 'getvalue', array('id' => $return['id'], 'return' => 'data_processor_id'));
   CRM_Dataprocessor_BAO_DataProcessor::updateAndChekStatus($dataProcessorId);
+  CRM_Dataprocessor_Utils_Cache::clearAllDataProcessorCaches();
   return $return;
 }
 

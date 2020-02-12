@@ -70,12 +70,21 @@ class UIOutputHelper {
       if (CIVICRM_UF === 'UnitTests') {
         return;
       }
+      $factory = dataprocessor_get_factory();
       if ($op == 'delete') {
         $output = civicrm_api3('DataProcessorOutput', 'getsingle', ['id' => $id]);
+        $outputClass = $factory->getOutputByName($output['type']);
+        if ($outputClass instanceof UIOutputInterface) {
+          self::$rebuildMenu = TRUE;
+        }
         self::removeOutputFromNavigation($output['configuration']);
       }
       elseif ($op == 'edit') {
         $output = civicrm_api3('DataProcessorOutput', 'getsingle', ['id' => $id]);
+        $outputClass = $factory->getOutputByName($output['type']);
+        if ($outputClass instanceof UIOutputInterface) {
+          self::$rebuildMenu = TRUE;
+        }
         if (!isset($output['configuration']['navigation_id']) && !isset($params['configuration']['navigation_parent_path'])) {
           return;
         }
@@ -97,11 +106,14 @@ class UIOutputHelper {
           }
         }
       }
-      elseif ($op == 'create' && isset($params['configuration']['navigation_parent_path'])) {
-        $dataProcessor = civicrm_api3('DataProcessor', 'getsingle', ['id' => $params['data_processor_id']]);
-        $configuration = self::createOrUpdateNavigationItem($params, $dataProcessor);
-        if ($configuration) {
-          $params['configuration'] = $configuration;
+      elseif ($op == 'create') {
+        self::$rebuildMenu = true;
+        if (isset($params['configuration']['navigation_parent_path'])) {
+          $dataProcessor = civicrm_api3('DataProcessor', 'getsingle', ['id' => $params['data_processor_id']]);
+          $configuration = self::createOrUpdateNavigationItem($params, $dataProcessor);
+          if ($configuration) {
+            $params['configuration'] = $configuration;
+          }
         }
       }
     } elseif ($objectName == 'DataProcessor' && $op == 'edit') {

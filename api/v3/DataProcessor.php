@@ -67,6 +67,7 @@ function civicrm_api3_data_processor_delete($params) {
   CRM_Dataprocessor_BAO_DataProcessorField::deleteWithDataProcessorId($params['id']);
   CRM_Dataprocessor_BAO_DataProcessorFilter::deleteWithDataProcessorId($params['id']);
   CRM_Dataprocessor_BAO_DataProcessorSource::deleteWithDataProcessorId($params['id']);
+  CRM_Dataprocessor_Utils_Cache::clearAllDataProcessorCaches();
   return _civicrm_api3_basic_delete(_civicrm_api3_get_BAO(__FUNCTION__), $params);
 }
 
