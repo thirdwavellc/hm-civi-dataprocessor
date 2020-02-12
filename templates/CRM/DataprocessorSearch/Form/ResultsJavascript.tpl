@@ -12,8 +12,12 @@
         var output_id = $(this).data('output-id');
         $('input[name=export_id]').val(output_id);
         $('form').submit();
+        $('input[name=export_id]').val('');
         return false;
       });
+      $('.crm-form-submit').on('click', function() {
+        $('input[name=export_id]').val('');
+      })
     });
     {/literal}
 </script>
