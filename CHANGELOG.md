@@ -2,6 +2,7 @@
 
 * Fixed the dashlets.
 * Fixed caching issues.
+* Add Recurring Contribution as datasource
 
 # Version 1.2.0
 
