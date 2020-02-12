@@ -1,6 +1,7 @@
 # Version 1.3.0 (not yet released)
 
-
+* Fixed the dashlets.
+* Fixed caching issues.
 
 # Version 1.2.0
 
