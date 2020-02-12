@@ -105,6 +105,7 @@ class Factory {
     $this->addDataSource('website', 'Civi\DataProcessor\Source\Contact\WebsiteSource', E::ts('Website'));
     $this->addDataSource('campaign', 'Civi\DataProcessor\Source\Campaign\CampaignSource', E::ts('Campaign'));
     $this->addDataSource('contribution', 'Civi\DataProcessor\Source\Contribution\ContributionSource', E::ts('Contribution'));
+    $this->addDataSource('contribution_recur', 'Civi\DataProcessor\Source\Contribution\ContributionRecurSource', E::ts('Recurring Contribution'));
     $this->addDataSource('case', 'Civi\DataProcessor\Source\Cases\CaseSource', E::ts('Case'));
     $this->addDataSource('relationship', 'Civi\DataProcessor\Source\Contact\RelationshipSource', E::ts('Relationship'));
     $this->addDataSource('relationship_type', 'Civi\DataProcessor\Source\Contact\RelationshipTypeSource', E::ts('Relationship Type'));
