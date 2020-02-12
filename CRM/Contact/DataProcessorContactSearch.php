@@ -4,10 +4,10 @@
  * @license AGPL-3.0
  */
 
-use Civi\DataProcessor\Output\UIOutputInterface;
+use Civi\DataProcessor\Output\UIFormOutputInterface;
 use CRM_Dataprocessor_ExtensionUtil as E;
 
-class CRM_Contact_DataProcessorContactSearch implements UIOutputInterface {
+class CRM_Contact_DataProcessorContactSearch implements UIFormOutputInterface {
 
   /**
    * Returns true when this filter has additional configuration

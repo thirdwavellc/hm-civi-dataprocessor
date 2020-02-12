@@ -32,14 +32,14 @@ class UIOutputHelper {
     }
 
     $sql = "
-    SELECT o.permission, p.id, p.title, o.configuration, o.type, o.id as output_id 
-    FROM civicrm_data_processor_output o 
-    INNER JOIN civicrm_data_processor p ON o.data_processor_id = p.id 
+    SELECT o.permission, p.id, p.title, o.configuration, o.type, o.id as output_id
+    FROM civicrm_data_processor_output o
+    INNER JOIN civicrm_data_processor p ON o.data_processor_id = p.id
     WHERE p.is_active = 1";
     $dao = \CRM_Core_DAO::executeQuery($sql);
     while ($dao->fetch()) {
       $outputClass = $factory->getOutputByName($dao->type);
-      if ($outputClass instanceof \Civi\DataProcessor\Output\UIOutputInterface) {
+      if ($outputClass instanceof \Civi\DataProcessor\Output\UIFormOutputInterface) {
         $output = civicrm_api3('DataProcessorOutput', 'getsingle', array('id' => $dao->output_id));
         $dataprocessor = civicrm_api3('DataProcessor', 'getsingle', array('id' => $dao->id));
         $url = $outputClass->getUrlToUi($output, $dataprocessor);
@@ -191,7 +191,7 @@ class UIOutputHelper {
     $configuration = $output['configuration'];
 
     $title = $dataProcessor['title'];
-    if ($outputClass && $outputClass instanceof \Civi\DataProcessor\Output\UIOutputInterface) {
+    if ($outputClass && $outputClass instanceof \Civi\DataProcessor\Output\UIFormOutputInterface) {
       $url = $outputClass->getUrlToUi($output, $dataProcessor);
       $title = $outputClass->getTitleForUiLink($output, $dataProcessor);
     }

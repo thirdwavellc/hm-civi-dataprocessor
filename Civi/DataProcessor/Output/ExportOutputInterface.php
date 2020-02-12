@@ -9,7 +9,7 @@ namespace Civi\DataProcessor\Output;
 /**
  * This interface indicates that the output type is accessible from the user interface
  *
- * Interface UIOutputInterface
+ * Interface ExportOutputInterface
  *
  * @package Civi\DataProcessor\Output
  */

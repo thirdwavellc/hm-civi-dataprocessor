@@ -16,40 +16,6 @@ namespace Civi\DataProcessor\Output;
 interface UIOutputInterface extends OutputInterface {
 
   /**
-   * Returns the url for the page/form this output will show to the user
-   *
-   * @param array $output
-   * @param array $dataProcessor
-   * @return string
-   */
-  public function getUrlToUi($output, $dataProcessor);
-
-  /**
-   * Returns the url for the page/form this output will show to the user
-   *
-   * @param array $output
-   * @param array $dataProcessor
-   * @return string
-   */
-  public function getTitleForUiLink($output, $dataProcessor);
-
-  /**
-   * Returns the url for the page/form this output will show to the user
-   *
-   * @param array $output
-   * @param array $dataProcessor
-   * @return string|false
-   */
-  public function getIconForUiLink($output, $dataProcessor);
-
-  /**
-   * Returns the callback for the UI.
-   *
-   * @return string
-   */
-  public function getCallbackForUi();
-
-  /**
    * Checks whether the current user has access to this output
    *
    * @param array $output

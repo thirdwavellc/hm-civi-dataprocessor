@@ -6,7 +6,7 @@
 
 use \CRM_Dataprocessor_ExtensionUtil as E;
 
-class CRM_DataprocessorDashlet_Dashlet implements Civi\DataProcessor\Output\OutputInterface {
+class CRM_DataprocessorDashlet_Dashlet implements Civi\DataProcessor\Output\UIOutputInterface {
 
   /**
    * Returns true when this output has additional configuration
@@ -150,6 +150,19 @@ class CRM_DataprocessorDashlet_Dashlet implements Civi\DataProcessor\Output\Outp
         // Do nothing
       }
     }
+  }
+
+  /**
+   * Checks whether the current user has access to this output
+   *
+   * @param array $output
+   * @param array $dataProcessor
+   * @return bool
+   */
+  public function checkUIPermission($output, $dataProcessor) {
+    return CRM_Core_Permission::check(array(
+      $output['permission']
+    ));
   }
 
 

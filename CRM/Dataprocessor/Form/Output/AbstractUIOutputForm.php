@@ -4,6 +4,7 @@
  * @license AGPL-3.0
  */
 
+use Civi\DataProcessor\Output\UIOutputInterface;
 use CRM_Dataprocessor_ExtensionUtil as E;
 
 abstract class CRM_Dataprocessor_Form_Output_AbstractUIOutputForm extends CRM_Core_Form_Search {
@@ -85,7 +86,7 @@ abstract class CRM_Dataprocessor_Form_Output_AbstractUIOutputForm extends CRM_Co
       $this->assign('output', $this->dataProcessorOutput);
 
       $outputClass = $factory->getOutputByName($this->dataProcessorOutput['type']);
-      if (!$outputClass instanceof \Civi\DataProcessor\Output\UIOutputInterface) {
+      if (!$outputClass instanceof UIOutputInterface) {
         throw new \Exception('Invalid output');
       }
 

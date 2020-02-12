@@ -5,9 +5,9 @@
  */
 
 use CRM_Dataprocessor_ExtensionUtil as E;
-use Civi\DataProcessor\Output\UIOutputInterface;
+use Civi\DataProcessor\Output\UIFormOutputInterface;
 
-class CRM_Contact_DataProcessorContactSummaryTab implements UIOutputInterface {
+class CRM_Contact_DataProcessorContactSummaryTab implements UIFormOutputInterface {
 
   /**
    * Implements hook_civicrm_tabset().
@@ -42,13 +42,13 @@ class CRM_Contact_DataProcessorContactSummaryTab implements UIOutputInterface {
     $maxWeight++;
 
     $sql = "SELECT o.*, d.name as data_processor_name
-            FROM civicrm_data_processor d 
+            FROM civicrm_data_processor d
             INNER JOIN civicrm_data_processor_output o ON d.id = o.data_processor_id
             WHERE d.is_active = 1 AND o.type = 'contact_summary_tab'";
     $dao = CRM_Core_DAO::executeQuery($sql);
     while($dao->fetch()) {
       $outputClass = $factory->getOutputByName($dao->type);
-      if (!$outputClass instanceof \Civi\DataProcessor\Output\UIOutputInterface) {
+      if (!$outputClass instanceof CRM_Contact_DataProcessorContactSummaryTab) {
         continue;
       }
       $output = civicrm_api3('DataProcessorOutput', 'getsingle', ['id' => $dao->id]);

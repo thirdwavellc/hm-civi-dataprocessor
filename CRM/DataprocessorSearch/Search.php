@@ -5,11 +5,11 @@
  */
 
 
-use Civi\DataProcessor\Output\UIOutputInterface;
+use Civi\DataProcessor\Output\UIFormOutputInterface;
 
 use CRM_Dataprocessor_ExtensionUtil as E;
 
-class CRM_DataprocessorSearch_Search implements UIOutputInterface {
+class CRM_DataprocessorSearch_Search implements UIFormOutputInterface {
 
   /**
    * Returns true when this filter has additional configuration

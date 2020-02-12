@@ -1,3 +1,7 @@
+# Version 1.3.0 (not yet released)
+
+
+
 # Version 1.2.0
 
 * Made CSV Export download available for anonymous users.

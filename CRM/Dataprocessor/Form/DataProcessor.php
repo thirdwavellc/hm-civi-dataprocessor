@@ -123,7 +123,7 @@ class CRM_Dataprocessor_Form_DataProcessor extends CRM_Core_Form {
     $outputs = CRM_Utils_Array::value('values', $outputs);
     foreach($outputs as $idx => $output) {
       $outputClass = $factory->getOutputByName($output['type']);
-      if ($outputClass instanceof \Civi\DataProcessor\Output\UIOutputInterface) {
+      if ($outputClass instanceof \Civi\DataProcessor\Output\UIFormOutputInterface) {
         $outputs[$idx]['navigation_url'] = CRM_Utils_System::url($outputClass->getUrlToUi($output, $this->dataProcessor), array('reset' => '1'));
       } elseif ($outputClass instanceof \Civi\DataProcessor\Output\UrlOutputInterface && $outputClass->checkPermission($output, $this->dataProcessor)) {
         $outputs[$idx]['navigation_url'] = $outputClass->getUrl($output, $this->dataProcessor);
