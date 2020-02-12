@@ -6,6 +6,11 @@
 * Added date group by function to date output field handler.
 * Added exposure of Aggregation on the Search/Report output.
 
+**Remark for extension developers**
+
+If you have an extension which implements an `OutputHandlerAggregate` in your _Field Output Handlers_ then you
+have to implement to additional methods: `enableAggregation` and `disableAggregation`.
+
 # Version 1.1.0
 
 * Respect selected permissions for outputs
