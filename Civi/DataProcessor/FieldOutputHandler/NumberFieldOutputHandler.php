@@ -82,6 +82,31 @@ class NumberFieldOutputHandler extends AbstractSimpleFieldOutputHandler implemen
   }
 
   /**
+   * Enable aggregation for this field.
+   *
+   * @return void
+   */
+  public function enableAggregation() {
+    $dataFlow = $this->dataSource->ensureField($this->getAggregateFieldSpec());
+    if ($dataFlow) {
+      $dataFlow->addAggregateOutputHandler($this);
+    }
+  }
+
+  /**
+   * Disable aggregation for this field.
+   *
+   * @return void
+   */
+  public function disableAggregation() {
+    $dataFlow = $this->dataSource->ensureField($this->getAggregateFieldSpec());
+    if ($dataFlow) {
+      $dataFlow->removeAggregateOutputHandler($this);
+    }
+  }
+
+
+  /**
    * When this handler has additional configuration you can add
    * the fields on the form with this function.
    *
