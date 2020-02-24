@@ -3,6 +3,7 @@
 * Fixed the dashlets.
 * Fixed caching issues.
 * Add Recurring Contribution as datasource
+* Added Field Output Handler for Is Active fields based on dates (start date and end date).
 
 # Version 1.2.0
 

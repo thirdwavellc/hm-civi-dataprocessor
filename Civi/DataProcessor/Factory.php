@@ -148,6 +148,7 @@ class Factory {
     $this->addOutputHandler('number', 'Civi\DataProcessor\FieldOutputHandler\NumberFieldOutputHandler', E::ts('Formatted Number field value'));
     $this->addOutputHandler('date', 'Civi\DataProcessor\FieldOutputHandler\DateFieldOutputHandler', E::ts('Date field value'));
     $this->addOutputHandler('contact_link', 'Civi\DataProcessor\FieldOutputHandler\ContactLinkFieldOutputHandler', E::ts('Link to view contact'));
+    $this->addOutputHandler('is_active', 'Civi\DataProcessor\FieldOutputHandler\IsActiveFieldOutputHandler', E::ts('Is Active (based on dates)'));
     $this->addOutputHandler('file_field', 'Civi\DataProcessor\FieldOutputHandler\FileFieldOutputHandler', E::ts('File download link'));
     $this->addOutputHandler('option_label', 'Civi\DataProcessor\FieldOutputHandler\OptionFieldOutputHandler', E::ts('Option label'));
     $this->addOutputHandler('relationships', 'Civi\DataProcessor\FieldOutputHandler\RelationshipsFieldOutputHandler', E::ts('Relationships'));
