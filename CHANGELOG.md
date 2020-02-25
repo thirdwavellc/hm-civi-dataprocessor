@@ -4,6 +4,7 @@
 * Fixed caching issues.
 * Add Recurring Contribution as datasource
 * Added Field Output Handler for Is Active fields based on dates (start date and end date).
+* Refactored the factory.
 
 # Version 1.2.0
 
