@@ -1,4 +1,4 @@
-# Version 1.4.0 (not yet release)
+# Version 1.4.0 (not yet released)
 
 
 
