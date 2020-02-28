@@ -4,7 +4,7 @@
 * Fixed caching issues.
 * Add Recurring Contribution as datasource
 * Added Field Output Handler for Is Active fields based on dates (start date and end date).
-* Refactored the factory.
+* Refactored the factory (the factory is used by developers to add data source, field outputs, outputs, filters etc.).
 * Added data sources for custom groups which are a multiple data set.
 
 # Version 1.2.0
