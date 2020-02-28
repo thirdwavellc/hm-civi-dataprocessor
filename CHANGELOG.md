@@ -1,6 +1,6 @@
 # Version 1.4.0 (not yet released)
 
-
+* Search tasks (eg. Export) work with Member,Contribute,Participant,Case... 
 
 # Version 1.3.0
 
