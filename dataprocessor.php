@@ -29,6 +29,8 @@ function dataprocessor_civicrm_container(ContainerBuilder $container) {
   $apiKernelDefinition = $container->getDefinition('civi_api_kernel');
   $apiProviderDefinition = new Definition('Civi\DataProcessor\Output\Api');
   $apiKernelDefinition->addMethodCall('registerApiProvider', array($apiProviderDefinition));
+
+  $container->addCompilerPass(new \Civi\DataProcessor\Source\CompilerPass\MultipleCustomGroupSource());
 }
 
 /**
@@ -51,8 +53,8 @@ function dataprocessor_civicrm_alterAPIPermissions($entity, $action, &$params, &
   $actionCamelCase = _civicrm_api_get_camel_name($api_action);
   $dao = CRM_Core_DAO::executeQuery("
     SELECT *
-    FROM civicrm_data_processor_output o 
-    INNER JOIN civicrm_data_processor p ON o.data_processor_id = p.id 
+    FROM civicrm_data_processor_output o
+    INNER JOIN civicrm_data_processor p ON o.data_processor_id = p.id
     WHERE p.is_active = 1
     AND (LOWER(api_entity) = LOWER(%1) OR LOWER(api_entity) = LOWER(%2))
     AND (

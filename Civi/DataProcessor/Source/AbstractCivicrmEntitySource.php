@@ -123,7 +123,7 @@ abstract class AbstractCivicrmEntitySource extends AbstractSource {
    * @return \Civi\DataProcessor\DataFlow\SqlDataFlow
    */
   protected function getEntityDataFlow() {
-    return new SqlTableDataFlow($this->getTable(), $this->getSourceName(), $this->getSourceTitle());
+    return new SqlTableDataFlow($this->getTable(), $this->getSourceName());
   }
 
   /**
@@ -186,9 +186,6 @@ abstract class AbstractCivicrmEntitySource extends AbstractSource {
     } elseif ($this->getAvailableFields()->doesFieldExist($filter_field_alias)) {
       $spec = $this->getAvailableFields()->getFieldSpecificationByName($filter_field_alias);
     }
-
-
-
 
     if ($spec) {
       if ($spec instanceof CustomFieldSpecification) {

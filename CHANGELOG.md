@@ -5,6 +5,7 @@
 * Add Recurring Contribution as datasource
 * Added Field Output Handler for Is Active fields based on dates (start date and end date).
 * Refactored the factory.
+* Added data sources for custom groups which are a multiple data set.
 
 # Version 1.2.0
 
