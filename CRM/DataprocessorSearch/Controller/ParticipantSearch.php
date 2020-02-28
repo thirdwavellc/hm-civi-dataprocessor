@@ -26,6 +26,7 @@ class CRM_DataprocessorSearch_Controller_ParticipantSearch extends CRM_Core_Cont
   public function __construct($title = NULL, $modal = TRUE, $action = CRM_Core_Action::NONE) {
     parent::__construct($title, $modal);
 
+    $this->set('component_mode', CRM_Contact_BAO_Query::MODE_EVENT);
     $this->_stateMachine = new CRM_DataprocessorSearch_StateMachine_ParticipantSearch($this, $action);
 
     // create and instantiate the pages

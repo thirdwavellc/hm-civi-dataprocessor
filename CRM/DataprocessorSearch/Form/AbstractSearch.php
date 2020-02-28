@@ -47,6 +47,20 @@ abstract class CRM_DataprocessorSearch_Form_AbstractSearch extends CRM_Dataproce
   protected $currentUrl;
 
   /**
+   * The params that are sent to the query.
+   *
+   * @var array
+   */
+  protected $_queryParams;
+
+  /**
+   * The array of entity IDs from the form
+   *
+   * @var array
+   */
+  protected $entityIDs;
+
+  /**
    * Returns the name of the ID field in the dataset.
    *
    * @return string

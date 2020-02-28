@@ -26,6 +26,7 @@ class CRM_DataprocessorSearch_Controller_MembershipSearch extends CRM_Core_Contr
   public function __construct($title = NULL, $modal = TRUE, $action = CRM_Core_Action::NONE) {
     parent::__construct($title, $modal);
 
+    $this->set('component_mode', CRM_Contact_BAO_Query::MODE_MEMBER);
     $this->_stateMachine = new CRM_DataprocessorSearch_StateMachine_MembershipSearch($this, $action);
 
     // create and instantiate the pages

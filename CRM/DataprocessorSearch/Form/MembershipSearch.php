@@ -107,4 +107,29 @@ class CRM_DataprocessorSearch_Form_MembershipSearch extends CRM_DataprocessorSea
     return $this->_taskList;
   }
 
+  /**
+   * Return altered rows
+   *
+   * Save the ids into the queryParams value. So that when an action is done on the selected record
+   * or on all records, the queryParams will hold all the activity ids so that in the next step only the selected record, or the first
+   * 50 records are populated.
+   *
+   * @param array $rows
+   * @param array $ids
+   *
+   */
+  protected function alterRows(&$rows, $ids) {
+    $this->entityIDs = $ids;
+    $this->_queryParams[0] = array(
+      'membership_id',
+      '=',
+      array(
+        'IN' => $this->entityIDs,
+      ),
+      0,
+      0
+    );
+    $this->controller->set('queryParams', $this->_queryParams);
+  }
+
 }

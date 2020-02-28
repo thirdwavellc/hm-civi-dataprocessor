@@ -9,16 +9,6 @@ use CRM_Dataprocessor_ExtensionUtil as E;
 class CRM_DataprocessorSearch_Form_ActivitySearch extends CRM_DataprocessorSearch_Form_AbstractSearch {
 
   /**
-   * The params that are sent to the query.
-   *
-   * @var array
-   */
-  protected $_queryParams;
-
-  protected $activity_ids;
-
-
-  /**
    * Returns the name of the default Entity
    *
    * @return string
@@ -120,12 +110,12 @@ class CRM_DataprocessorSearch_Form_ActivitySearch extends CRM_DataprocessorSearc
    *
    */
   protected function alterRows(&$rows, $ids) {
-    $this->activity_ids = $ids;
+    $this->entityIDs = $ids;
     $this->_queryParams[0] = array(
       'activity_id',
       '=',
       array(
-        'IN' => $this->activity_ids,
+        'IN' => $this->entityIDs,
       ),
       0,
       0
