@@ -527,9 +527,9 @@ abstract class AbstractFilterHandler {
           }
 
           // and a min value input box
-          $form->add('text', "{$alias}_min", E::ts('Min'), ['class' => 'six']);
+          $form->add('text', "{$alias}_min", E::ts('Min'), ['class' => $sizeClass]);
           // and a max value input box
-          $form->add('text', "{$alias}_max", E::ts('Max'), ['class' => 'six']);
+          $form->add('text', "{$alias}_max", E::ts('Max'), ['class' => $sizeClass]);
 
           if (isset($defaultFilterValue['min'])) {
             $defaults[$alias.'_min'] = $defaultFilterValue['min'];
