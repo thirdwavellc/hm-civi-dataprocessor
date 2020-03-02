@@ -92,7 +92,6 @@ class MultipleCustomGroupSource extends AbstractSource {
    *
    * @param DataSpecification $dataSpecification
    * @param bool $onlySearchAbleFields
-   * @param $entity
    * @throws \Civi\DataProcessor\DataSpecification\FieldExistsException
    * @throws \Exception
    */
@@ -119,6 +118,7 @@ class MultipleCustomGroupSource extends AbstractSource {
    * Ensures a field is in the data source
    *
    * @param \Civi\DataProcessor\DataSpecification\FieldSpecification $fieldSpecification
+   * @return \Civi\DataProcessor\Source\SourceInterface
    * @throws \Exception
    */
   public function ensureFieldInSource(FieldSpecification $fieldSpecification) {
@@ -127,6 +127,7 @@ class MultipleCustomGroupSource extends AbstractSource {
     } catch (FieldExistsException $e) {
       // Do nothing.
     }
+    return $this;
   }
 
 
