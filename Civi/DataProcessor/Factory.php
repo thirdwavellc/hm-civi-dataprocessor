@@ -117,6 +117,7 @@ class Factory {
     $this->addDataSource('mailing_job', new Definition('Civi\DataProcessor\Source\Mailing\MailingJobSource'), E::ts('Mailing Job'));
     $this->addDataSource('mailing_group', new Definition('Civi\DataProcessor\Source\Mailing\MailingGroupSource'), E::ts('Mailing Group'));
     $this->addDataSource('membership', new Definition('Civi\DataProcessor\Source\Member\MembershipSource'), E::ts('Membership'));
+    $this->addDataSource('primary_membership', new Definition('Civi\DataProcessor\Source\Member\PrimaryMembershipSource'), E::ts('Primary Membership (retrieve the owner membership id'));
     $this->addDataSource('membership_type', new Definition('Civi\DataProcessor\Source\Member\MembershipTypeSource'), E::ts('Membership Type'));
     $this->addDataSource('membership_status', new Definition('Civi\DataProcessor\Source\Member\MembershipStatusSource'), E::ts('Membership Status'));
     $this->addDataSource('csv', new Definition('Civi\DataProcessor\Source\CSV'), E::ts('CSV File'));

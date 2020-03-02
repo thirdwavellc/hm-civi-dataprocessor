@@ -1,6 +1,7 @@
 # Version 1.4.0 (not yet released)
 
-* Search tasks (eg. Export) work with Member,Contribute,Participant,Case... 
+* Search tasks (eg. Export) work with Member,Contribute,Participant,Case...
+* Added source to retrieve the owner membership, when owner membership is not set (meaning it is already the primary) then it will return itself.
 
 # Version 1.3.0
 

@@ -59,8 +59,8 @@ class SimpleNonRequiredJoin  extends  SimpleJoin {
    */
   public function getJoinClause(DataFlowDescription $sourceDataFlowDescription) {
     $this->initialize();
-    $joinClause = "";
-    if ($sourceDataFlowDescription->getJoinSpecification()) {
+    $joinClause = "ON 1";
+    if ($this->left_table && $this->right_table && $sourceDataFlowDescription->getJoinSpecification()) {
       $leftColumnName = "`{$this->left_table}`.`{$this->left_field}`";
       if ($this->leftFieldSpec) {
         $leftColumnName = $this->leftFieldSpec->getSqlColumnName($this->left_table);
