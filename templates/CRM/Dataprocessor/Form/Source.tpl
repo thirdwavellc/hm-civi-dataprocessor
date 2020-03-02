@@ -60,6 +60,7 @@
           $('#type').on('change', function() {
             {/literal}{if $action eq 1}{literal}
               var titlepreset = $.trim($('#type option:selected').text().split("::").pop());
+              titlepreset = $.trim(titlepreset.split("(").shift());
               $('#title').val(titlepreset).trigger('blur');
             {/literal}{/if}{literal};
             var type = $('#type').val();
