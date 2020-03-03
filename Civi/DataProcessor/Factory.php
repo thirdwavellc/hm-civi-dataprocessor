@@ -133,6 +133,7 @@ class Factory {
     $this->addOutput('membership_search', new Definition('CRM_DataprocessorSearch_MembershipSearch'), E::ts('Membership Search'));
     $this->addOutput('participant_search', new Definition('CRM_DataprocessorSearch_ParticipantSearch'), E::ts('Participant Search'));
     $this->addOutput('export_csv', new Definition('CRM_DataprocessorOutputExport_CSV'), E::ts('CSV Export'));
+    $this->addOutput('export_pdf', new Definition('CRM_DataprocessorOutputExport_PDF'), E::ts('PDF Export'));
     $this->addFilter('simple_sql_filter', new Definition('Civi\DataProcessor\FilterHandler\SimpleSqlFilter'), E::ts('Field filter'));
     $this->addFilter('date_filter', new Definition('Civi\DataProcessor\FilterHandler\DateFilter'), E::ts('Date filter'));
     $this->addFilter('multiple_field_filter', new Definition('Civi\DataProcessor\FilterHandler\MultipleFieldFilter'), E::ts('Text in multiple fields Filter'));

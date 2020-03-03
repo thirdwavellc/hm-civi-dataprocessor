@@ -148,7 +148,7 @@ class CRM_DataprocessorOutputExport_CSV implements ExportOutputInterface, Direct
    * @throws \Exception
    */
   public function downloadExport(\Civi\DataProcessor\ProcessorType\AbstractProcessorType $dataProcessorClass, $dataProcessor, $outputBAO, $formValues, $sortFieldName = null, $sortDirection = 'ASC', $idField=null, $selectedIds=array()) {
-    if (!$dataProcessorClass->getDataFlow()->recordCount() > self::MAX_DIRECT_SIZE) {
+    if ($dataProcessorClass->getDataFlow()->recordCount() > self::MAX_DIRECT_SIZE) {
       $this->startBatchJob($dataProcessorClass, $dataProcessor, $outputBAO, $formValues, $sortFieldName, $sortDirection, $idField, $selectedIds);
     } else {
       $this->doDirectDownload($dataProcessorClass, $dataProcessor, $outputBAO, $sortFieldName, $sortDirection, $idField, $selectedIds);

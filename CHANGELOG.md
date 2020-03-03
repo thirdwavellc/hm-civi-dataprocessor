@@ -4,6 +4,7 @@
 * Added source to retrieve the owner membership, when owner membership is not set (meaning it is already the primary) then it will return itself.
 * Added date filter to filter date with the PHP Date Format.
 * Added filtering on Contact (sub) type on the contact filter.
+* Added PDF Export Output
 
 # Version 1.3.0
 
