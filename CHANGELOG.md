@@ -5,6 +5,8 @@
 * Added date filter to filter date with the PHP Date Format.
 * Added filtering on Contact (sub) type on the contact filter.
 * Added PDF Export Output
+* Added Union Query Data Flow.
+* Added a field specification for a fixed value
 
 # Version 1.3.0
 
