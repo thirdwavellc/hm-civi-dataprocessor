@@ -26,6 +26,7 @@ class Utils {
       if (in_array($field['name'], $fieldsToSkip)) {
         continue;
       }
+      
       $type = \CRM_Utils_Type::typeToString($field['type']);
       $options = $daoClass::buildOptions($field['name']);
       $alias = $aliasPrefix.$field['name'];

@@ -8,6 +8,7 @@
 * Added Union Query Data Flow.
 * Added a field specification for a fixed value
 * Fixed #24
+* Improved export/import functionality. 
 
 # Version 1.3.0
 
