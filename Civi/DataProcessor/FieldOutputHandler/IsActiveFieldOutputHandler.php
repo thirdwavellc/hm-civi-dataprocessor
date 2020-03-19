@@ -156,6 +156,7 @@ class IsActiveFieldOutputHandler extends AbstractFieldOutputHandler {
     }
     $today = new \DateTime();
     if (
+      ($value) &&
       (!$startDate || $startDate->format(('Ymd') <= $today->format('Ymd'))) &&
       (!$endDate || $endDate->format(('Ymd') >= $today->format('Ymd')))
     ) {
