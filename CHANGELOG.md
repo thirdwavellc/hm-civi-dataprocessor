@@ -7,6 +7,7 @@
 * Added PDF Export Output
 * Added Union Query Data Flow.
 * Added a field specification for a fixed value
+* Fixed #24
 
 # Version 1.3.0
 

@@ -117,6 +117,18 @@ abstract class AbstractCivicrmEntitySource extends AbstractSource {
     $this->primaryDataFlow = $this->getEntityDataFlow();
     $this->dataFlow = null;
     $this->additionalDataFlowDescriptions = array();
+    $this->availableFields = null;
+    $this->availableFilterFields = null;
+  }
+
+  /**
+   * @param String $name
+   * @return \Civi\DataProcessor\Source\SourceInterface
+   */
+  public function setSourceName($name) {
+    $this->availableFields = null;
+    $this->availableFilterFields = null;
+    return parent::setSourceName($name);
   }
 
   /**
@@ -134,7 +146,10 @@ abstract class AbstractCivicrmEntitySource extends AbstractSource {
    */
   protected function loadFields(DataSpecification $dataSpecification, $fieldsToSkip=array()) {
     $daoClass = \CRM_Core_DAO_AllCoreTables::getFullName($this->getEntity());
-    $aliasPrefix = $this->getSourceName().'_';
+    $aliasPrefix = '';
+    if ($this->getSourceName()) {
+      $aliasPrefix = $this->getSourceName() . '_';
+    }
 
     DataSpecificationUtils::addDAOFieldsToDataSpecification($daoClass, $dataSpecification, $fieldsToSkip, '', $aliasPrefix);
   }
@@ -152,7 +167,10 @@ abstract class AbstractCivicrmEntitySource extends AbstractSource {
     if (!$entity) {
       $entity = $this->getEntity();
     }
-    $aliasPrefix = $this->getSourceName() . '_';
+    $aliasPrefix = '';
+    if ($this->getSourceName()) {
+      $aliasPrefix = $this->getSourceName() . '_';
+    }
     DataSpecificationUtils::addCustomFieldsToDataSpecification($entity, $dataSpecification, $onlySearchAbleFields, $aliasPrefix);
   }
 

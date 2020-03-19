@@ -188,7 +188,7 @@ class SimpleJoin implements JoinInterface, SqlJoinInterface {
    */
   public function processConfiguration($submittedValues, SourceInterface $joinFromSource) {
     $left_prefix = $joinFromSource->getSourceName();
-    $left_field = $this->ocrrectFieldName($submittedValues['left_field'], $joinFromSource);
+    $left_field = $this->correctFieldName($submittedValues['left_field'], $joinFromSource);
     list($right_prefix, $right_field) = explode("::",$submittedValues['right_field'], 2);
 
     $configuration = array(
@@ -215,7 +215,7 @@ class SimpleJoin implements JoinInterface, SqlJoinInterface {
    * @param \Civi\DataProcessor\Source\SourceInterface $joinFromSource
    * @return String
    */
-  private function ocrrectFieldName($fieldAlias, SourceInterface $joinFromSource) {
+  private function correctFieldName($fieldAlias, SourceInterface $joinFromSource) {
     try {
       $fields = \CRM_Dataprocessor_Utils_DataSourceFields::getAvailableFieldsInDataSource($joinFromSource, '', '');
       if (isset($fields[$fieldAlias])) {
@@ -228,7 +228,7 @@ class SimpleJoin implements JoinInterface, SqlJoinInterface {
       $fieldKeys = array_keys($fields);
       $fieldsWithoutPrefixKeys = array_keys($fieldsWithoutPrefix);
       $key = array_search($fieldAlias, $fieldsWithoutPrefixKeys);
-      if (isset($fieldKeys[$key])) {
+      if ($key!== false && isset($fieldKeys[$key])) {
         return $fieldKeys[$key];
       }
     } catch (\Exception $e) {
