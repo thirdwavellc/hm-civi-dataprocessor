@@ -56,6 +56,9 @@ class Api implements OutputInterface, API_ProviderInterface, EventSubscriberInte
    * @param array $filter
    */
   public function buildConfigurationForm(\CRM_Core_Form $form, $output=array()) {
+    $dataProcessor = civicrm_api3('DataProcessor', 'getsingle', array('id' => $output['data_processor_id']));
+    $dataProcessorClass = \CRM_Dataprocessor_BAO_DataProcessor::dataProcessorToClass($dataProcessor);
+
     $form->add('select','permission', E::ts('Permission'), \CRM_Core_Permission::basicPermissions(), true, array(
       'style' => 'min-width:250px',
       'class' => 'crm-select2 huge',
@@ -64,6 +67,14 @@ class Api implements OutputInterface, API_ProviderInterface, EventSubscriberInte
     $form->add('text', 'api_entity', E::ts('API Entity'), true);
     $form->add('text', 'api_action', E::ts('API Action Name'), true);
     $form->add('text', 'api_count_action', E::ts('API GetCount Action Name'), true);
+
+    if (isset($output['id'])) {
+      $doc = $this->generateMkDocs($dataProcessorClass, $dataProcessor, $output);
+      $resources = \CRM_Core_Resources::singleton();
+      $resources->addScriptFile('dataprocessor', 'packages/markdown-it/dist/markdown-it.min.js');
+      $form->assign('doc', $doc);
+
+    }
 
     if ($output && isset($output['id']) && $output['id']) {
       $defaults['permission'] = $output['permission'];
@@ -102,6 +113,71 @@ class Api implements OutputInterface, API_ProviderInterface, EventSubscriberInte
     $output['api_action'] = $submittedValues['api_action'];
     $output['api_count_action'] = $submittedValues['api_count_action'];
     return array();
+  }
+
+
+  public function generateMkDocs(AbstractProcessorType $dataProcessorClass, $dataProcessor, $output) {
+    $types = \CRM_Utils_Type::getValidTypes();
+    $types['Memo'] = \CRM_Utils_Type::T_TEXT;
+    $fields = array();
+    $filters = array();
+    foreach ($dataProcessorClass->getDataFlow()->getOutputFieldHandlers() as $outputFieldHandler) {
+      $fieldSpec = $outputFieldHandler->getOutputFieldSpecification();
+      $type = \CRM_Utils_Type::T_STRING;
+      if (isset($types[$fieldSpec->type])) {
+        $type = $types[$fieldSpec->type];
+      }
+      $field = [
+        'name' => $fieldSpec->alias,
+        'title' => $fieldSpec->title,
+        'description' => '',
+        'type' => $type,
+        'data_type' => $fieldSpec->type,
+        'api.aliases' => [],
+        'api.filter' => FALSE,
+        'api.return' => TRUE,
+      ];
+      if ($fieldSpec->getOptions()) {
+        $field['options'] = $fieldSpec->getOptions();
+      }
+      $fields[$fieldSpec->alias] = $field;
+    }
+    foreach($dataProcessorClass->getFilterHandlers() as $filterHandler) {
+      $fieldSpec = $filterHandler->getFieldSpecification();
+      $type = \CRM_Utils_Type::T_STRING;
+      if (isset($types[$fieldSpec->type])) {
+        $type = $types[$fieldSpec->type];
+      }
+      if (!$fieldSpec || !$filterHandler->isExposed()) {
+        continue;
+      }
+      $field = [
+        'name' => $fieldSpec->alias,
+        'title' => $fieldSpec->title,
+        'data_type' => $fieldSpec->type,
+        'description' => '',
+        'type' => $type,
+        'api.required' => $filterHandler->isRequired(),
+      ];
+      if ($fieldSpec->getOptions()) {
+        $field['options'] = $fieldSpec->getOptions();
+      }
+
+      $filters[$fieldSpec->alias] = $field;
+    }
+
+    $template = \CRM_Core_Smarty::singleton();
+    $config = \CRM_Core_Config::singleton();
+    $oldTemplateVars = $template->get_template_vars();
+    $template->clearTemplateVars();
+    $template->assign('dataprocessor', $dataProcessor);
+    $template->assign('output', $output);
+    $template->assign('fields', $fields);
+    $template->assign('filters', $filters);
+    $template->assign('resourceBase', rtrim($config->userFrameworkBaseURL, "/").rtrim($config->resourceBase, "/"));
+    $docs = $template->fetch('CRM/Dataprocessor/Docs/Output/API.tpl');
+    $template->assignAll($oldTemplateVars);
+    return $docs;
   }
 
   /**

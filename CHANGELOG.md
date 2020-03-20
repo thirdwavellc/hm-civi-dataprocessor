@@ -9,6 +9,7 @@
 * Added a field specification for a fixed value
 * Fixed #24
 * Improved export/import functionality.
+* Added documentation generator to the API output.
 
 # Version 1.3.0
 
