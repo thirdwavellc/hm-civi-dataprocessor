@@ -157,7 +157,7 @@ class Api implements OutputInterface, API_ProviderInterface, EventSubscriberInte
         'data_type' => $fieldSpec->type,
         'description' => '',
         'type' => $type,
-        'api.required' => $filterHandler->isRequired(),
+        'required' => $filterHandler->isRequired(),
       ];
       if ($fieldSpec->getOptions()) {
         $field['options'] = $fieldSpec->getOptions();
