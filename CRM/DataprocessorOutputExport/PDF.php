@@ -32,6 +32,7 @@ class CRM_DataprocessorOutputExport_PDF implements ExportOutputInterface, Direct
    * @param array $filter
    */
   public function buildConfigurationForm(\CRM_Core_Form $form, $output=array()) {
+    $defaults = [];
     $dataProcessor = civicrm_api3('DataProcessor', 'getsingle', array('id' => $output['data_processor_id']));
     $dataProcessorClass = \CRM_Dataprocessor_BAO_DataProcessor::dataProcessorToClass($dataProcessor);
     $fields = array();
@@ -46,11 +47,45 @@ class CRM_DataprocessorOutputExport_PDF implements ExportOutputInterface, Direct
       $pdfFormats[$pdfFormat['id']] = $pdfFormat['label'];
     }
 
+    $smarty = \CRM_Core_Smarty::singleton();
+    $templates = [];
+    $template_dirs = $smarty->template_dir;
+    if (!is_array($template_dirs)) {
+      $template_dirs = [$template_dirs];
+    }
+    foreach($template_dirs as $template_dir) {
+      foreach(glob($template_dir."/CRM/DataprocessorOutputExport/PDF/*") as $fileName) {
+        if (is_dir($fileName)) {
+          $template = basename($fileName);
+          $title = $template;
+          if (file_exists($fileName."/title.txt")) {
+            $title = E::ts(file_get_contents($fileName."/title.txt"));
+          }
+          $templates[$template] = $title;
+        }
+      }
+    }
+    $defaults['template'] = key($templates);
+
+    $form->add('select', 'template', E::ts('Template'), $templates, false, array(
+      'style' => 'min-width:250px',
+      'class' => 'crm-select2 huge',
+      'multiple' => false,
+      'placeholder' => E::ts('- select -'),
+    ));
+
     $form->add('select', 'hidden_fields', E::ts('Hidden fields'), $fields, false, array(
       'style' => 'min-width:250px',
       'class' => 'crm-select2 huge',
       'multiple' => true,
       'placeholder' => E::ts('- select -'),
+    ));
+
+    $form->add('select', 'section_titles', E::ts('Section Titles'), $fields, false, array(
+      'style' => 'min-width:250px',
+      'class' => 'crm-select2 huge',
+      'multiple' => true,
+      'placeholder' => E::ts('- no section titles -'),
     ));
 
     $form->add('select', 'pdf_format', E::ts('PDF Format'), $pdfFormats, false, array(
@@ -61,16 +96,6 @@ class CRM_DataprocessorOutputExport_PDF implements ExportOutputInterface, Direct
     ));
     $form->assign('ManagePdfFormatUrl', CRM_Utils_System::url('civicrm/admin/pdfFormats', ['reset'=>1]));
 
-    $borderStyles = [
-      'full' => E::ts('Border around every cell'),
-      'row_bottom' => E::ts('Border at the bottom of the row'),
-    ];
-    $form->add('select', 'border', E::ts('Border'), $borderStyles, false, array(
-      'style' => 'min-width:250px',
-      'class' => 'crm-select2 huge',
-      'multiple' => false,
-      'placeholder' => E::ts('- No border -'),
-    ));
 
     $form->add('checkbox', 'anonymous', E::ts('Available for anonymous users'), array(), false);
 
@@ -87,6 +112,9 @@ class CRM_DataprocessorOutputExport_PDF implements ExportOutputInterface, Direct
     }
     if ($configuration && isset($configuration['hidden_fields'])) {
       $defaults['hidden_fields'] = $configuration['hidden_fields'];
+    }
+    if ($configuration && isset($configuration['section_titles'])) {
+      $defaults['section_titles'] = $configuration['section_titles'];
     }
     if ($configuration && isset($configuration['pdf_format'])) {
       $defaults['pdf_format'] = $configuration['pdf_format'];
@@ -109,8 +137,8 @@ class CRM_DataprocessorOutputExport_PDF implements ExportOutputInterface, Direct
     if ($configuration && isset($configuration['additional_column_height'])) {
       $defaults['additional_column_height'] = $configuration['additional_column_height'];
     }
-    if ($configuration && isset($configuration['border'])) {
-      $defaults['border'] = $configuration['border'];
+    if ($configuration && isset($configuration['template'])) {
+      $defaults['template'] = $configuration['template'];
     }
     $form->setDefaults($defaults);
   }
@@ -136,6 +164,7 @@ class CRM_DataprocessorOutputExport_PDF implements ExportOutputInterface, Direct
   public function processConfiguration($submittedValues, &$output) {
     $configuration = array();
     $configuration['hidden_fields'] = $submittedValues['hidden_fields'];
+    $configuration['section_titles'] = $submittedValues['section_titles'];
     $configuration['pdf_format'] = $submittedValues['pdf_format'];
     $configuration['header'] = $submittedValues['header'];
     $configuration['anonymous'] = $submittedValues['anonymous'];
@@ -143,7 +172,7 @@ class CRM_DataprocessorOutputExport_PDF implements ExportOutputInterface, Direct
     $configuration['additional_column_title'] = $submittedValues['additional_column_title'];
     $configuration['additional_column_width'] = $submittedValues['additional_column_width'];
     $configuration['additional_column_height'] = $submittedValues['additional_column_height'];
-    $configuration['border'] = $submittedValues['border'];
+    $configuration['template'] = $submittedValues['template'];
     return $configuration;
   }
 
@@ -226,7 +255,6 @@ class CRM_DataprocessorOutputExport_PDF implements ExportOutputInterface, Direct
       $dataProcessorClass->getDataFlow()->addSort($sortFieldName, $sortDirection);
     }
 
-    self::createHeader($path, $dataProcessorClass, $outputBAO['configuration'], $dataProcessor);
     self::exportDataProcessor($path, $dataProcessorClass, $outputBAO['configuration'], $idField, $selectedIds);
     $path = self::createFooter($path, $dataProcessorClass, $outputBAO['configuration'], $dataProcessor);
 
@@ -267,8 +295,6 @@ class CRM_DataprocessorOutputExport_PDF implements ExportOutputInterface, Direct
     CRM_Utils_File::createDir($basePath);
     CRM_Utils_File::restrictAccess($basePath.'/');
     $filename = $basePath.'/'. $name.'.html';
-
-    self::createHeader($filename, $dataProcessorClass, $outputBAO['configuration'], $dataProcessor);
 
     $count = $dataProcessorClass->getDataFlow()->recordCount();
     $recordsPerJob = self::RECORDS_PER_JOB;
@@ -315,68 +341,56 @@ class CRM_DataprocessorOutputExport_PDF implements ExportOutputInterface, Direct
     $runner->runAllViaWeb(); // does not return
   }
 
-  protected static function createHeader($filename, \Civi\DataProcessor\ProcessorType\AbstractProcessorType $dataProcessorClass, $configuration, $dataProcessor) {
-    $borderStyle = "";
-    if (isset($configuration['border']) && $configuration['border'] == 'full') {
-      $borderStyle = "th, td { border: 1px solid black; padding-left: 4px; padding-right: 4px; }";
-    } elseif (isset($configuration['border']) && $configuration['border'] == 'row_bottom') {
-      $borderStyle = "th, td { border-bottom: 1px solid black; }";
-    }
-
-    $content = "
-        <html>
-        <head>
-        <title>{$dataProcessor['title']}</title>
-        </head>
-        <body>
-        <style>
-        table { border-collapse: collapse; }
-        {$borderStyle}
-        </style>
-        <h1>{$dataProcessor['title']}</h1>
-    ";
-
-    if (isset($configuration['header'])) {
-      $content .= $configuration['header'];
-    }
-
-    $content .= "<table style=\"width: 100%;\"><thead><tr>";
+  protected static function createFooter($filename, \Civi\DataProcessor\ProcessorType\AbstractProcessorType $dataProcessorClass, $configuration, $dataProcessor) {
+    $content = "";
     $hiddenFields = array();
     if (isset($configuration['hidden_fields']) && is_array($configuration['hidden_fields'])) {
       $hiddenFields = $configuration['hidden_fields'];
     }
+    $headerColumns = [];
     foreach($dataProcessorClass->getDataFlow()->getOutputFieldHandlers() as $outputHandler) {
-      if (!in_array($outputHandler->getOutputFieldSpecification()->alias, $hiddenFields)) {
-        $content .= "<th>" . self::encodeValue($outputHandler->getOutputFieldSpecification()->title) . "</th>";
-      }
+      $headerColumns[$outputHandler->getOutputFieldSpecification()->alias] = $outputHandler->getOutputFieldSpecification()->title;
     }
 
-    if (isset($configuration['additional_column']) && $configuration['additional_column']) {
-      $additionalColumnStyle = "";
-      if (isset($configuration['additional_column_width']) && $configuration['additional_column_width']) {
-        $additionalColumnStyle .= "width: {$configuration['additional_column_width']};";
+    $smarty = \CRM_Core_Smarty::singleton();
+    $smarty->pushScope(array());
+    $smarty->assign('configuration', $configuration);
+    $smarty->assign('hiddenFields', $hiddenFields);
+    $smarty->assign('headerColumns', $headerColumns);
+    $smarty->assign('dataProcessor', $dataProcessor);
+
+    $parts = [];
+    foreach (glob($filename.".part.*") as $partFilename) {
+      $basePartFileName = basename($partFilename);
+      $partName = substr($basePartFileName, stripos($basePartFileName, ".part.")+6);
+      $partContent = file_get_contents($partFilename);
+      if ($partName == "_none_") {
+        $smarty->assign('sectionTitle', '');
+        $smarty->assign('rows', $partContent);
+        $content .= $smarty->fetch(self::getTemplateFolder($configuration)."table.tpl");
+        $smarty->popScope();
+      } else {
+        $parts[$partName] = $partContent;
       }
-      $content .= "<th style=\"{$additionalColumnStyle}\">";
-      if (isset($configuration['additional_column_title']) && $configuration['additional_column_title']) {
-        $content .= $configuration['additional_column_title'];
-      }
-      $content .= "</th>";
+      unlink($partFilename);
     }
 
-    $content .= "</tr></thead>";
-    $file = fopen($filename, 'a');
-    fwrite($file, $content."\r\n");
-    fclose($file);
-  }
+    foreach($parts as $sectionTitle => $rows) {
+      $smarty->assign('sectionTitle', $sectionTitle);
+      $smarty->assign('rows', $rows);
+      $content .= $smarty->fetch(self::getTemplateFolder($configuration)."table.tpl");
+      $smarty->popScope();
+      unset($parts[$sectionTitle]);
+    }
+    $smarty->popScope();
 
-  protected static function createFooter($filename, \Civi\DataProcessor\ProcessorType\AbstractProcessorType $dataProcessorClass, $configuration, $dataProcessor) {
-    $content = "</table></body></html>";
-    $file = fopen($filename, 'a');
-    fwrite($file, $content."\r\n");
-    fclose($file);
+    $smarty->pushScope(array());
+    $smarty->assign('configuration', $configuration);
+    $smarty->assign('dataProcessor', $dataProcessor);
+    $smarty->assign('content', $content);
+    $content = $smarty->fetch(self::getTemplateFolder($configuration)."html.tpl");
+    $smarty->popScope();
 
-    $content = file_get_contents($filename);
-    unlink($filename);
     $pdfFilename = str_replace(".html", ".pdf", $filename);
     $pdfFormat = isset($configuration['pdf_format']) ? $configuration['pdf_format'] : null;
     $pdfContents = \CRM_Utils_PDF_Utils::html2pdf($content, basename($pdfFilename), TRUE, $pdfFormat);
@@ -393,22 +407,21 @@ class CRM_DataprocessorOutputExport_PDF implements ExportOutputInterface, Direct
       $hiddenFields = $configuration['hidden_fields'];
     }
 
-    $additionalColumn = '';
-    if (isset($configuration['additional_column']) && $configuration['additional_column']) {
-      $style = "";
-      if (isset($configuration['additional_column_width']) && $configuration['additional_column_width']) {
-        $style .= "width: {$configuration['additional_column_width']};";
-      }
-      if (isset($configuration['additional_column_height']) && $configuration['additional_column_height']) {
-        $style .= "height: {$configuration['additional_column_height']};";
-      }
-      $additionalColumn = "<td style=\"{$style}\">&nbsp;</td>";
+    $smarty = \CRM_Core_Smarty::singleton();
+    $smarty->pushScope(array());
+    $smarty->assign('configuration', $configuration);
+    $smarty->assign('hiddenFields', $hiddenFields);
+    $smarty->assign('dataProcessor', $dataProcessor);
+
+    if (!isset($configuration['section_titles']) || !is_array($configuration['section_titles'])) {
+      $configuration['section_titles'] = array();
     }
 
-    $content = "";
+    $contents = [];
     try {
       while($record = $dataProcessor->getDataFlow()->nextRecord()) {
         $row = array();
+        $content = "";
         $rowIsSelected = true;
         if (isset($idField) && is_array($selectedIds) && count($selectedIds)) {
           $rowIsSelected = false;
@@ -418,25 +431,41 @@ class CRM_DataprocessorOutputExport_PDF implements ExportOutputInterface, Direct
           }
         }
         if ($rowIsSelected) {
-          $content .= "<tr>";
-          foreach ($record as $field => $value) {
-            if (!in_array($field, $hiddenFields)) {
-              $content .= "<td>" . self::encodeValue($value->formattedValue) . "</td>";
-            }
-          }
-          $content .= $additionalColumn . "</tr>";
+          $smarty->assign('record', $record);
+          $content = $smarty->fetch(self::getTemplateFolder($configuration)."row.tpl");
         }
+
+        $sectionHeader = "";
+        foreach($configuration['section_titles'] as $section_title) {
+          $sectionHeader .= strip_tags($record[$section_title]->formattedValue)." ";
+        }
+        if (empty($sectionHeader)) {
+          $sectionHeader = "_none_";
+        }
+        $sectionHeader = trim($sectionHeader);
+        if (!isset($contents[$sectionHeader])) {
+          $contents[$sectionHeader] = "";
+        }
+        $contents[$sectionHeader] .= $content;
       }
     } catch (\Civi\DataProcessor\DataFlow\EndOfFlowException $e) {
       // Do nothing
     }
-    $file = fopen($filename, 'a');
-    fwrite($file, $content . "\r\n");
-    fclose($file);
+    foreach($contents as $sectionHeader => $content) {
+      $file = fopen($filename.".part.".$sectionHeader, 'a');
+      fwrite($file, $content . "\r\n");
+      fclose($file);
+    }
+
+    $smarty->popScope();
   }
 
-  protected static function encodeValue($value) {
-    return htmlentities($value);
+  protected static function getTemplateFolder($configuration) {
+    $template = "Default";
+    if (isset($configuration['template'])) {
+      $template = $configuration['template'];
+    }
+    return "CRM/DataprocessorOutputExport/PDF/{$template}/";
   }
 
   public static function exportBatch(CRM_Queue_TaskContext $ctx, $filename, $params, $dataProcessorId, $outputId, $offset, $limit, $sortFieldName = null, $sortDirection = 'ASC', $idField=null, $selectedIds=array()) {
