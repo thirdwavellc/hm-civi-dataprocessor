@@ -54,13 +54,15 @@ class CRM_Dataprocessor_BAO_DataProcessor extends CRM_Dataprocessor_DAO_DataProc
    * Returns a configured data processor instance.
    *
    * @param array $dataProcessor
+   * @param bool $forece
+   *   If set reload the data processor in the cache.
    * @return \Civi\DataProcessor\ProcessorType\AbstractProcessorType
    * @throws \Exception
    */
-  public static function dataProcessorToClass($dataProcessor) {
+  public static function dataProcessorToClass($dataProcessor, $force=false) {
     $cache_key = 'dataprocessor_'.$dataProcessor['id'];
     $cache = CRM_Dataprocessor_Utils_Cache::singleton();
-    if ($dataProcessorClass = $cache->get($cache_key)) {
+    if (!$force && $dataProcessorClass = $cache->get($cache_key)) {
       // Reset the default filter values as they might have been changed.
       $dataProcessorClass->setDefaultFilterValues();
       return $dataProcessorClass;

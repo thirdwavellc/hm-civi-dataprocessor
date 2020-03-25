@@ -115,10 +115,13 @@ class CRM_Contact_Selector_DataProcessorContactSearch {
    */
   protected function loadDataProcessor() {
     if (!$this->dataProcessorId) {
+      $debug = CRM_Utils_Request::retrieve('debug', 'Boolean', $this, FALSE);
+      $doNotUseCache = $debug ? true : false;
+
       $dataProcessorName = $this->getDataProcessorName();
       $sql = "
         SELECT civicrm_data_processor.id as data_processor_id,  civicrm_data_processor_output.id AS output_id
-        FROM civicrm_data_processor 
+        FROM civicrm_data_processor
         INNER JOIN civicrm_data_processor_output ON civicrm_data_processor.id = civicrm_data_processor_output.data_processor_id
         WHERE is_active = 1 AND civicrm_data_processor.name = %1 AND civicrm_data_processor_output.type = %2
       ";
@@ -130,7 +133,7 @@ class CRM_Contact_Selector_DataProcessorContactSearch {
       }
 
       $this->dataProcessor = civicrm_api3('DataProcessor', 'getsingle', array('id' => $dao->data_processor_id));
-      $this->dataProcessorClass = \CRM_Dataprocessor_BAO_DataProcessor::dataProcessorToClass($this->dataProcessor, true);
+      $this->dataProcessorClass = \CRM_Dataprocessor_BAO_DataProcessor::dataProcessorToClass($this->dataProcessor, $doNotUseCache);
       $this->dataProcessorId = $dao->data_processor_id;
 
       $this->dataProcessorOutput = civicrm_api3('DataProcessorOutput', 'getsingle', array('id' => $dao->output_id));

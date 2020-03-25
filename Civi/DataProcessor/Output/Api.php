@@ -291,11 +291,14 @@ class Api implements OutputInterface, API_ProviderInterface, EventSubscriberInte
   }
 
   protected function getFields($entity, $params) {
+    $debug = isset($params['debug']) && $params['debug'] ? true : false;
+    $doNotUseCache = $debug ? true : false;
+
     $cacheKey = 'getfields_'.strtolower($entity);
     if (isset($params['action'])) {
       $cacheKey .= '_'.strtolower($params['action']);
     }
-    if ($cache = $this->cache->get($cacheKey)) {
+    if (!$doNotUseCache && $cache = $this->cache->get($cacheKey)) {
       return $cache;
     }
     $types = \CRM_Utils_Type::getValidTypes();
@@ -320,8 +323,7 @@ class Api implements OutputInterface, API_ProviderInterface, EventSubscriberInte
       throw new \API_Exception("Could not find a data processor");
     }
     $dataProcessor = civicrm_api3('DataProcessor', 'getsingle', array('id' => $dao->data_processor_id));
-    $dataProcessorClass = \CRM_Dataprocessor_BAO_DataProcessor::dataProcessorToClass($dataProcessor);
-
+    $dataProcessorClass = \CRM_Dataprocessor_BAO_DataProcessor::dataProcessorToClass($dataProcessor, $doNotUseCache);
 
     foreach ($dataProcessorClass->getDataFlow()->getOutputFieldHandlers() as $outputFieldHandler) {
       $fieldSpec = $outputFieldHandler->getOutputFieldSpecification();
@@ -434,6 +436,10 @@ class Api implements OutputInterface, API_ProviderInterface, EventSubscriberInte
   }
 
   protected function invokeDataProcessor($apiRequest) {
+    $params = $apiRequest['params'];
+    $debug = isset($params['debug']) && $params['debug'] ? true : false;
+    $doNotUseCache = $debug ? true : false;
+
     $isCountAction = FALSE;
     $dataProcessorIdSql = "
       SELECT *
@@ -453,13 +459,11 @@ class Api implements OutputInterface, API_ProviderInterface, EventSubscriberInte
     }
 
     $cache_key = 'data_processor_id_'.$dao->data_processor_id;
-    if (! ($dataProcessor = $this->cache->get($cache_key)) ){
+    if ($doNotUseCache || !($dataProcessor = $this->cache->get($cache_key)) ){
       $dataProcessor = civicrm_api3('DataProcessor', 'getsingle', ['id' => $dao->data_processor_id]);
       $this->cache->set($cache_key, $dataProcessor);
     }
-    $dataProcessorClass = \CRM_Dataprocessor_BAO_DataProcessor::dataProcessorToClass($dataProcessor);
-
-    $params = $apiRequest['params'];
+    $dataProcessorClass = \CRM_Dataprocessor_BAO_DataProcessor::dataProcessorToClass($dataProcessor, $doNotUseCache);
     return $this->runDataProcessor($dataProcessorClass, $params, $isCountAction);
   }
 

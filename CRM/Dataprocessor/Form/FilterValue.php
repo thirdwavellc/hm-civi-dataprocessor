@@ -47,7 +47,7 @@ class CRM_Dataprocessor_Form_FilterValue extends CRM_Core_Form {
     $factory = dataprocessor_get_factory();
     $this->dataProcessorId = CRM_Utils_Request::retrieve('data_processor_id', 'Integer');
     $this->dataProcessor = civicrm_api3('DataProcessor', 'getsingle', array('id' => $this->dataProcessorId));
-    $this->dataProcessorClass = CRM_Dataprocessor_BAO_DataProcessor::dataProcessorToClass($this->dataProcessor);
+    $this->dataProcessorClass = CRM_Dataprocessor_BAO_DataProcessor::dataProcessorToClass($this->dataProcessor, true);
     $this->assign('data_processor_id', $this->dataProcessorId);
 
     $this->id = CRM_Utils_Request::retrieve('id', 'Integer');

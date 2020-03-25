@@ -64,6 +64,9 @@ abstract class CRM_Dataprocessor_Form_Output_AbstractUIOutputForm extends CRM_Co
   protected function loadDataProcessor() {
     $factory = dataprocessor_get_factory();
     if (!$this->dataProcessorId) {
+      $debug = CRM_Utils_Request::retrieve('debug', 'Boolean', $this, FALSE);
+      $doNotUseCache = $debug ? true : false;
+
       $dataProcessorName = $this->getDataProcessorName();
       $sql = "
         SELECT civicrm_data_processor.id as data_processor_id,  civicrm_data_processor_output.id AS output_id
@@ -79,7 +82,7 @@ abstract class CRM_Dataprocessor_Form_Output_AbstractUIOutputForm extends CRM_Co
       }
 
       $this->dataProcessor = civicrm_api3('DataProcessor', 'getsingle', array('id' => $dao->data_processor_id));
-      $this->dataProcessorClass = \CRM_Dataprocessor_BAO_DataProcessor::dataProcessorToClass($this->dataProcessor, true);
+      $this->dataProcessorClass = \CRM_Dataprocessor_BAO_DataProcessor::dataProcessorToClass($this->dataProcessor, $doNotUseCache);
       $this->dataProcessorId = $dao->data_processor_id;
 
       $this->dataProcessorOutput = civicrm_api3('DataProcessorOutput', 'getsingle', array('id' => $dao->output_id));
