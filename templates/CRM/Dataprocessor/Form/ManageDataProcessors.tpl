@@ -92,7 +92,7 @@
                             {if $data_processor.navigation}
                                 {foreach from=$data_processor.navigation item=navigationItem}
                                     <a href="{$navigationItem.url}"
-                                       class="action-item crm-hover-button" title="{$navigationItem.title}">{$navigationItem.title}</a>
+                                       class="action-item crm-hover-button" title="{$navigationItem.title}">{$navigationItem.type}</a>
                                 {/foreach}
                             {/if}
                         </td>
