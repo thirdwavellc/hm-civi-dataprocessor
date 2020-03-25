@@ -27,8 +27,8 @@ class ACLContactSource extends ContactSource {
     foreach ($whereTables as $tableAndAlias => $joinCriteria) {
       $this->addAclJoin($tableAndAlias, $joinCriteria);
     }
-    $this->addAclWhere($where);
     parent::initialize();
+    $this->addAclWhere($where);
   }
 
   /**
