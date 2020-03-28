@@ -275,6 +275,13 @@ abstract class AbstractDataFlow {
   }
 
   /**
+   * Resets the sorting
+   */
+  public function resetSort() {
+    $this->sortSpecifications = [];
+  }
+
+  /**
    * Sort compare function
    * Returns 0 when both values are equal
    * Returns -1 when a is less than b

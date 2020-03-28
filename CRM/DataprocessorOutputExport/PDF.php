@@ -252,6 +252,7 @@ class CRM_DataprocessorOutputExport_PDF implements ExportOutputInterface, Direct
 
     $path = CRM_Core_Config::singleton()->templateCompileDir . 'dataprocessor_export_pdf/'. $filename;
     if ($sortFieldName) {
+      $dataProcessorClass->getDataFlow()->resetSort();
       $dataProcessorClass->getDataFlow()->addSort($sortFieldName, $sortDirection);
     }
 
@@ -474,6 +475,7 @@ class CRM_DataprocessorOutputExport_PDF implements ExportOutputInterface, Direct
     $dataProcessorClass = \CRM_Dataprocessor_BAO_DataProcessor::dataProcessorToClass($dataProcessor);
     CRM_Dataprocessor_Form_Output_AbstractUIOutputForm::applyFilters($dataProcessorClass, $params);
     if ($sortFieldName) {
+      $dataProcessorClass->getDataFlow()->resetSort();
       $dataProcessorClass->getDataFlow()->addSort($sortFieldName, $sortDirection);
     }
     $dataProcessorClass->getDataFlow()->setOffset($offset);

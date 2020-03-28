@@ -234,7 +234,7 @@ abstract class CRM_DataprocessorSearch_Form_AbstractSearch extends CRM_Dataproce
     // Set the sort
     $sortDirection = 'ASC';
     $sortFieldName = null;
-    if (!empty($this->sort->_vars[$this->sort->getCurrentSortID()])) {
+    if ($this->sort->getCurrentSortID() > 1) {
       $sortField = $this->sort->_vars[$this->sort->getCurrentSortID()];
       if ($this->sort->getCurrentSortDirection() == CRM_Utils_Sort::DESCENDING) {
         $sortDirection = 'DESC';
@@ -273,12 +273,13 @@ abstract class CRM_DataprocessorSearch_Form_AbstractSearch extends CRM_Dataproce
     self::applyFilters($this->dataProcessorClass, $this->_formValues);
 
     // Set the sort
-    $sortDirection = 'ASC';
-    if (!empty($this->sort->_vars[$this->sort->getCurrentSortID()])) {
+    if ($this->sort->getCurrentSortID() > 1) {
+      $sortDirection = 'ASC';
       $sortField = $this->sort->_vars[$this->sort->getCurrentSortID()];
       if ($this->sort->getCurrentSortDirection() == CRM_Utils_Sort::DESCENDING) {
         $sortDirection = 'DESC';
       }
+      $this->dataProcessorClass->getDataFlow()->resetSort();
       $this->dataProcessorClass->getDataFlow()->addSort($sortField['name'], $sortDirection);
     }
 
@@ -363,7 +364,7 @@ abstract class CRM_DataprocessorSearch_Form_AbstractSearch extends CRM_Dataproce
     $sortFields = array();
     $hiddenFields = $this->getHiddenFields();
     $columnHeaders = array();
-    $sortColumnNr = 1;
+    $sortColumnNr = 2; // Start at two as 1 is the default sort.
     foreach($this->dataProcessorClass->getDataFlow()->getOutputFieldHandlers() as $outputFieldHandler) {
       $field = $outputFieldHandler->getOutputFieldSpecification();
       if (!in_array($field->alias, $hiddenFields)) {

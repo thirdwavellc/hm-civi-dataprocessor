@@ -507,6 +507,7 @@ class Api implements OutputInterface, API_ProviderInterface, EventSubscriberInte
       }
       if (isset($options['sort'])) {
         $sort = explode(', ', $options['sort']);
+        $dataProcessorClass->getDataFlow()->resetSort();
         foreach ($sort as $index => &$sortString) {
           // Get sort field and direction
           list($sortField, $dir) = array_pad(explode(' ', $sortString), 2, 'ASC');

@@ -105,6 +105,19 @@ class CRM_Dataprocessor_BAO_DataProcessor extends CRM_Dataprocessor_DAO_DataProc
         }
       }
     }
+
+    if (isset($dataProcessor['configuration']['default_sort'])) {
+      foreach($dataProcessor['configuration']['default_sort'] as $sort) {
+        if (stripos($sort, 'asc_by_') === 0) {
+          $field = substr($sort, 7);
+          $dataProcessorClass->getDataFlow()->addSort($field, 'ASC');
+        } elseif (stripos($sort, 'desc_by_') === 0) {
+          $field = substr($sort, 8);
+          $dataProcessorClass->getDataFlow()->addSort($field, 'DESC');
+        }
+      }
+    }
+
     $cache->set($cache_key, $dataProcessorClass);
     return $dataProcessorClass;
   }

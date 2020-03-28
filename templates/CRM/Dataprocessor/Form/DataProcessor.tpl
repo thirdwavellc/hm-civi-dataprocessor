@@ -46,6 +46,21 @@
     <div class="content">{$form.is_active.html}</div>
     <div class="clear"></div>
   </div>
+  {if $data_processor_id}
+  <div class="crm-section">
+    <div class="label">{ts}Default Sort{/ts}</div>
+    <div class="content">
+      <ul id="defaultsort" class="crm-checkbox-list crm-sortable-list" style="width: 600px;">
+        {foreach from=$sortFields item="sortFieldLabel" key="sortFieldValue"}
+          <li id="defaultsort-{$sortFieldValue}">
+            {$form.defaultSort.$sortFieldValue.html}
+          </li>
+        {/foreach}
+      </ul>
+    </div>
+    <div class="clear"></div>
+  </div>
+  {/if}
 </div>
 
   {if $data_processor_id}
@@ -79,6 +94,21 @@
           });
         }
       });
+
+      function getSorting(e, ui) {
+        var params = [];
+        var y = 0;
+        var items = $("#defaultsort li");
+        if (items.length > 0) {
+          for (var y = 0; y < items.length; y++) {
+            var idState = items[y].id.split('-');
+            params[y + 1] = idState[1];
+          }
+        }
+        $('#default_sort_weight').val(params.toString());
+      }
+
+      $("#defaultsort").on('sortupdate', getSorting);
     });
     {/literal}
   </script>
