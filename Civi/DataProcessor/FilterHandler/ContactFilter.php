@@ -131,6 +131,29 @@ class ContactFilter extends AbstractFieldFilterHandler {
   }
 
   /**
+   * File name of the template to add this filter to the criteria form.
+   *
+   * @return string
+   */
+  public function getTemplateFileName() {
+    return "CRM/Dataprocessor/Form/Filter/ContactFilter.tpl";
+  }
+
+  /**
+   * Apply the submitted filter
+   *
+   * @param $submittedValues
+   * @throws \Exception
+   */
+  public function applyFilterFromSubmittedFilterParams($submittedValues) {
+    if (isset($submittedValues['op']) && $submittedValues['op'] == 'current_user') {
+      $submittedValues['op'] = 'IN';
+      $submittedValues['value'] = [\CRM_Core_Session::getLoggedInContactID()];
+    }
+    parent::applyFilterFromSubmittedFilterParams($submittedValues);
+  }
+
+  /**
    * Add the elements to the filter form.
    *
    * @param \CRM_Core_Form $form
@@ -223,6 +246,7 @@ class ContactFilter extends AbstractFieldFilterHandler {
       'IN' => E::ts('Is one of'),
       'NOT IN' => E::ts('Is not one of'),
       'null' => E::ts('Is empty'),
+      'current_user' => E::ts('Is current user'),
     );
   }
 
