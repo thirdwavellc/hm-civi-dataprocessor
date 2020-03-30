@@ -94,8 +94,10 @@ class SubtractFieldOutputHandler extends AbstractFieldOutputHandler {
     if (!$dataSource) {
       throw new DataSourceNotFoundException(E::ts("Field %1 requires data source '%2' which could not be found. Did you rename or deleted the data source?", array(1=>$title, 2=>$datasourceName)));
     }
-    $inputFieldSpec = $dataSource->getAvailableFields()
-      ->getFieldSpecificationByName($field);
+    $inputFieldSpec = $dataSource->getAvailableFields()->getFieldSpecificationByAlias($field);
+    if (!$inputFieldSpec) {
+      $inputFieldSpec = $dataSource->getAvailableFields()->getFieldSpecificationByName($field);
+    }
     if (!$inputFieldSpec) {
       throw new FieldNotFoundException(E::ts("Field %1 requires a field with the name '%2' in the data source '%3'. Did you change the data source type?", [
         1 => $title,
