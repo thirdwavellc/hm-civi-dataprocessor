@@ -146,9 +146,11 @@ class ContactFilter extends AbstractFieldFilterHandler {
    * @return array
    */
   public function validateSubmittedFilterParams($submittedValues) {
-    if (isset($submittedValues['op']) && $submittedValues['op'] == 'current_user') {
-      $submittedValues['op'] = 'IN';
-      $submittedValues['value'] = [\CRM_Core_Session::getLoggedInContactID()];
+    $filterSpec = $this->getFieldSpecification();
+    $filterName = $filterSpec->alias;
+    if (isset($submittedValues[$filterName.'_op']) && $submittedValues[$filterName.'_op'] == 'current_user') {
+      $submittedValues[$filterName.'_op'] = 'IN';
+      $submittedValues[$filterName.'_value'] = [\CRM_Core_Session::getLoggedInContactID()];
     }
     return parent::validateSubmittedFilterParams($submittedValues);
   }
