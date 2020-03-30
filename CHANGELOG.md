@@ -11,6 +11,7 @@
 * Improved export/import functionality.
 * Added documentation generator to the API output.
 * Added default sort configuration for a data processor (#26).
+* Added Age field.
 
 # Version 1.3.0
 
