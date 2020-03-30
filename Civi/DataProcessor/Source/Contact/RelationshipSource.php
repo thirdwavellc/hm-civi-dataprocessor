@@ -66,7 +66,6 @@ class RelationshipSource extends AbstractCivicrmEntitySource {
   protected function requiredConfigurationFilters() {
     return array(
       'relationship_type_id',
-      'is_active',
     );
   }
 
