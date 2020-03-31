@@ -75,6 +75,8 @@ class CRM_Dataprocessor_Form_CloneDataProcessor extends CRM_Core_Form {
   public function postProcess() {
     $session = CRM_Core_Session::singleton();
     $values = $this->exportValues();
+    $params = clone $this->dataProcessor;
+    unset($params['id']);
     $params['name'] = $values['name'];
     $params['title'] = $values['title'];
     $params['description'] = $values['description'];
