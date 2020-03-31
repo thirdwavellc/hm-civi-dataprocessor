@@ -57,6 +57,7 @@ class CRM_DataprocessorSearch_Search implements UIFormOutputInterface {
     ));
 
     $form->add('wysiwyg', 'help_text', E::ts('Help text for this search'), array('rows' => 6, 'cols' => 80));
+    $form->add('text', 'no_result_text', E::ts('No result text'), array('class' => 'huge'), false);
     $form->add('checkbox', 'expanded_search', E::ts('Expand criteria form initially'));
     $form->add('checkbox', 'expose_aggregate', E::ts('Expose aggregate options'));
 
@@ -76,6 +77,11 @@ class CRM_DataprocessorSearch_Search implements UIFormOutputInterface {
       if (isset($output['configuration']) && is_array($output['configuration'])) {
         if (isset($output['configuration']['id_field'])) {
           $defaults['id_field'] = $output['configuration']['id_field'];
+        }
+        if (isset($output['configuration']['no_result_text'])) {
+          $defaults['no_result_text'] = $output['configuration']['no_result_text'];
+        } else {
+          $defaults['no_result_text'] = E::ts('No results');
         }
         if (isset($output['configuration']['navigation_id'])) {
           $defaults['navigation_parent_path'] = $navigation->getNavigationParentPathById($output['configuration']['navigation_id']);
@@ -124,6 +130,7 @@ class CRM_DataprocessorSearch_Search implements UIFormOutputInterface {
     $output['permission'] = $submittedValues['permission'];
     $configuration['id_field'] = $submittedValues['id_field'];
     $configuration['navigation_parent_path'] = $submittedValues['navigation_parent_path'];
+    $configuration['no_result_text'] = $submittedValues['no_result_text'];
     $configuration['hide_id_field'] = $submittedValues['hide_id_field'];
     $configuration['hidden_fields'] = $submittedValues['hidden_fields'];
     $configuration['help_text'] = $submittedValues['help_text'];

@@ -118,6 +118,18 @@ abstract class CRM_DataprocessorSearch_Form_AbstractSearch extends CRM_Dataproce
   }
 
   /**
+   * Retrieve the text for no results.
+   *
+   * @return string
+   */
+  protected function getNoResultText() {
+    if (isset($this->dataProcessorOutput['configuration']['no_result_text'])) {
+      return $this->dataProcessorOutput['configuration']['no_result_text'];
+    }
+    return E::ts('No results');
+  }
+
+  /**
    * Returns the url for view of the record action
    *
    * @param $row
@@ -345,6 +357,7 @@ abstract class CRM_DataprocessorSearch_Form_AbstractSearch extends CRM_Dataproce
 
     $this->addElement('checkbox', 'toggleSelect', NULL, NULL, ['class' => 'select-rows']);
     $this->assign('rows', $rows);
+    $this->assign('no_result_text', $this->getNoResultText());
     $this->assign('debug_info', $this->dataProcessorClass->getDataFlow()->getDebugInformation());
     if ($this->usePrevNextCache()) {
       $cacheKey = "civicrm search {$this->controller->_key}";

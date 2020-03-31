@@ -41,6 +41,7 @@ class CRM_DataprocessorDashlet_Dashlet implements Civi\DataProcessor\Output\UIOu
     $form->add('text', 'default_limit', E::ts('Default Limit'));
     $form->add('wysiwyg', 'help_text', E::ts('Help text for this dashlet'), array('rows' => 6, 'cols' => 80));
     $form->add('checkbox', 'expanded_search', E::ts('Expand criteria form initially'));
+    $form->add('text', 'no_result_text', E::ts('No result text'), array('class' => 'huge'), false);
 
     $form->add('select', 'hidden_fields', E::ts('Hidden fields'), $fields, false, array(
       'style' => 'min-width:250px',
@@ -57,6 +58,11 @@ class CRM_DataprocessorDashlet_Dashlet implements Civi\DataProcessor\Output\UIOu
       if (isset($output['configuration']) && is_array($output['configuration'])) {
         if (isset($output['configuration']['default_limit'])) {
           $defaults['default_limit'] = $output['configuration']['default_limit'];
+        }
+        if (isset($output['configuration']['no_result_text'])) {
+          $defaults['no_result_text'] = $output['configuration']['no_result_text'];
+        } else {
+          $defaults['no_result_text'] = E::ts('No results');
         }
         if (isset($output['configuration']['help_text'])) {
           $defaults['help_text'] = $output['configuration']['help_text'];
@@ -123,6 +129,7 @@ class CRM_DataprocessorDashlet_Dashlet implements Civi\DataProcessor\Output\UIOu
 
     $output['permission'] = $submittedValues['permission'];
     $configuration['default_limit'] = $submittedValues['default_limit'];
+    $configuration['no_result_text'] = $submittedValues['no_result_text'];
     $configuration['help_text'] = $submittedValues['help_text'];
     $configuration['hidden_fields'] = $submittedValues['hidden_fields'];
     $configuration['expanded_search'] = isset($submittedValues['expanded_search']) ? $submittedValues['expanded_search'] : false;
