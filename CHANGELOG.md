@@ -13,6 +13,7 @@
 * Added default sort configuration for a data processor (#26).
 * Added Age field.
 * Added current user to contact filter.
+* Added data source for permissioned contact (#25).
 
 # Version 1.3.0
 
