@@ -14,6 +14,7 @@
 * Added Age field.
 * Added current user to contact filter.
 * Added data source for permissioned contact (#25).
+* Fixed issue with configuration contact source sub type filter.
 
 # Version 1.3.0
 
