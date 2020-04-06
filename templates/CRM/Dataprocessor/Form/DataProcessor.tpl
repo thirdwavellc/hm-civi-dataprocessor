@@ -50,10 +50,11 @@
   <div class="crm-section">
     <div class="label">{ts}Default Sort{/ts}</div>
     <div class="content">
-      <ul id="defaultsort" class="crm-checkbox-list crm-sortable-list" style="width: 600px;">
+      <ul id="defaultsort" class="crm-checkbox-list crm-sortable-list" style="width: 600px; list-style: none; margin: 10px 0; max-height: 100px; overflow-y: auto;">
         {foreach from=$sortFields item="sortFieldLabel" key="sortFieldValue"}
-          <li id="defaultsort-{$sortFieldValue}">
-            {$form.defaultSort.$sortFieldValue.html}
+          <li id="defaultsort-{$sortFieldValue}" class="ui-state-default" style="padding: 5px;">
+            <i class='crm-i fa-arrows crm-grip' style="float:left; margin-right: 10px;"></i>
+            <span>{$form.defaultSort.$sortFieldValue.html}</span>
           </li>
         {/foreach}
       </ul>
@@ -108,7 +109,10 @@
         $('#default_sort_weight').val(params.toString());
       }
 
-      $("#defaultsort").on('sortupdate', getSorting);
+      $("#defaultsort").sortable({
+        placeholder: 'ui-state-highlight',
+        update: getSorting
+      });
     });
     {/literal}
   </script>
