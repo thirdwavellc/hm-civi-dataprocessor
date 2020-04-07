@@ -7,11 +7,10 @@
     <div class="crm-section">
       <div class="label">{$form.relationship_type_checkboxes.label}</div>
       <div class="content">
-        <ul id="relationship_types" class="crm-checkbox-list crm-sortable-list ui-sortable" style="width: 600px; list-style: none; margin: 10px 0; max-height: 300px; overflow-y: auto;">
+        <ul id="relationship_types" class="crm-checkbox-list crm-sortable-list" style="width: 600px;">
           {foreach from=$relationship_types item="relationshipType"}
-            <li id="relationship-type-{$relationshipType}" class="ui-state-default ui-corner-all" style="padding: 5px; border-radius: 0;">
-              <i class='crm-i fa-arrows crm-grip' style="float:left; margin-right: 10px;"></i>
-              <span>{$form.relationship_type_checkboxes.$relationshipType.html}</span>
+            <li id="relationship-type-{$relationshipType}">
+              {$form.relationship_type_checkboxes.$relationshipType.html}
             </li>
           {/foreach}
         </ul>
@@ -63,3 +62,25 @@
   });
   {/literal}
 </script>
+
+<style type="text/css">{literal}
+  .crm-container ul.crm-sortable-list li label::after {
+    display: block;
+    font-family: "FontAwesome";
+    content: "\f047";
+    position: absolute;
+    left: 6px;
+    top: 6px;
+    font-size: 10px;
+    color: grey;
+  }
+
+  .crm-container ul.crm-checkbox-list.crm-sortable-list li {
+    padding: 4px 7px;
+  }
+
+  .crm-container ul.crm-checkbox-list.crm-sortable-list li input {
+    left: 20px;
+    top: 4px;
+  }
+  {/literal}</style>

@@ -50,11 +50,10 @@
   <div class="crm-section">
     <div class="label">{ts}Default Sort{/ts}</div>
     <div class="content">
-      <ul id="defaultsort" class="crm-checkbox-list crm-sortable-list" style="width: 600px; list-style: none; margin: 10px 0; max-height: 100px; overflow-y: auto;">
+      <ul id="defaultsort" class="crm-checkbox-list crm-sortable-list" style="width: 600px;">
         {foreach from=$sortFields item="sortFieldLabel" key="sortFieldValue"}
-          <li id="defaultsort-{$sortFieldValue}" class="ui-state-default" style="padding: 5px;">
-            <i class='crm-i fa-arrows crm-grip' style="float:left; margin-right: 10px;"></i>
-            <span>{$form.defaultSort.$sortFieldValue.html}</span>
+          <li id="defaultsort-{$sortFieldValue}">
+            {$form.defaultSort.$sortFieldValue.html}
           </li>
         {/foreach}
       </ul>
@@ -116,6 +115,28 @@
     });
     {/literal}
   </script>
+
+  <style type="text/css">{literal}
+    .crm-container ul.crm-sortable-list li label::after {
+      display: block;
+      font-family: "FontAwesome";
+      content: "\f047";
+      position: absolute;
+      left: 6px;
+      top: 6px;
+      font-size: 10px;
+      color: grey;
+    }
+
+    .crm-container ul.crm-checkbox-list.crm-sortable-list li {
+      padding: 4px 7px;
+    }
+
+    .crm-container ul.crm-checkbox-list.crm-sortable-list li input {
+      left: 20px;
+      top: 4px;
+    }
+    {/literal}</style>
 
 {/if}
 
