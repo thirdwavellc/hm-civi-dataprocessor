@@ -46,7 +46,7 @@
     <div class="content">{$form.is_active.html}</div>
     <div class="clear"></div>
   </div>
-  {if $data_processor_id}
+  {if $data_processor_id && $sortFields && count($sortFields)}
   <div class="crm-section">
     <div class="label">{ts}Default Sort{/ts}</div>
     <div class="content">

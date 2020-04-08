@@ -257,7 +257,7 @@ class RelationshipsFieldOutputHandler extends AbstractFieldOutputHandler {
     $form->add('hidden', 'sorted_relationship_types', null, ['id' => 'sorted_relationship_types']);
     // Backwords compatibilty
     $form->assign('useSortIcon', false);
-    if (version_compare(CRM_Utils_System::version(), '5.15', '<')) {
+    if (version_compare(\CRM_Utils_System::version(), '5.15', '<')) {
       $form->assign('useSortIcon', true);
     }
 
