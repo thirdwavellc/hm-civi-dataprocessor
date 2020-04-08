@@ -255,6 +255,11 @@ class RelationshipsFieldOutputHandler extends AbstractFieldOutputHandler {
     $form->addCheckBox('relationship_type_checkboxes',  E::ts('Restrict to relationship'), $relationshipTypes);
     $form->assign('relationship_types', $relationshipTypes);
     $form->add('hidden', 'sorted_relationship_types', null, ['id' => 'sorted_relationship_types']);
+    // Backwords compatibilty
+    $form->assign('useSortIcon', false);
+    if (version_compare(CRM_Utils_System::version(), '5.15', '<')) {
+      $form->assign('useSortIcon', true);
+    }
 
     $form->add('checkbox', 'show_label', E::ts('Show relationship type'), false, false);
     $form->add('checkbox', 'include_deceased', E::ts('Include deceased'), false, false);

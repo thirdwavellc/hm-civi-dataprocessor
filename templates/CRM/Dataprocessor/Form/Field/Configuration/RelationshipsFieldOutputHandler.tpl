@@ -10,6 +10,9 @@
         <ul id="relationship_types" class="crm-checkbox-list crm-sortable-list" style="width: 600px;">
           {foreach from=$relationship_types item="relationshipType"}
             <li id="relationship-type-{$relationshipType}">
+              {if $useSortIcon}
+                <i class="crm-i fa-arrows crm-grip" style="float:left;"></i>
+              {/if}
               {$form.relationship_type_checkboxes.$relationshipType.html}
             </li>
           {/foreach}
@@ -84,4 +87,15 @@
     left: 20px;
     top: 4px;
   }
-  {/literal}</style>
+  {/literal}
+  {if $useSortIcon}{literal}
+  .crm-container ul.crm-checkbox-list.crm-sortable-list {
+    border: 1px solid #a5a5a5;
+    padding: 0px;
+    background-color: white;
+  }
+  .crm-container ul.crm-checkbox-list.crm-sortable-list li i {
+    margin-top: 3px;
+  }
+  {/literal}{/if}
+</style>
