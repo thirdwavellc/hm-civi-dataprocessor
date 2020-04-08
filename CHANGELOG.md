@@ -1,4 +1,4 @@
-# 1.5.0
+# Version 1.5.0
 
 * Added relationship type order by Relationship Field Type.
 * Added smart group contact data source.
