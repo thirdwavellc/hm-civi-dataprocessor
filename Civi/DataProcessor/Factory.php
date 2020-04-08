@@ -101,6 +101,7 @@ class Factory {
     $this->addDataSource('organization', new Definition('Civi\DataProcessor\Source\Contact\OrganizationSource'), E::ts('Organization'));
     $this->addDataSource('group', new Definition('Civi\DataProcessor\Source\Group\GroupSource'), E::ts('Group'));
     $this->addDataSource('group_contact', new Definition('Civi\DataProcessor\Source\Group\GroupContactSource'), E::ts('Contacts in a group'));
+    $this->addDataSource('group_contact_cache', new Definition('Civi\DataProcessor\Source\Group\SmartGroupContactSource'), E::ts('Contacts in a smart group'));
     $this->addDataSource('email', new Definition('Civi\DataProcessor\Source\Contact\EmailSource'), E::ts('E-mail'));
     $this->addDataSource('address', new Definition('Civi\DataProcessor\Source\Contact\AddressSource'), E::ts('Address'));
     $this->addDataSource('phone', new Definition('Civi\DataProcessor\Source\Contact\PhoneSource'), E::ts('Phone'));
