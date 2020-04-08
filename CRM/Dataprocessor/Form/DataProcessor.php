@@ -127,6 +127,11 @@ class CRM_Dataprocessor_Form_DataProcessor extends CRM_Core_Form {
     $this->addCheckBox('defaultSort',  E::ts('Default sort'), $sortOptions);
     $this->assign('sortFields', $sortFields);
     $this->add('hidden', 'default_sort_weight', null, ['id' => 'default_sort_weight']);
+    // Backwords compatibilty
+    $this->assign('defaultSortUseIcon', false);
+    if (version_compare(CRM_Utils_System::version(), '5.15', '<')) {
+      $this->assign('defaultSortUseIcon', true);
+    }
   }
 
   protected function addFilters() {

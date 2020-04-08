@@ -53,6 +53,9 @@
       <ul id="defaultsort" class="crm-checkbox-list crm-sortable-list" style="width: 600px;">
         {foreach from=$sortFields item="sortFieldLabel" key="sortFieldValue"}
           <li id="defaultsort-{$sortFieldValue}">
+            {if $defaultSortUseIcon}
+              <i class="crm-i fa-arrows crm-grip" style="float:left;"></i>
+            {/if}
             {$form.defaultSort.$sortFieldValue.html}
           </li>
         {/foreach}
