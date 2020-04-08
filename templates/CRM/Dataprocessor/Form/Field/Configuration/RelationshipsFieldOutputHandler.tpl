@@ -77,6 +77,7 @@
 
   .crm-container ul.crm-checkbox-list.crm-sortable-list li {
     padding: 4px 7px;
+    list-style: none;
   }
 
   .crm-container ul.crm-checkbox-list.crm-sortable-list li input {
