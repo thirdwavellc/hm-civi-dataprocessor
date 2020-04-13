@@ -104,7 +104,7 @@ class CRM_Contact_Selector_DataProcessorContactSearch {
    * @return String
    */
   protected function getDataProcessorName() {
-    $dataProcessorName = str_replace('civicrm/dataprocessor_contact_search/', '', CRM_Utils_System::getUrlPath());
+    $dataProcessorName = str_replace('civicrm/dataprocessor_contact_search/', '', CRM_Utils_System::currentPath());
     return $dataProcessorName;
   }
 
