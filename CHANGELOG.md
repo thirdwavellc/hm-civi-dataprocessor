@@ -1,5 +1,7 @@
 # Version 1.6.0 (not yet released)
 
+* Update to avoid using a system function that is being deprecated. (See !37)
+
 # Version 1.5.0
 
 * Added relationship type order by Relationship Field Type.
