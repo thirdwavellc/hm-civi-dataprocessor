@@ -77,7 +77,7 @@ class CRM_Contact_Form_DataProcessorContactSummaryTab extends CRM_DataprocessorS
    * @return String
    */
   protected function getDataProcessorName() {
-    $dataProcessorName = str_replace('civicrm/dataprocessor_contact_summary/', '', CRM_Utils_System::getUrlPath());
+    $dataProcessorName = str_replace('civicrm/dataprocessor_contact_summary/', '', CRM_Utils_System::currentPath());
     return $dataProcessorName;
   }
 
