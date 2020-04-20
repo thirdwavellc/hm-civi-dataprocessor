@@ -28,8 +28,8 @@ class CRM_DataprocessorSearch_Form_CaseSearch extends CRM_DataprocessorSearch_Fo
     $record = $row['record'];
     $idFieldName = $this->getIdFieldName();
     $contactIdFieldName = $this->getContactIdFieldName();
-    $caseId = $record[$idFieldName]->formattedValue;
-    $contactId = $record[$contactIdFieldName]->formattedValue;
+    $caseId = $record[$idFieldName];
+    $contactId = $record[$contactIdFieldName];
     return CRM_Utils_System::url('civicrm/contact/view/case', 'reset=1&action=view&id='.$caseId.'&cid='.$contactId.'&context=search');
   }
 
