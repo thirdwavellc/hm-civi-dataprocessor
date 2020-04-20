@@ -37,7 +37,7 @@ class CRM_DataprocessorSearch_Form_Search extends CRM_DataprocessorSearch_Form_A
    * @return String
    */
   protected function getDataProcessorName() {
-    $dataProcessorName = str_replace('civicrm/dataprocessor_search/', '', CRM_Utils_System::getUrlPath());
+    $dataProcessorName = str_replace('civicrm/dataprocessor_search/', '', CRM_Utils_System::currentPath());
     return $dataProcessorName;
   }
 

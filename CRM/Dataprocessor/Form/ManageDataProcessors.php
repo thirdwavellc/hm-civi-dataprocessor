@@ -59,7 +59,7 @@ class CRM_Dataprocessor_Form_ManageDataProcessors extends CRM_Core_Form {
 
     $session = CRM_Core_Session::singleton();
     $qfKey = CRM_Utils_Request::retrieve('qfKey', 'String', $this);
-    $urlPath = CRM_Utils_System::getUrlPath();
+    $urlPath = CRM_Utils_System::currentPath();
     $urlParams = 'force=1';
     if ($qfKey) {
       $urlParams .= "&qfKey=$qfKey";

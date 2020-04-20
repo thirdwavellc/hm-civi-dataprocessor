@@ -69,7 +69,7 @@ class CRM_Contact_Controller_DataProcessorContactSearch extends CRM_Core_Control
     if (!$this->_pages[$pageName] instanceof CRM_DataprocessorSearch_Form_ContactSearch) {
       $session = CRM_Core_Session::singleton();
       $qfKey = CRM_Utils_Request::retrieve('qfKey', 'String', $this);
-      $urlPath = CRM_Utils_System::getUrlPath();
+      $urlPath = CRM_Utils_System::currentPath();
       $urlParams = 'force=1';
       if ($qfKey) {
         $urlParams .= "&qfKey=$qfKey";
