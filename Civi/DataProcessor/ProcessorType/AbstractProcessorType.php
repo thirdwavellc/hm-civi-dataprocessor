@@ -188,7 +188,7 @@ abstract class AbstractProcessorType {
   public function loadedFromCache() {
     if ($this->dataSources && is_array($this->dataSources)) {
       foreach ($this->dataSources as $dataSource) {
-        $dataSource->sourceLoadedFromCache();
+        $dataSource['datasource']->sourceLoadedFromCache();
       }
     }
 
