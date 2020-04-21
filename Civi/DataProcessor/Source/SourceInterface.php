@@ -139,4 +139,10 @@ interface SourceInterface {
    */
   public function processConfiguration($submittedValues);
 
+  /**
+   * This function is called after a source is loaded from the cache.
+   * @return void
+   */
+  public function sourceLoadedFromCache();
+
 }

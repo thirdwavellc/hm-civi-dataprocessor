@@ -64,7 +64,7 @@ class CRM_Dataprocessor_BAO_DataProcessor extends CRM_Dataprocessor_DAO_DataProc
     $cache = CRM_Dataprocessor_Utils_Cache::singleton();
     if (!$force && $dataProcessorClass = $cache->get($cache_key)) {
       // Reset the default filter values as they might have been changed.
-      $dataProcessorClass->setDefaultFilterValues();
+      $dataProcessorClass->loadedFromCache();
       return $dataProcessorClass;
     }
     $factory = dataprocessor_get_factory();

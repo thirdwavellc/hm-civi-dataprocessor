@@ -93,4 +93,15 @@ class ACLContactSource extends ContactSource {
     }
   }
 
+  /**
+   * This function is called after a source is loaded from the cache.
+   * @return void
+   */
+  public function sourceLoadedFromCache() {
+    // reset the source. This completly looks up all the custom fields etc.. of this source
+    // ideally we only want to reset the aclWherePart.
+    $this->reset();
+    $this->initialize();
+  }
+
 }
