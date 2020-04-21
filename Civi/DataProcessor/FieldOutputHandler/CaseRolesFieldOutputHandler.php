@@ -73,7 +73,10 @@ class CaseRolesFieldOutputHandler extends AbstractFieldOutputHandler {
     if (!$this->caseIdSource) {
       throw new DataSourceNotFoundException(E::ts("Field %1 requires data source '%2' which could not be found. Did you rename or deleted the data source?", array(1=>$title, 2=>$configuration['datasource'])));
     }
-    $this->caseIdField = $this->caseIdSource->getAvailableFields()->getFieldSpecificationByName($configuration['field']);
+    $this->caseIdField = $this->caseIdSource->getAvailableFields()->getFieldSpecificationByAlias($configuration['field']);
+    if (!$this->caseIdField) {
+      $this->caseIdField = $this->caseIdSource->getAvailableFields()->getFieldSpecificationByName($configuration['field']);
+    }
     if (!$this->caseIdField) {
       throw new FieldNotFoundException(E::ts("Field %1 requires a field with the name '%2' in the data source '%3'. Did you change the data source type?", array(
         1 => $title,
@@ -107,7 +110,7 @@ class CaseRolesFieldOutputHandler extends AbstractFieldOutputHandler {
   public function formatField($rawRecord, $formattedRecord) {
     $caseId = $rawRecord[$this->caseIdField->alias];
     $sql = "SELECT c.id, c.display_name, t.label_a_b, r.relationship_type_id
-            FROM civicrm_contact c 
+            FROM civicrm_contact c
             INNER JOIN civicrm_relationship r ON r.contact_id_b = c.id
             INNER JOIN civicrm_relationship_type t on r.relationship_type_id = t.id
             WHERE c.is_deleted = 0 AND r.is_active = 1 AND r.case_id = %1";
@@ -137,8 +140,9 @@ class CaseRolesFieldOutputHandler extends AbstractFieldOutputHandler {
         $formattedValues[] = $link;
       }
     }
-    $output = new FieldOutput($rawValues);
+    $output = new HTMLFieldOutput($rawValues);
     $output->formattedValue = implode("<br>", $formattedValues);
+    $output->setHtmlOutput($output->formattedValue);
     return $output;
   }
 
