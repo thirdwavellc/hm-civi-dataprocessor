@@ -1,4 +1,4 @@
-# Version 1.6.0 (not yet released)
+# Version 1.6.0
 
 * Update to avoid using a system function that is being deprecated. (See !37)
 * Fixed issue with case role field.
