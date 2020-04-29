@@ -46,24 +46,6 @@
     <div class="content">{$form.is_active.html}</div>
     <div class="clear"></div>
   </div>
-  {if $data_processor_id && $sortFields && count($sortFields)}
-  <div class="crm-section">
-    <div class="label">{ts}Default Sort{/ts}</div>
-    <div class="content">
-      <ul id="defaultsort" class="crm-checkbox-list crm-sortable-list" style="width: 600px;">
-        {foreach from=$sortFields item="sortFieldLabel" key="sortFieldValue"}
-          <li id="defaultsort-{$sortFieldValue}">
-            {if $defaultSortUseIcon}
-              <i class="crm-i fa-arrows crm-grip" style="float:left;"></i>
-            {/if}
-            {$form.defaultSort.$sortFieldValue.html}
-          </li>
-        {/foreach}
-      </ul>
-    </div>
-    <div class="clear"></div>
-  </div>
-  {/if}
 </div>
 
   {if $data_processor_id}
@@ -71,6 +53,23 @@
       <tr>
         <td style="width: 50%;">
           {include file="CRM/Dataprocessor/Form/DataProcessorBlocks/Sources.tpl"}
+
+          {if $data_processor_id && $sortFields && count($sortFields)}
+            <h3>{ts}Default Sort{/ts}</h3>
+            <div class="crm-block crm-form-block crm-data-processor_outputs-block">
+                <ul id="defaultsort" class="crm-checkbox-list crm-sortable-list" style="width: 100%;">
+                  {foreach from=$sortFields item="sortFieldLabel" key="sortFieldValue"}
+                    <li id="defaultsort-{$sortFieldValue}">
+                      {if $defaultSortUseIcon}
+                        <i class="crm-i fa-arrows crm-grip" style="float:left;"></i>
+                      {/if}
+                      {$form.defaultSort.$sortFieldValue.html}
+                    </li>
+                  {/foreach}
+                </ul>
+            </div>
+          {/if}
+
           {include file="CRM/Dataprocessor/Form/DataProcessorBlocks/Outputs.tpl"}
         </td>
         <td style="width: 50%;">
