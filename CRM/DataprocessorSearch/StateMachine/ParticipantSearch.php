@@ -38,7 +38,7 @@ class CRM_DataprocessorSearch_StateMachine_ParticipantSearch extends CRM_Core_St
     }
 
     if ($result) {
-      $this->_pages['CRM_Participant_Form_Task_Result'] = NULL;
+      $this->_pages['CRM_Event_Form_Task_Result'] = NULL;
     }
 
     $this->addSequentialPages($this->_pages, $action);
