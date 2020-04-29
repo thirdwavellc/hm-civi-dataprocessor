@@ -1,7 +1,8 @@
 # Version 1.7.0 (not yet released)
 
 * Changed Age field so aggeragation is working correctly.
-* Changed Field Specification to allow more advanced mysql functions
+* Changed Field Specification to allow more advanced mysql functions.
+* Added Event Filter
 
 # Version 1.6.0
 
