@@ -2,7 +2,8 @@
 
 * Changed Age field so aggeragation is working correctly.
 * Changed Field Specification to allow more advanced mysql functions.
-* Added Event Filter
+* Added Event Filter.
+* Added Formatted Address field.
 
 # Version 1.6.0
 

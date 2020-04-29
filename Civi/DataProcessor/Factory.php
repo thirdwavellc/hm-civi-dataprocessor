@@ -152,6 +152,7 @@ class Factory {
     $this->addjoinType('simple_join', new Definition('Civi\DataProcessor\DataFlow\MultipleDataFlows\SimpleJoin'), E::ts('Select fields to join on'));
     $this->addjoinType('simple_non_required_join', new Definition('Civi\DataProcessor\DataFlow\MultipleDataFlows\SimpleNonRequiredJoin'), E::ts('Select fields to join on (not required)'));
     $this->addOutputHandler('raw', new Definition('Civi\DataProcessor\FieldOutputHandler\RawFieldOutputHandler'), E::ts('Raw field value'));
+    $this->addOutputHandler('formatted_address', new Definition('Civi\DataProcessor\FieldOutputHandler\FormattedAddressFieldOutputHandler'), E::ts('Formatted Address'));
     $this->addOutputHandler('number', new Definition('Civi\DataProcessor\FieldOutputHandler\NumberFieldOutputHandler'), E::ts('Formatted Number field value'));
     $this->addOutputHandler('date', new Definition('Civi\DataProcessor\FieldOutputHandler\DateFieldOutputHandler'), E::ts('Date field value'));
     $this->addOutputHandler('age', new Definition('Civi\DataProcessor\FieldOutputHandler\AgeFieldOutputHandler'), E::ts('Age field value'));
