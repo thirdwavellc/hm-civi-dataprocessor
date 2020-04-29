@@ -4,6 +4,7 @@
 * Changed Field Specification to allow more advanced mysql functions.
 * Added Event Filter.
 * Added Formatted Address field.
+* Added data source for note
 
 # Version 1.6.0
 
