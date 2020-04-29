@@ -56,6 +56,19 @@ class FieldSpecification implements SqlFieldSpecification {
 
   /**
    * @param $function
+   *
+   * Examples
+   *   YEAR
+   *
+   *   which is translated in
+   *   YEAR(`table`.`field`) AS `alias`
+   *
+   * Or you can use %1 for the name of the table and %2 for the name of the field.
+   * Such as:
+   *   CASE WHEN YEAR(`%1`.`%2`) == 2020 THEN 1 ELSE 0 END
+   *
+   *   which is translated in
+   *   (CASE WHEN YEAR(`table`.`field`) == 2020 THEN 1 ELSE 0 END) as `alias`
    */
   public function setMySqlFunction($function) {
     $this->sqlValueFormatFunction = $function;
@@ -70,7 +83,11 @@ class FieldSpecification implements SqlFieldSpecification {
    */
   public function getSqlSelectStatement($table_alias) {
     if ($this->sqlValueFormatFunction) {
-      return "{$this->sqlValueFormatFunction} (`{$table_alias}`.`{$this->name}`) AS `{$this->alias}`";
+      if (stripos($this->sqlValueFormatFunction, '%1') >= 0 && stripos($this->sqlValueFormatFunction, '%2') >= 0) {
+        return "(".str_replace(['%1', '%2'], [$table_alias, $this->name], $this->sqlValueFormatFunction). ") AS `{$this->alias}`";
+      } else {
+        return "{$this->sqlValueFormatFunction} (`{$table_alias}`.`{$this->name}`) AS `{$this->alias}`";
+      }
     }
     return "`{$table_alias}`.`{$this->name}` AS `{$this->alias}`";
   }
@@ -99,7 +116,11 @@ class FieldSpecification implements SqlFieldSpecification {
    */
   public function getSqlGroupByStatement($table_alias) {
     if ($this->sqlValueFormatFunction) {
-      return "{$this->sqlValueFormatFunction} (`{$table_alias}`.`{$this->name}`)";
+      if (stripos($this->sqlValueFormatFunction, '%1') >= 0 && stripos($this->sqlValueFormatFunction, '%2') >= 0) {
+        return "(".str_replace(['%1', '%2'], [$table_alias, $this->name], $this->sqlValueFormatFunction). ")";
+      } else {
+        return "{$this->sqlValueFormatFunction} (`{$table_alias}`.`{$this->name}`)";
+      }
     }
     return "`{$table_alias}`.`{$this->name}`";
   }

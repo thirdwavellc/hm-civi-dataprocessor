@@ -29,7 +29,7 @@ class AgeFieldOutputHandler extends AbstractSimpleFieldOutputHandler implements 
    */
   public function initialize($alias, $title, $configuration) {
     parent::initialize($alias, $title, $configuration);
-    $this->inputFieldSpec->setMySqlFunction('DATE');
+    $this->inputFieldSpec->setMySqlFunction('CASE WHEN DATE(CONCAT(YEAR(CURRENT_DATE()), \'-\', MONTH(`%1`.`%2`), \'-\', DAYOFMONTH(`%1`.`%2`))) BETWEEN DATE_FORMAT(CURRENT_DATE(), \'%Y-01-01\') AND CURRENT_DATE() THEN YEAR(CURRENT_DATE()) - YEAR(`%1`.`%2`) ELSE YEAR(CURRENT_DATE()) - YEAR(`%1`.`%2`) -1 END');
     $this->isAggregateField = isset($configuration['is_aggregate']) ? $configuration['is_aggregate'] : false;
     if ($this->isAggregateField) {
       $dataFlow = $this->dataSource->ensureField($this->getAggregateFieldSpec());
@@ -91,10 +91,21 @@ class AgeFieldOutputHandler extends AbstractSimpleFieldOutputHandler implements 
    * @return \Civi\DataProcessor\FieldOutputHandler\FieldOutput
    */
   public function formatField($rawRecord, $formattedRecord) {
-    $output = new FieldOutput();
-    if ($rawRecord[$this->inputFieldSpec->alias]) {
-      $date = new \DateTime($rawRecord[$this->inputFieldSpec->alias]);
+    $value = $rawRecord[$this->inputFieldSpec->alias];
+    $output = new FieldOutput($value);
+    // Check whether the value is a number.
+    // When it is a number the age has been calculated in the database.
+    // If not we have to calculate the age.
+    if ($value !== null && is_numeric($value) && strlen($value) != 10) {
+      // We check for strlen as civicrm format is yyyymmdd which is numeric but actually
+      // a format.
+      $output->formattedValue = $value;
+    } elseif ($value !== null) {
       $today = new \DateTime();
+      $date = new \DateTime($value);
+      if (strlen($value) == 10 && is_numeric($value)) {
+        $date = \DateTime::createFromFormat('Ymd', $value);
+      }
       $age = $today->diff($date);
       $output->rawValue = $age->format('%y');
       $output->formattedValue = $output->rawValue;
@@ -141,13 +152,21 @@ class AgeFieldOutputHandler extends AbstractSimpleFieldOutputHandler implements 
    * @return mixed
    */
   public function formatAggregationValue($value) {
-    $availableFunctions = $this->getFunctions();
-    if ($this->function && isset($availableFunctions[$this->function]) && $value) {
+    // Check whether the value is a number.
+    // When it is a number the age has been calculated in the database.
+    // If not we have to calculate the age.
+    if (is_numeric($value) && strlen($value) != 10) {
+      // We check for strlen as civicrm format is yyyymmdd which is numeric but actually
+      // a format.
+      return $value;
+    } else {
+      $today = new \DateTime();
       $date = new \DateTime($value);
-      $value = $date->format($availableFunctions[$this->function]['php_date_format']);
-      if (isset($availableFunctions[$this->function]['php_add'])) {
-        $value = $value + $availableFunctions[$this->function]['php_add'];
+      if (strlen($value) == 10 && is_numeric($value)) {
+        $date = \DateTime::createFromFormat('Ymd', $value);
       }
+      $age = $today->diff($date);
+      return $age->format('%y');
     }
     return $value;
   }
