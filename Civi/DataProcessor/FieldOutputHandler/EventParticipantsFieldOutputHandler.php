@@ -25,20 +25,6 @@ class EventParticipantsFieldOutputHandler extends AbstractSimpleFieldOutputHandl
   protected $role_ids = array();
 
   /**
-   * @return \Civi\DataProcessor\DataSpecification\FieldSpecification
-   */
-  public function getOutputFieldSpecification() {
-    return $this->outputFieldSpec;
-  }
-
-  /**
-   * @return \Civi\DataProcessor\DataSpecification\FieldSpecification
-   */
-  public function getSortableInputFieldSpec() {
-    return $this->inputFieldSpec;
-  }
-
-  /**
    * Returns the data type of this field
    *
    * @return String

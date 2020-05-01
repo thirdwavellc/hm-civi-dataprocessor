@@ -71,9 +71,9 @@ class GroupsOfContactFieldOutputHandler extends AbstractFieldOutputHandler {
     if (!$this->contactIdSource) {
       throw new DataSourceNotFoundException(E::ts("Field %1 requires data source '%2' which could not be found. Did you rename or deleted the data source?", array(1=>$title, 2=>$configuration['datasource'])));
     }
-    $this->contactIdField = $this->caseIdSource->getAvailableFields()->getFieldSpecificationByAlias($configuration['field']);
+    $this->contactIdField = $this->contactIdSource->getAvailableFields()->getFieldSpecificationByAlias($configuration['field']);
     if (!$this->contactIdField) {
-      $this->contactIdField = $this->caseIdSource->getAvailableFields()->getFieldSpecificationByName($configuration['field']);
+      $this->contactIdField = $this->contactIdSource->getAvailableFields()->getFieldSpecificationByName($configuration['field']);
     }
     if (!$this->contactIdField) {
       throw new FieldNotFoundException(E::ts("Field %1 requires a field with the name '%2' in the data source '%3'. Did you change the data source type?", array(
