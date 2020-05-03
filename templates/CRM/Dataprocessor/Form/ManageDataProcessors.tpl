@@ -91,8 +91,11 @@
                         <td class="crm-dataprocessor-navigation">
                             {if $data_processor.navigation}
                                 {foreach from=$data_processor.navigation item=navigationItem}
-                                    <a href="{$navigationItem.url}"
-                                       class="action-item crm-hover-button" title="{$navigationItem.title}">{$navigationItem.type}</a>
+                                  {if $navigationItem.url}
+                                    <a href="{$navigationItem.url}" class="action-item" title="{$navigationItem.title}">{$navigationItem.type}</a>
+                                  {else}
+                                    <span class="">{$navigationItem.type}</span>
+                                  {/if}
                                 {/foreach}
                             {/if}
                         </td>
