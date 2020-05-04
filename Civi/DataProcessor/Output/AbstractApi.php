@@ -375,13 +375,7 @@ abstract class AbstractApi implements API_ProviderInterface, EventSubscriberInte
       $records = $dataProcessorClass->getDataFlow()->allRecords();
       $values = array();
       foreach($records as $idx => $record) {
-        foreach($record as $fieldname => $field) {
-          if ($field instanceof arrayFieldOutput) {
-            $values[$idx][$fieldname] = $field->getArrayData();
-          } else {
-            $values[$idx][$fieldname] = $field->formattedValue;
-          }
-        }
+        $values[$idx] = $this->getRecordData($record, $dataProcessorClass);
       }
       $return = array(
         'values' => $values,
@@ -397,6 +391,26 @@ abstract class AbstractApi implements API_ProviderInterface, EventSubscriberInte
 
       return $return;
     }
+  }
+
+  /**
+   * Process a record from the data processor the api data.
+   *
+   * @param $record
+   * @param \Civi\DataProcessor\ProcessorType\AbstractProcessorType $dataProcessorClass
+   *
+   * @return array
+   */
+  protected function getRecordData($record, AbstractProcessorType $dataProcessorClass) {
+    $data = array();
+    foreach($record as $fieldname => $field) {
+      if ($field instanceof arrayFieldOutput) {
+        $data[$fieldname] = $field->getArrayData();
+      } else {
+        $data[$fieldname] = $field->formattedValue;
+      }
+    }
+    return $data;
   }
 
   /**
