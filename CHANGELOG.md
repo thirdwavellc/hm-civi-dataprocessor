@@ -6,6 +6,7 @@
 * Added Formatted Address field.
 * Added data source for note
 * Refactored API Output to an Abstract Class so that it is easy for extension developers to develop their own implementation.
+* Added Markup/Html Field Value output field handler.
 
 # Version 1.6.0
 
