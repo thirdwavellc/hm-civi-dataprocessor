@@ -7,6 +7,7 @@
 namespace Civi\DataProcessor\Source;
 
 use Civi\DataProcessor\DataFlow\MultipleDataFlows\JoinInterface;
+use Civi\DataProcessor\DataSpecification\FieldExistsException;
 use Civi\DataProcessor\DataSpecification\FieldSpecification;
 use Civi\DataProcessor\ProcessorType\AbstractProcessorType;
 
@@ -134,8 +135,12 @@ abstract class AbstractSource implements SourceInterface {
   public function ensureField(FieldSpecification $field) {
     $field = $this->getAvailableFields()->getFieldSpecificationByAlias($field->alias);
     if ($field) {
-      $this->dataFlow->getDataSpecification()
-        ->addFieldSpecification($field->name, $field);
+      try {
+        $this->dataFlow->getDataSpecification()
+          ->addFieldSpecification($field->name, $field);
+      } catch (FieldExistsException $e) {
+        // Do nothing.
+      }
     }
     return $this->dataFlow;
   }

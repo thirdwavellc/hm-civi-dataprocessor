@@ -6,6 +6,7 @@
 
 namespace Civi\DataProcessor\FilterHandler;
 
+use Civi\DataProcessor\DataFlow\InMemoryDataFlow;
 use Civi\DataProcessor\DataFlow\SqlDataFlow;
 use Civi\DataProcessor\DataSpecification\CustomFieldSpecification;
 use Civi\DataProcessor\Exception\InvalidConfigurationException;
@@ -42,6 +43,9 @@ class SimpleSqlFilter extends AbstractFieldFilterHandler {
         $this->whereClause = new SqlDataFlow\SimpleWhereClause($dataFlow->getName(), $this->inputFieldSpecification->name, $filter['op'], $filter['value'], $this->inputFieldSpecification->type);
       }
       $dataFlow->addWhereClause($this->whereClause);
+    } elseif ($dataFlow && $dataFlow instanceof InMemoryDataFlow && !$this->isMultiValueField()) {
+      $this->filterClass = new InMemoryDataFlow\SimpleFilter($this->inputFieldSpecification->name, $filter['op'], $filter['value']);
+      $dataFlow->addFilter($this->filterClass);
     }
   }
 

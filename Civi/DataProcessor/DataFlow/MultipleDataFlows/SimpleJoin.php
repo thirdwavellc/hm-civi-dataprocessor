@@ -10,6 +10,7 @@ use Civi\DataProcessor\DataFlow\AbstractDataFlow;
 use Civi\DataProcessor\DataFlow\CombinedDataFlow\CombinedSqlDataFlow;
 use Civi\DataProcessor\DataFlow\SqlDataFlow;
 use Civi\DataProcessor\DataFlow\SqlTableDataFlow;
+use Civi\DataProcessor\DataSpecification\FieldExistsException;
 use Civi\DataProcessor\ProcessorType\AbstractProcessorType;
 use Civi\DataProcessor\Source\SourceInterface;
 
@@ -348,8 +349,8 @@ class SimpleJoin implements JoinInterface, SqlJoinInterface {
       foreach ($left_record_set as $left_index => $left_record) {
         $is_record_present_in_right_set = FALSE;
         foreach ($right_record_set as $right_index => $right_record) {
-          if (isset($left_record[$this->left_field_alias]) && isset($right_record[$this->right_field_alias])) {
-            if ($left_record[$this->left_field_alias] == $right_record[$this->right_field_alias]) {
+          if (isset($left_record[$this->right_field_alias]) && isset($right_record[$this->left_field_alias])) {
+            if ($left_record[$this->right_field_alias] == $right_record[$this->left_field_alias]) {
               $joined_record_set[] = array_merge($left_record, $right_record);
               $is_record_present_in_right_set = TRUE;
             }
@@ -363,8 +364,8 @@ class SimpleJoin implements JoinInterface, SqlJoinInterface {
       foreach ($right_record_set as $right_index => $right_record) {
         $is_record_present_in_left_set = FALSE;
         foreach ($left_record_set as $left_index => $left_record) {
-          if (isset($left_record[$this->left_field_alias]) && isset($right_record[$this->right_field_alias])) {
-            if ($left_record[$this->left_field_alias] == $right_record[$this->right_field_alias]) {
+          if (isset($left_record[$this->right_field_alias]) && isset($right_record[$this->left_field_alias])) {
+            if ($left_record[$this->right_field_alias] == $right_record[$this->left_field_alias]) {
               $joined_record_set[] = array_merge($left_record, $right_record);
               $is_record_present_in_left_set = TRUE;
             }
@@ -395,14 +396,15 @@ class SimpleJoin implements JoinInterface, SqlJoinInterface {
       $table = $rightDataFlow->getTableAlias();
       $this->rightClause = new SqlDataFlow\OrClause();
       foreach ($left_record_set as $left_record) {
-        if (isset($left_record[$this->left_field_alias])) {
-          $value = $left_record[$this->left_field_alias];
-          $this->rightClause->addWhereClause(new SqlDataFlow\SimpleWhereClause($table, $this->right_field, '=', $value));
+        if (isset($left_record[$this->right_field_alias])) {
+          $value = $left_record[$this->right_field_alias];
+          $this->rightClause->addWhereClause(new SqlDataFlow\SimpleWhereClause($table, $this->leftFieldSpec->name, '=', $value));
 
           // Make sure the join field is also available in the select statement of the query.
-          if (!$rightDataFlow->getDataSpecification()->doesFieldExist($this->right_field_alias)) {
-            $rightDataFlow->getDataSpecification()
-              ->addFieldSpecification($this->right_field_alias, $this->rightFieldSpec);
+          try {
+            $rightDataFlow->getDataSpecification()->addFieldSpecification($this->left_field_alias, $this->leftFieldSpec);
+          } catch (FieldExistsException $e) {
+            // Do nothing.
           }
         }
       }

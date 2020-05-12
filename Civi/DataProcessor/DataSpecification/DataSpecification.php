@@ -33,11 +33,6 @@ class DataSpecification {
       throw new FieldExistsException($name);
     }
     $this->fields[] = $field;
-
-    /*if (isset($this->fields[$name])) {
-      throw new FieldExistsException($name);
-    }
-    $this->fields[$name] = $field;*/
     return $this;
   }
 

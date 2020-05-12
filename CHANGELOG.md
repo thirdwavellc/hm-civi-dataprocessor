@@ -7,6 +7,7 @@
 * Added data source for note
 * Refactored API Output to an Abstract Class so that it is easy for extension developers to develop their own implementation.
 * Added Markup/Html Field Value output field handler.
+* Improved In Memory Dataflow so that joins and filters would work.
 
 # Version 1.6.0
 
