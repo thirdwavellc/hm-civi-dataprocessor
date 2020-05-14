@@ -10,6 +10,7 @@
 * Added Markup/Html Field Value output field handler.
 * Improved In Memory Dataflow so that joins and filters would work.
 * Improved Contact Summary Tab output so it includes a count.
+* Fixed caching issues on the contact data source #31.
 
 # Version 1.6.0
 
