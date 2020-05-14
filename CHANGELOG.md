@@ -1,5 +1,6 @@
 # Version 1.7.0 (not yet released)
 
+* Fixed #35: Custom Fields on a tab are also available as field now.
 * Changed Age field so aggeragation is working correctly.
 * Changed Field Specification to allow more advanced mysql functions.
 * Added Event Filter.
