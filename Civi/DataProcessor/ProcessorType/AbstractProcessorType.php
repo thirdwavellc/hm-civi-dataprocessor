@@ -181,11 +181,17 @@ abstract class AbstractProcessorType {
   }
 
   /**
-   * Sets the default filter values for all filters.
+   * Sets the default filter values for all filters and calls loadFromCache on a source.
    *
    * @throws \Exception
    */
-  public function setDefaultFilterValues() {
+  public function loadedFromCache() {
+    if ($this->dataSources && is_array($this->dataSources)) {
+      foreach ($this->dataSources as $dataSource) {
+        $dataSource['datasource']->sourceLoadedFromCache();
+      }
+    }
+
     if ($this->filterHandlers && is_array($this->filterHandlers)) {
       foreach ($this->filterHandlers as $filterHandler) {
         $filterHandler->setDefaultFilterValues();

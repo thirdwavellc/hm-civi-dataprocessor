@@ -46,6 +46,24 @@ class UnionQueryDataFlow extends SqlDataFlow implements MultipleSourceDataFlows 
     $this->sourceDataFlowDescriptions[] = $dataFlowDescription;
   }
 
+  /**
+   * Removes a source data flow
+   *
+   * @param \Civi\DataProcessor\DataFlow\MultipleDataFlows\DataFlowDescription $dataFlowDescription
+   * @return void
+   * @throws \Civi\DataProcessor\DataFlow\InvalidFlowException
+   */
+  public function removeSourceDataFlow(DataFlowDescription $dataFlowDescription) {
+    if (!$dataFlowDescription->getDataFlow() instanceof SqlDataFlow) {
+      throw new InvalidFlowException();
+    }
+    foreach($this->sourceDataFlowDescriptions as $idx => $sourceDataFlowDescription) {
+      if ($sourceDataFlowDescription === $dataFlowDescription) {
+        unset($this->sourceDataFlowDescriptions[$idx]);
+      }
+    }
+  }
+
   public function getName() {
     return $this->name;
   }

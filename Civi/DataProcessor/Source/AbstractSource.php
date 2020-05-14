@@ -302,4 +302,12 @@ abstract class AbstractSource implements SourceInterface {
     return $configuration;
   }
 
+  /**
+   * This function is called after a source is loaded from the cache.
+   * @return void
+   */
+  public function sourceLoadedFromCache() {
+
+  }
+
 }

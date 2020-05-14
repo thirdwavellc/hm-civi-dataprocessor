@@ -7,6 +7,7 @@
 namespace Civi\DataProcessor\Source\Contact;
 
 use Civi\DataProcessor\DataFlow\MultipleDataFlows\DataFlowDescription;
+use Civi\DataProcessor\DataFlow\MultipleDataFlows\MultipleSourceDataFlows;
 use Civi\DataProcessor\DataFlow\MultipleDataFlows\PureSqlStatementJoin;
 use Civi\DataProcessor\DataFlow\SqlDataFlow\AndClause;
 use Civi\DataProcessor\DataFlow\SqlDataFlow\OrClause;
@@ -21,8 +22,10 @@ class ACLContactSource extends ContactSource {
    */
   protected $dataFlow;
 
-  public function initialize() {
+  protected $aclJoins = [];
+  protected $aclWhereClause = null;
 
+  public function initialize() {
     $tables = array();
     $whereTables = array();
     $where = \CRM_ACL_API::whereClause(\CRM_ACL_API::VIEW, $tables, $whereTables, NULL, FALSE, TRUE, FALSE);
@@ -48,12 +51,13 @@ class ACLContactSource extends ContactSource {
     $joinCriteria = str_replace('contact_a', $this->primaryDataFlow->getName(), $joinCriteria);
     $join = new PureSqlStatementJoin(' JOIN ' . $tableAndAlias . ' ON ' . $joinCriteria);
     $this->additionalDataFlowDescriptions[$tableAndAlias] = new DataFlowDescription($aclTable, $join);
+    $this->aclJoins[] = $tableAndAlias;
   }
 
   protected function addAclWhere($where) {
     $where = str_replace('contact_a', $this->primaryDataFlow->getName(), $where);
-    $clause = new PureSqlStatementClause($where);
-    $this->primaryDataFlow->addWhereClause($clause);
+    $this->aclWhereClause = new PureSqlStatementClause($where);
+    $this->primaryDataFlow->addWhereClause($this->aclWhereClause);
   }
 
   /**
@@ -90,6 +94,28 @@ class ACLContactSource extends ContactSource {
       }
     } else {
       parent::addFilter($filter_field_alias, $op, $values);
+    }
+  }
+
+  /**
+   * This function is called after a source is loaded from the cache.
+   * @return void
+   */
+  public function sourceLoadedFromCache() {
+    if ($this->primaryDataFlow && $this->aclWhereClause) {
+      $this->primaryDataFlow->removeWhereClause($this->aclWhereClause);
+    }
+    $this->aclWhereClause = null;
+    if (count($this->aclJoins)) {
+      foreach($this->aclJoins as $tableAndAlias) {
+        if (isset($this->additionalDataFlowDescriptions[$tableAndAlias])) {
+          if ($this->dataFlow && $this->dataFlow instanceof MultipleSourceDataFlows) {
+            $this->dataFlow->removeSourceDataFlow($this->additionalDataFlowDescriptions[$tableAndAlias]);
+          }
+          unset($this->additionalDataFlowDescriptions[$tableAndAlias]);
+        }
+      }
+      $this->aclJoins = [];
     }
   }
 
