@@ -217,8 +217,9 @@ class ContactInGroupFilter extends AbstractFieldFilterHandler {
     $api_params['is_active'] = 1;
 
     if ($this->parent_group_id) {
-      $api_params['parents']['='] = $this->parent_group_id;
-    }
+         $childGroupIds = \CRM_Contact_BAO_GroupNesting::getDescendentGroupIds([$this->parent_group_id], FALSE);
+         $api_params['parents']['IN'] = array_merge( [ $this->parent_group_id ] , $childGroupIds);
+         }
 
     $form->add('select', "{$fieldSpec->alias}_op", E::ts('Operator:'), $operations, true, [
       'style' => $minWidth,
