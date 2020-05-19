@@ -1,4 +1,4 @@
-# Version 1.7.0 (not yet released)
+# Version 1.7.0
 
 * Fixed #35: Custom Fields on a tab are also available as field now.
 * Changed Age field so aggeragation is working correctly.
