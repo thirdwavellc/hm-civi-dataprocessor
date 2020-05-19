@@ -11,6 +11,7 @@
 * Improved In Memory Dataflow so that joins and filters would work.
 * Improved Contact Summary Tab output so it includes a count.
 * Fixed caching issues on the contact data source #31.
+* Fixed bugs with ContactInGroup filter #33
 
 # Version 1.6.0
 
