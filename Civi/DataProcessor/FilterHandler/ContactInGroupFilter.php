@@ -51,8 +51,9 @@ class ContactInGroupFilter extends AbstractFieldFilterHandler {
     $this->resetFilter();
     $dataFlow  = $this->dataSource->ensureField($this->inputFieldSpecification);
     $group_ids = $filter['value'];
+
     if (!is_array($group_ids)) {
-      $group_ids = array($group_ids);
+      $group_ids = explode(",", $group_ids);
     }
 
     // If the groups are smartgroups (saved searches) they may be out of date.
@@ -207,16 +208,18 @@ class ContactInGroupFilter extends AbstractFieldFilterHandler {
 
     $sizeClass = 'huge';
     $minWidth = 'min-width: 250px;';
+
     if ($size =='compact') {
       $sizeClass = 'medium';
       $minWidth = '';
     }
 
     $api_params['is_active'] = 1;
+
     if ($this->parent_group_id) {
-      $childGroupIds = \CRM_Contact_BAO_GroupNesting::getDescendentGroupIds([$this->parent_group_id], FALSE);
-      $api_params['id']['IN'] = $childGroupIds;
-    }
+         $childGroupIds = \CRM_Contact_BAO_GroupNesting::getDescendentGroupIds([$this->parent_group_id], FALSE);
+         $api_params['parents']['IN'] = array_merge( [ $this->parent_group_id ] , $childGroupIds);
+         }
 
     $form->add('select', "{$fieldSpec->alias}_op", E::ts('Operator:'), $operations, true, [
       'style' => $minWidth,
@@ -224,6 +227,7 @@ class ContactInGroupFilter extends AbstractFieldFilterHandler {
       'multiple' => FALSE,
       'placeholder' => E::ts('- select -'),
     ]);
+
     $form->addEntityRef( "{$fieldSpec->alias}_value", NULL, array(
       'placeholder' => E::ts('Select a group'),
       'entity' => 'Group',
@@ -238,6 +242,7 @@ class ContactInGroupFilter extends AbstractFieldFilterHandler {
     } else {
       $defaults[$alias . '_op'] = key($operations);
     }
+
     if (isset($defaultFilterValue['value'])) {
       $defaults[$alias.'_value'] = $defaultFilterValue['value'];
     }
