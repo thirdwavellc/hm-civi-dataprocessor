@@ -159,8 +159,9 @@ class CRM_Dataprocessor_Utils_Importer {
    * Import a data processor
    *
    * @param $data
-   * @param $filename
-   * @param $data_processor_id
+   * @param string|null $filename
+   * @param int|null $data_processor_id
+   * @param int
    *
    * @return mixed
    * @throws \Exception

@@ -1,5 +1,7 @@
 # Version 1.8.0 (not yet released)
 
+* Fixed issue with cloning data processors.
+
 # Version 1.7.0
 
 * Fixed #35: Custom Fields on a tab are also available as field now.
