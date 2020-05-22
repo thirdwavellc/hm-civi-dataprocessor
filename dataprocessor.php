@@ -78,6 +78,20 @@ function dataprocessor_civicrm_alterAPIPermissions($entity, $action, &$params, &
  * @link https://docs.civicrm.org/dev/en/latest/hooks/hook_civicrm_alterMenu/
  */
 function dataprocessor_civicrm_alterMenu(&$items) {
+  // This hook is called BEFORE civicrm_entityTypes so DataProcessor API calls will fail with missing BAO in
+  //   some cases (eg. running cv flush from cli)
+  // So we manually run it here before calling alterMenu function
+  $entityTypes = [];
+  _dataprocessor_civix_civicrm_entityTypes($entityTypes);
+  foreach ($entityTypes as $entityType) {
+    CRM_Core_DAO_AllCoreTables::registerEntityType(
+      $entityType['name'],
+      $entityType['class'],
+      $entityType['table'],
+      $entityType['fields_callback'] ?? NULL,
+      $entityType['links_callback'] ?? NULL
+    );
+  }
   \Civi\DataProcessor\Output\UIOutputHelper::alterMenu($items);
 }
 
@@ -262,17 +276,6 @@ function dataprocessor_civicrm_alterSettingsFolders(&$metaDataFolders = NULL) {
 function dataprocessor_civicrm_entityTypes(&$entityTypes) {
   _dataprocessor_civix_civicrm_entityTypes($entityTypes);
 }
-
-// --- Functions below this ship commented out. Uncomment as required. ---
-
-/**
- * Implements hook_civicrm_preProcess().
- *
- * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_preProcess
- *
-function dataprocessor_civicrm_preProcess($formName, &$form) {
-
-} // */
 
 /**
  * Implements hook_civicrm_navigationMenu().
