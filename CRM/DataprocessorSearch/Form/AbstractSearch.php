@@ -303,6 +303,7 @@ abstract class CRM_DataprocessorSearch_Form_AbstractSearch extends CRM_Dataproce
     $this->pager = new CRM_Utils_Pager($pagerParams);
     $this->assign('pager', $this->pager);
     $this->controller->set('rowCount', $this->dataProcessorClass->getDataFlow()->recordCount());
+    $showLink = false;
 
     $i=0;
     try {
@@ -330,6 +331,7 @@ abstract class CRM_DataprocessorSearch_Form_AbstractSearch extends CRM_Dataproce
         if ($link) {
           $row['url'] = $link;
           $row['link_text'] = $this->linkText($row);
+          $showLink = true;
         }
 
         if (isset($row['checkbox'])) {
@@ -358,6 +360,7 @@ abstract class CRM_DataprocessorSearch_Form_AbstractSearch extends CRM_Dataproce
     $this->addElement('checkbox', 'toggleSelect', NULL, NULL, ['class' => 'select-rows']);
     $this->assign('rows', $rows);
     $this->assign('no_result_text', $this->getNoResultText());
+    $this->assign('showLink', $showLink);
     $this->assign('debug_info', $this->dataProcessorClass->getDataFlow()->getDebugInformation());
     if ($this->usePrevNextCache()) {
       $cacheKey = "civicrm search {$this->controller->_key}";

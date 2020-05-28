@@ -25,6 +25,10 @@ class CRM_DataprocessorSearch_Form_CaseSearch extends CRM_DataprocessorSearch_Fo
    * @return false|string
    */
   protected function link($row) {
+    if (empty($this->dataProcessorOutput['configuration']['show_manage_case'])) {
+      return false;
+    }
+
     $record = $row['record'];
     $idFieldName = $this->getIdFieldName();
     $contactIdFieldName = $this->getContactIdFieldName();

@@ -63,6 +63,7 @@ class CRM_DataprocessorSearch_CaseSearch implements UIFormOutputInterface {
     $form->add('wysiwyg', 'help_text', E::ts('Help text for this search'), array('rows' => 6, 'cols' => 80));
     $form->add('text', 'no_result_text', E::ts('No result text'), array('class' => 'huge'), false);
     $form->add('checkbox', 'expanded_search', E::ts('Expand criteria form initially'));
+    $form->add('checkbox', 'show_manage_case', E::ts('Show manage case column'));
 
     // navigation field
     $navigationOptions = $navigation->getNavigationOptions();
@@ -104,6 +105,9 @@ class CRM_DataprocessorSearch_CaseSearch implements UIFormOutputInterface {
         if (isset($output['configuration']['expanded_search'])) {
           $defaults['expanded_search'] = $output['configuration']['expanded_search'];
         }
+        if (isset($output['configuration']['show_manage_case'])) {
+          $defaults['show_manage_case'] = $output['configuration']['show_manage_case'];
+        }
       }
     }
     if (!isset($defaults['permission'])) {
@@ -140,6 +144,7 @@ class CRM_DataprocessorSearch_CaseSearch implements UIFormOutputInterface {
     $configuration['hide_id_fields'] = $submittedValues['hide_id_fields'];
     $configuration['help_text'] = $submittedValues['help_text'];
     $configuration['expanded_search'] = isset($submittedValues['expanded_search']) ? $submittedValues['expanded_search'] : false;
+    $configuration['show_manage_case'] = isset($submittedValues['show_manage_case']) ? $submittedValues['show_manage_case'] : false;
     return $configuration;
   }
 
