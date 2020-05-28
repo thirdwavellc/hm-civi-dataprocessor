@@ -233,6 +233,7 @@ abstract class AbstractApi implements API_ProviderInterface, EventSubscriberInte
         'title' => $fieldSpec->title,
         'description' => '',
         'type' => $type,
+        'data_type' => $fieldSpec->type,
         'api.required' => $filterHandler->isRequired(),
         'api.aliases' => [],
         'api.filter' => TRUE,
@@ -248,7 +249,23 @@ abstract class AbstractApi implements API_ProviderInterface, EventSubscriberInte
         $fields[$fieldSpec->alias] = array_merge($fields[$fieldSpec->alias], $field);
       }
     }
+
+    // Let child classes alter the fields.
+    $fields = $this->alterFields($fields);
+
     $this->cache->set($cacheKey, $fields);
+    return $fields;
+  }
+
+  /**
+   * This function could be overriden by child classes
+   * to alter the getFields.
+   *
+   * @param array $fields
+   *
+   * @return array
+   */
+  protected function alterFields($fields) {
     return $fields;
   }
 
