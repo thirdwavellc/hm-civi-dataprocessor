@@ -164,6 +164,7 @@ class Factory {
     $this->addOutputHandler('option_label', new Definition('Civi\DataProcessor\FieldOutputHandler\OptionFieldOutputHandler'), E::ts('Option label'));
     $this->addOutputHandler('relationships', new Definition('Civi\DataProcessor\FieldOutputHandler\RelationshipsFieldOutputHandler'), E::ts('Relationships'));
     $this->addOutputHandler('case_roles', new Definition('Civi\DataProcessor\FieldOutputHandler\CaseRolesFieldOutputHandler'), E::ts('Case Roles'));
+    $this->addOutputHandler('manage_case_link', new Definition('Civi\DataProcessor\FieldOutputHandler\ManageCaseLinkFieldOutputHandler'), E::ts('Link to manage case'));
     $this->addOutputHandler('groups_of_contact', new Definition('Civi\DataProcessor\FieldOutputHandler\GroupsOfContactFieldOutputHandler'), E::ts('Display the groups of a contact'));
     $this->addOutputHandler('event_repeating_info', new Definition('Civi\DataProcessor\FieldOutputHandler\EventRepeatingInfoFieldOutputHandler'), E::ts('Display info about repeating event'));
     $this->addOutputHandler('event_participants', new Definition('Civi\DataProcessor\FieldOutputHandler\EventParticipantsFieldOutputHandler'), E::ts('List participants'));

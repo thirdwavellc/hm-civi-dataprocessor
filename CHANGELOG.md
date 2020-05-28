@@ -1,6 +1,7 @@
 # Version 1.8.0 (not yet released)
 
 * Fixed issue with cloning data processors.
+* Added Manage Case Link field.
 
 # Version 1.7.0
 
