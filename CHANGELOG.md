@@ -1,6 +1,7 @@
 # Version 1.9.0 (not yet released)
 
 * Fixed issue with filtering on contact subtype.
+* Fixed issue with returning after a participant task.
 
 # Version 1.8.0
 
