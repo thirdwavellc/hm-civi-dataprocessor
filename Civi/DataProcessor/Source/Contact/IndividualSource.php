@@ -123,7 +123,7 @@ class IndividualSource extends AbstractCivicrmEntitySource {
         $contactTypeClauses[] = new SimpleWhereClause($this->getSourceName(), 'contact_sub_type', 'LIKE', $contactTypeSearchName, 'String', TRUE);
       }
       if (count($contactTypeClauses)) {
-        $contactTypeClause = new OrClause($contactTypeClauses);
+        $contactTypeClause = new OrClause($contactTypeClauses, TRUE);
         $entityDataFlow = $this->ensureEntity();
         $entityDataFlow->addWhereClause($contactTypeClause);
       }
@@ -134,7 +134,7 @@ class IndividualSource extends AbstractCivicrmEntitySource {
         $contactTypeClauses[] = new SimpleWhereClause($this->getSourceName(), 'contact_sub_type', 'NOT LIKE', $contactTypeSearchName, 'String',TRUE);
       }
       if (count($contactTypeClauses)) {
-        $contactTypeClause = new AndClause($contactTypeClauses);
+        $contactTypeClause = new AndClause($contactTypeClauses, TRUE);
         $entityDataFlow = $this->ensureEntity();
         $entityDataFlow->addWhereClause($contactTypeClause);
       }
