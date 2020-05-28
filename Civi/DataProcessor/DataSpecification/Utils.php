@@ -159,6 +159,7 @@ class Utils {
         'html_type',
         'default_value',
         'attributes',
+        'is_searchable',
         'is_required',
         'is_view',
         'help_pre',
