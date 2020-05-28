@@ -146,16 +146,20 @@ class CRM_DataprocessorDashlet_Dashlet implements Civi\DataProcessor\Output\UIOu
   public function deleteOutput($output) {
     $dataProcessor = civicrm_api3('DataProcessor', 'getsingle', array('id' => $output['data_processor_id']));
     $dashletName = 'dataprocessor_'.$dataProcessor['name'];
-    $dashlets = civicrm_api3('Dashboard', 'get', [
-      'name' => $dashletName,
-      'options' => ['limit' => 0]
-    ]);
-    foreach ($dashlets['values'] as $dashlet) {
-      try {
-        civicrm_api3('Dashlet', 'delete', ['id' => $dashlet['id']]);
-      } catch (\Exception $e) {
-        // Do nothing
+    try {
+      $dashlets = civicrm_api3('Dashboard', 'get', [
+        'name' => $dashletName,
+        'options' => ['limit' => 0]
+      ]);
+      foreach ($dashlets['values'] as $dashlet) {
+        try {
+          civicrm_api3('Dashlet', 'delete', ['id' => $dashlet['id']]);
+        } catch (\Exception $e) {
+          // Do nothing.
+        }
       }
+    } catch (\CiviCRM_API3_Exception $ex) {
+      // Do nothing.
     }
   }
 
