@@ -2,6 +2,7 @@
 
 * Fixed issue with cloning data processors.
 * Added Manage Case Link field.
+* Fixed issue with dashlet opening in full screen.
 
 # Version 1.7.0
 
