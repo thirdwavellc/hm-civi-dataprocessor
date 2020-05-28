@@ -1,8 +1,7 @@
-# Version 1.9.0 (not yet released)
-
 # Version 1.8.0
 
 * Added Manage Case Link field.
+* Added checkbox to show Manage Case on the Case Search output. 
 * Fixed issue with dashlet opening in full screen.
 
 # Version 1.7.1
