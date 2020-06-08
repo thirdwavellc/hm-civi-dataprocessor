@@ -125,6 +125,8 @@ class Factory {
     $this->addDataSource('note', new Definition('Civi\DataProcessor\Source\Note\NoteSource'), E::ts('Note'));
     $this->addDataSource('csv', new Definition('Civi\DataProcessor\Source\CSV'), E::ts('CSV File'));
     $this->addDataSource('sqltable', new Definition('Civi\DataProcessor\Source\SQLTable'), E::ts('SQL Table'));
+    $this->addDataSource('pledge', 'Civi\DataProcessor\Source\Pledge\PledgeSource', E::ts('Pledge'));
+    $this->addDataSource('pledge_payment', 'Civi\DataProcessor\Source\Pledge\PledgePaymentSource', E::ts('Pledge Payment'));
     $this->addOutput('api', new Definition('Civi\DataProcessor\Output\Api'), E::ts('API'));
     $this->addOutput('contact_summary_tab', new Definition('CRM_Contact_DataProcessorContactSummaryTab'), E::ts('Tab on contact summary'));
     $this->addOutput('dashlet', new Definition('CRM_DataprocessorDashlet_Dashlet'), E::ts('Dashlet'));
